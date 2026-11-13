@@ -5,9 +5,10 @@ safety model, scored with **n8n's own maintainer tests**, and producing a PR evi
 
 ## How a task works
 
-1. **Pick a real fix.** 20 PRs merged into `n8n-io/n8n` between 2026-10-12 and 2026-11-12, each
-   closing a public GitHub issue, touching one package, with unit tests
+1. **Pick a real fix.** 20 PRs merged into `n8n-io/n8n` between 2026-10-12 and 2026-11-12 were
+   picked, each closing a public GitHub issue, touching one package, with unit tests
    ([`tasks/tasks.json`](tasks/tasks.json), built by [`harness/build_tasks.py`](harness/build_tasks.py)).
+   19 of them are in the results, the 20th was dropped at the control step below.
 2. **Rewind.** Check out the parent of the merge commit. Install and build that package's
    workspace dependencies.
 3. **Control.** Copy the merged PR's test files in and run them on the untouched code. They must
