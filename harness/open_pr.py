@@ -24,22 +24,28 @@ def git(*a, cwd=None, inp=None):
 wt = tempfile.mkdtemp(prefix="pr-")
 git("-C", "cache/n8n.git", "worktree", "add", "--detach", wt, task["base_sha"])
 try:
-    git("-c", "core.autocrlf=false", "apply", "--whitespace=nowarn", "-", cwd=wt, inp=run["diff"])
+    if run["diff"].strip():
+        git("-c", "core.autocrlf=false", "apply", "--whitespace=nowarn", "-", cwd=wt, inp=run["diff"])
     git("add", "-A", cwd=wt)
     msg = f"fix: agent run for #{task['issue']} ({run['model']}, AGENTS.md {run['agents_md']})\n\nReplayed by n8n-agent-bench."
-    git("-c", "user.name=n8n-agent-bench", "-c", "user.email=bench@ciocandco.com", "commit", "-qm", msg, cwd=wt)
+    git("-c", "user.name=n8n-agent-bench", "-c", "user.email=bench@ciocandco.com", "commit", "--allow-empty", "-qm", msg, cwd=wt)
     url = f"https://github.com/{FORK}.git"
     git("push", "-f", url, f"{task['base_sha']}:refs/heads/{base_branch}", cwd=wt)
     git("push", "-f", url, f"HEAD:refs/heads/{head_branch}", cwd=wt)
 finally:
     git("-C", "cache/n8n.git", "worktree", "remove", "--force", wt)
 
-title = f"[bench] #{task['issue']}: {task['issue_title'][:70]}"
+verdict = "pass" if json.load(open(run_path.replace(".json", ".score.json"), encoding="utf-8"))["held_out_tests_pass"] else "fail"
+title = f"[bench {verdict}, AGENTS.md {run['agents_md']}] #{task['issue']}: {task['issue_title'][:60]}"
 existing = subprocess.run(["gh", "pr", "list", "-R", FORK, "--head", head_branch, "--json", "url", "-q", ".[0].url"],
                           capture_output=True, text=True).stdout.strip()
 if existing:
-    subprocess.run(["gh", "pr", "edit", existing, "-R", FORK, "--body", body], check=True)
-    print(existing)
+    subprocess.run(["gh", "pr", "edit", existing, "-R", FORK, "--title", title, "--body", body], check=True, capture_output=True)
+    url = existing
 else:
-    print(subprocess.check_output(["gh", "pr", "create", "-R", FORK, "--base", base_branch, "--head", head_branch,
-                                   "--title", title, "--body", body], encoding="utf-8").strip())
+    url = subprocess.check_output(["gh", "pr", "create", "-R", FORK, "--base", base_branch, "--head", head_branch,
+                                   "--title", title, "--body", body], encoding="utf-8").strip()
+index = json.load(open("results/prs.json", encoding="utf-8")) if os.path.exists("results/prs.json") else {}
+index[f"{task['id']}/{run['agents_md']}"] = url
+json.dump(index, open("results/prs.json", "w", encoding="utf-8"), indent=1, sort_keys=True)
+print(url)

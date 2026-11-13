@@ -3,11 +3,6 @@
 A benchmark of coding agents on **n8n's own merged bug fixes**, run in a sandbox with an explicit
 safety model, scored with **n8n's own maintainer tests**, and producing a PR evidence block per run.
 
-It covers the four things the
-[Staff Platform Engineer, Agentic Engineering](https://jobs.ashbyhq.com/n8n/24ad7d68-fac9-476c-b9fa-3410d73a6d7d)
-posting describes: isolated execution environments, a safety model, benchmarks from real historical
-tasks, and PR evidence ("what changed, what ran, what risks remain, where human judgment is needed").
-
 ## How a task works
 
 1. **Pick a real fix.** 20 PRs merged into `n8n-io/n8n` between 2026-10-12 and 2026-11-12, each
@@ -68,7 +63,7 @@ Pass rate by package:
 - **Where a cheap agent is already useful, and where it is not.** Fixes local to one node or
   utility (header casing, queue bindings, webhook static data, tool-name truncation, bot-detection
   messages) pass. Agent-runtime internals (token counting, offloaded tool results, streamed tool
-  calls) failed every time. That is a first cut at "which task categories agents may attempt".
+  calls) failed every time.
 - **AGENTS.md did not help this agent.** With n8n's 24 KB root `AGENTS.md` in context the agent
   passed 7 of 19; without it, 9 of 19. One run per arm, so this is within noise, but there is no
   sign of a benefit for a small model, and a plausible cost: the instructions are written for
@@ -92,13 +87,25 @@ Pass rate by package:
   was the best **gate** (12/12 on auth-or-not, Brier 0.002) and one of the weakest verifiers. The
   model has to be chosen per decision, on your own runs.
 
+## Evidence PRs
+
+Every run is a PR on the fork [WhitehatD/n8n](https://github.com/WhitehatD/n8n/pulls) (base =
+the parent of the merged fix, head = the agent's change), with the evidence block as its
+description. Index: [`results/prs.json`](results/prs.json). Good ones to start with:
+
+- [n8n-43061, AGENTS.md on](https://github.com/WhitehatD/n8n/pull/1): auth header casing, pass, flagged for human review
+- [n8n-43033, AGENTS.md on](https://github.com/WhitehatD/n8n/pull/24): RabbitMQ queue bindings, pass
+- [n8n-43142, AGENTS.md off](https://github.com/WhitehatD/n8n/pull/26): child job waits on workers, pass, 188-line fix
+- [n8n-41570, AGENTS.md on](https://github.com/WhitehatD/n8n/pull/11): Code node console output, fail, with the same bug passing in the AGENTS.md-off run
+- [n8n-42436, AGENTS.md on](https://github.com/WhitehatD/n8n/pull/17): agent token counting, fail
+
 ## Limits
 
 - One cheap model (`deepseek/deepseek-v4-flash`), one run per arm: the numbers are a measurement
   of this setup, not a ranking of models. Run-to-run variance is not measured yet.
 - Held-out tests are unit tests only. CI, lint and type checks are not run, so "pass" is necessary
   but not sufficient for merge.
-- GitHub issues stand in for Linear issues. Reviewer acceptance and rework rate need real users.
+- Reviewer acceptance and rework rate need real reviewers; they are not measured here.
 
 ## Run it
 
