@@ -1,0 +1,253 @@
+{
+ "<None>": {
+  "allowed_connects": {
+   "codeload.github.com": 1,
+   "nodejs.org": 2,
+   "registry.npmjs.org": 654
+  },
+  "denied": {
+   "api.github.com": 10,
+   "codeload.github.com": 3,
+   "github.com": 4,
+   "telemetry.vercel.com": 63
+  },
+  "llm_calls": 206
+ },
+ "<agent>": {
+  "allowed_connects": {},
+  "denied": {
+   "127.0.0.1": 50,
+   "telemetry.vercel.com": 9
+  },
+  "llm_calls": 0
+ },
+ "<installer>": {
+  "allowed_connects": {
+   "api.github.com": 2,
+   "registry.npmjs.org": 1126,
+   "release-assets.githubusercontent.com": 1
+  },
+  "denied": {
+   "/llm/v1/chat/completions": 1,
+   "api.github.com": 15,
+   "github.com": 1,
+   "telemetry.vercel.com": 174
+  },
+  "llm_calls": 0
+ },
+ "<sandbox>": {
+  "allowed_connects": {},
+  "denied": {
+   "127.0.0.1": 5,
+   "registry.npmjs.org": 1
+  },
+  "llm_calls": 1
+ },
+ "<unknown>": {
+  "allowed_connects": {},
+  "denied": {
+   "registry.npmjs.org": 1
+  },
+  "llm_calls": 0
+ },
+ "n8n-41021/deepseek_deepseek-v4-flash-amd-off": {
+  "allowed_connects": {},
+  "denied": {},
+  "llm_calls": 39
+ },
+ "n8n-41021/deepseek_deepseek-v4-flash-amd-on": {
+  "allowed_connects": {},
+  "denied": {},
+  "llm_calls": 78
+ },
+ "n8n-41061/deepseek_deepseek-v4-flash-amd-off": {
+  "allowed_connects": {},
+  "denied": {},
+  "llm_calls": 97
+ },
+ "n8n-41061/deepseek_deepseek-v4-flash-amd-on": {
+  "allowed_connects": {},
+  "denied": {},
+  "llm_calls": 89
+ },
+ "n8n-41064/deepseek_deepseek-v4-flash-amd-off": {
+  "allowed_connects": {},
+  "denied": {},
+  "llm_calls": 117
+ },
+ "n8n-41064/deepseek_deepseek-v4-flash-amd-on": {
+  "allowed_connects": {},
+  "denied": {},
+  "llm_calls": 124
+ },
+ "n8n-41116/deepseek_deepseek-v4-flash-amd-off": {
+  "allowed_connects": {},
+  "denied": {},
+  "llm_calls": 132
+ },
+ "n8n-41116/deepseek_deepseek-v4-flash-amd-on": {
+  "allowed_connects": {},
+  "denied": {},
+  "llm_calls": 160
+ },
+ "n8n-41570/deepseek_deepseek-v4-flash-amd-off": {
+  "allowed_connects": {},
+  "denied": {},
+  "llm_calls": 76
+ },
+ "n8n-41570/deepseek_deepseek-v4-flash-amd-on": {
+  "allowed_connects": {},
+  "denied": {},
+  "llm_calls": 32
+ },
+ "n8n-41838/deepseek_deepseek-v4-flash-amd-off": {
+  "allowed_connects": {},
+  "denied": {},
+  "llm_calls": 154
+ },
+ "n8n-41838/deepseek_deepseek-v4-flash-amd-on": {
+  "allowed_connects": {},
+  "denied": {},
+  "llm_calls": 160
+ },
+ "n8n-42081/deepseek_deepseek-v4-flash-amd-off": {
+  "allowed_connects": {},
+  "denied": {},
+  "llm_calls": 153
+ },
+ "n8n-42081/deepseek_deepseek-v4-flash-amd-on": {
+  "allowed_connects": {},
+  "denied": {},
+  "llm_calls": 94
+ },
+ "n8n-42436/deepseek_deepseek-v4-flash-amd-off": {
+  "allowed_connects": {},
+  "denied": {},
+  "llm_calls": 194
+ },
+ "n8n-42436/deepseek_deepseek-v4-flash-amd-on": {
+  "allowed_connects": {},
+  "denied": {},
+  "llm_calls": 53
+ },
+ "n8n-42473/deepseek_deepseek-v4-flash-amd-off": {
+  "allowed_connects": {},
+  "denied": {},
+  "llm_calls": 167
+ },
+ "n8n-42473/deepseek_deepseek-v4-flash-amd-on": {
+  "allowed_connects": {},
+  "denied": {},
+  "llm_calls": 150
+ },
+ "n8n-42475/deepseek_deepseek-v4-flash-amd-off": {
+  "allowed_connects": {},
+  "denied": {},
+  "llm_calls": 99
+ },
+ "n8n-42475/deepseek_deepseek-v4-flash-amd-on": {
+  "allowed_connects": {},
+  "denied": {},
+  "llm_calls": 138
+ },
+ "n8n-42569/deepseek_deepseek-v4-flash-amd-off": {
+  "allowed_connects": {},
+  "denied": {},
+  "llm_calls": 118
+ },
+ "n8n-42569/deepseek_deepseek-v4-flash-amd-on": {
+  "allowed_connects": {},
+  "denied": {},
+  "llm_calls": 96
+ },
+ "n8n-43033/deepseek_deepseek-v4-flash-amd-off": {
+  "allowed_connects": {},
+  "denied": {},
+  "llm_calls": 36
+ },
+ "n8n-43033/deepseek_deepseek-v4-flash-amd-on": {
+  "allowed_connects": {},
+  "denied": {},
+  "llm_calls": 58
+ },
+ "n8n-43061/deepseek_deepseek-v4-flash-amd-off": {
+  "allowed_connects": {},
+  "denied": {},
+  "llm_calls": 37
+ },
+ "n8n-43061/deepseek_deepseek-v4-flash-amd-on": {
+  "allowed_connects": {},
+  "denied": {},
+  "llm_calls": 22
+ },
+ "n8n-43142/deepseek_deepseek-v4-flash-amd-off": {
+  "allowed_connects": {},
+  "denied": {},
+  "llm_calls": 26
+ },
+ "n8n-43142/deepseek_deepseek-v4-flash-amd-on": {
+  "allowed_connects": {},
+  "denied": {},
+  "llm_calls": 57
+ },
+ "n8n-43252/deepseek_deepseek-v4-flash-amd-off": {
+  "allowed_connects": {},
+  "denied": {},
+  "llm_calls": 140
+ },
+ "n8n-43252/deepseek_deepseek-v4-flash-amd-on": {
+  "allowed_connects": {},
+  "denied": {},
+  "llm_calls": 160
+ },
+ "n8n-43286/deepseek_deepseek-v4-flash-amd-off": {
+  "allowed_connects": {},
+  "denied": {},
+  "llm_calls": 25
+ },
+ "n8n-43286/deepseek_deepseek-v4-flash-amd-on": {
+  "allowed_connects": {},
+  "denied": {},
+  "llm_calls": 17
+ },
+ "n8n-43306/deepseek_deepseek-v4-flash-amd-off": {
+  "allowed_connects": {},
+  "denied": {},
+  "llm_calls": 119
+ },
+ "n8n-43306/deepseek_deepseek-v4-flash-amd-on": {
+  "allowed_connects": {},
+  "denied": {},
+  "llm_calls": 102
+ },
+ "n8n-43353/deepseek_deepseek-v4-flash-amd-off": {
+  "allowed_connects": {},
+  "denied": {},
+  "llm_calls": 46
+ },
+ "n8n-43353/deepseek_deepseek-v4-flash-amd-on": {
+  "allowed_connects": {},
+  "denied": {},
+  "llm_calls": 66
+ },
+ "n8n-43517/deepseek_deepseek-v4-flash-amd-off": {
+  "allowed_connects": {},
+  "denied": {},
+  "llm_calls": 48
+ },
+ "n8n-43517/deepseek_deepseek-v4-flash-amd-on": {
+  "allowed_connects": {},
+  "denied": {},
+  "llm_calls": 136
+ },
+ "n8n-43518/deepseek_deepseek-v4-flash-amd-off": {
+  "allowed_connects": {},
+  "denied": {},
+  "llm_calls": 87
+ },
+ "n8n-43518/deepseek_deepseek-v4-flash-amd-on": {
+  "allowed_connects": {},
+  "denied": {},
+  "llm_calls": 100
+ }
+}

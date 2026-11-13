@@ -1,0 +1,2 @@
+{"task": "n8n-42475", "held_out_tests_pass": false, "cost_usd": 0.0353, "steps": 42} {"deny_write_hits": [], "human_review_path_hits": ["packages/nodes-base/credentials/GoogleApi.credentials.ts", "packages/nodes-base/credentials/test/GoogleApi.credentials.test.ts"], "gate_model": "morph/reflex", "gate_p_needs_human": 0.9999507716431364, "needs_human": true, "refused_tool_calls": 0} {"src_file_overlap": 1.0, "agent_lines": 53, "gold_lines": 110}
+n8n-42475 deepseek_deepseek-v4-flash-amd-off: done in 155s

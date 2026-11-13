@@ -1,0 +1,13 @@
+{
+ "task": "n8n-43518",
+ "base_fails": true,
+ "failing": [
+  "should not clear the store in a batch, because beforeInsert does it",
+  "should do nothing when Clear Data is off",
+  "should delete the collection when Clear Data is on",
+  "should remove only the tenant when Clear Data is on and a tenant is set",
+  "should close the client after the clear step",
+  "should close the client when the clear step fails"
+ ],
+ "tail": "de.test.ts:479:16\n    477|   describe('beforeInsert', () => {\n    478|    const clear = async (options: Record<string, unknown>) =>\n    479|     await node.beforeInsert(createContext(options), embeddings, 0);\n       |                ^\n    480|\n    481|    it('should do nothing when Clear Data is off', async () => {\n \u276f nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts:503:11\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[5/6]\u23af\n\n FAIL  nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts > VectorStoreWeaviate.node > populateVectorStore > beforeInsert > should close the client when the clear step fails\nAssertionError: expected [Function] to throw error including 'clear failed' but got 'node.beforeInsert is not a function'\n\nExpected: \"clear failed\"\nReceived: \"node.beforeInsert is not a function\"\n\n \u276f nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts:511:46\n    509|     deleteCollection.mockRejectedValueOnce(new Error('clear failed'));\n    510|\n    511|     await expect(clear({ clearStore: true })).rejects.toThrow('clear f\u2026\n       |                                              ^\n    512|     expect(closeClient).toHaveBeenCalledTimes(1);\n    513|    });\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[6/6]\u23af\n\n\n Test Files  1 failed (1)\n      Tests  6 failed | 24 passed (30)\n   Start at  00:02:49\n   Duration  1.01s (import 71%, transform 21%, tests 6%, setup 1%, worker 1%)\n\nJUNIT report written to /work/runs/n8n-43518/control/packages/@n8n/nodes-langchain/junit.xml\n"
+}

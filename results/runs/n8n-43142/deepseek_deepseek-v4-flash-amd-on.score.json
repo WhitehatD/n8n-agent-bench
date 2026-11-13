@@ -1,0 +1,37 @@
+{
+ "task": "n8n-43142",
+ "model": "deepseek/deepseek-v4-flash",
+ "agents_md": "on",
+ "held_out_tests_pass": false,
+ "policy": {
+  "deny_write_hits": [],
+  "human_review_path_hits": [],
+  "gate_model": "morph/reflex",
+  "gate_p_needs_human": 0.0005796938907819865,
+  "needs_human": false,
+  "refused_tool_calls": 0
+ },
+ "closeness": {
+  "agent_files": [
+   "packages/cli/src/scaling/__tests__/scaling.service.test.ts",
+   "packages/cli/src/scaling/scaling.service.ts"
+  ],
+  "gold_src_files": [
+   "packages/cli/src/scaling/job-outcome-tracker.ts",
+   "packages/cli/src/scaling/scaling.service.ts"
+  ],
+  "src_file_overlap": 0.5,
+  "extra_files": [],
+  "agent_lines": 305,
+  "gold_lines": 188
+ },
+ "cost_usd": 0.1699,
+ "steps": 68,
+ "seconds": 458,
+ "finished": true,
+ "held_out": {
+  "passed": false,
+  "seconds": 12,
+  "tail": "sing from the queue and queue is empty 1ms\n       \u2713 should mark running executions as crashed if they are missing from the queue and queue is not empty 0ms\n       \u2713 should not mark running executions as crashed if they are present in the queue 0ms\n     \u2713 MCP response handling (6)\n       \u2713 should process mcp-response messages without throwing 1ms\n       \u2713 should handle mcp-response for trigger type 0ms\n       \u2713 should restore an offloaded body without reclaiming it on the session-owning main 52ms\n       \u2713 should decode a Buffer body the worker base64-encoded to relay it 52ms\n       \u2713 should not restore an offloaded body on a main that does not hold the session 51ms\n       \u2713 should deliver a response a pending call awaits when the transport is gone 51ms\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af Failed Tests 1 \u23af\u23af\u23af\u23af\u23af\u23af\u23af\n\n FAIL  src/scaling/__tests__/scaling.service.test.ts > ScalingService > message handling > job outcome wiring on worker > should keep the failedBeforeStart flag of a v2 job-finished result\nAssertionError: expected \"vi.fn()\" to be called with arguments: [ 'jobs', 'job-789', 'exec-123', \u2026(1) ]\n\nReceived:\n\n  1st vi.fn() call:\n\n  [\n    \"jobs\",\n    \"job-789\",\n    \"exec-123\",\n-   ObjectContaining {\n-     \"failedBeforeStart\": true,\n+   {\n+     \"error\": undefined,\n+     \"lastNodeExecuted\": undefined,\n+     \"metadata\": undefined,\n+     \"nodeTimeSavedMinutes\": undefined,\n+     \"startedAt\": 2026-07-25T11:59:00.000Z,\n+     \"status\": \"error\",\n+     \"stoppedAt\": 2026-07-25T11:59:30.000Z,\n+     \"success\": false,\n+     \"usedDynamicCredentials\": undefined,\n+     \"waitTill\": null,\n    },\n  ]\n\n\nNumber of calls: 1\n\n \u276f src/scaling/__tests__/scaling.service.test.ts:1169:46\n    1167|     });\n    1168|\n    1169|     expect(jobOutcomeTracker.recordFinished).toHaveBeenCalledWith(\n       |                                              ^\n    1170|      'jobs',\n    1171|      'job-789',\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[1/1]\u23af\n\n\n Test Files  1 failed (1)\n      Tests  1 failed | 84 passed (85)\n   Start at  00:16:30\n   Duration  10.52s (transform 82%, import 9%, setup 6%, tests 3%)\n\n  Transform  transforming modules took 7.57s \u00b7 82% of tracked time, re-done on every run\n             persist transforms across runs with fsModuleCache: true\n             on CI this only helps when the cache directory is persisted between runs\n             learn more: https://vitest.dev/guide/improving-performance#caching-between-reruns\n\nJUNIT report written to /work/runs/n8n-43142/deepseek_deepseek-v4-flash-amd-on/packages/cli/junit.xml\n"
+ }
+}

@@ -1,0 +1,10 @@
+{
+ "task": "n8n-42475",
+ "base_fails": true,
+ "failing": [
+  "obtains a token when all Gmail scopes are authorized",
+  "obtains a token when only the selected mail scope is authori\u2026",
+  "obtains a token when only the mail scope is authorized and n\u2026"
+ ],
+ "tail": "est.ts > getGoogleAccessToken with domain-wide delegation > obtains a token when only the selected mail scope is authori\u2026\n FAIL  nodes/Google/test/GenericFunctions.domainWideDelegation.test.ts > getGoogleAccessToken with domain-wide delegation > obtains a token when only the mail scope is authorized and n\u2026\nAssertionError: promise rejected \"Error: 401 unauthorized_client { \u2026(2) }\" instead of resolving\n \u276f nodes/Google/test/GenericFunctions.domainWideDelegation.test.ts:95:73\n     93|   });\n     94|\n     95|   await expect(getGoogleAccessToken.call(context, credentials, 'gmail'\u2026\n       |                                                                         ^\n     96|    tokenResponse,\n     97|   );\n\nCaused by: Error: 401 unauthorized_client\n \u276f Proxy.<anonymous> nodes/Google/test/GenericFunctions.domainWideDelegation.test.ts:80:25\n \u276f Proxy.getGoogleAccessToken nodes/Google/GenericFunctions.ts:126:28\n \u276f nodes/Google/test/GenericFunctions.domainWideDelegation.test.ts:95:37\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\nSerialized Error: { statusCode: 401, error: { error: 'unauthorized_client', error_description: 'Client is unauthorized to retrieve access tokens using this method, or client not authorized for any of the scopes requested.' } }\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[2/3]\u23af\n\n\n Test Files  1 failed (1)\n      Tests  3 failed (3)\n   Start at  23:38:14\n   Duration  2.54s (transform 68%, import 27%, tests 2%, setup 2%)\n\nJUNIT report written to /work/runs/n8n-42475/control/packages/nodes-base/junit.xml\n"
+}

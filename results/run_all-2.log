@@ -1,0 +1,42 @@
+n8n-41570: all arms already scored
+n8n-42081: all arms already scored
+n8n-42436: all arms already scored
+n8n-42473: all arms already scored
+n8n-43033: all arms already scored
+control n8n-41838: base_fails=True ['should resolve the schema URL for http://localhost:5678//api/v1', 'should resolve the schema URL for http://localhost:5678/api/v1/']
+control n8n-41116: base_fails=True ['should reject a successful Gemini 3 Flash response when a Gemma model is configured', 'should reject a different model in a tool follow-up response']
+control n8n-43353: base_fails=True []
+n8n-43306 deepseek_deepseek-v4-flash-amd-on: tests fail  $0.0579  43 steps  180s  needs_human=False
+n8n-41838 deepseek_deepseek-v4-flash-amd-off: tests fail  $0.1461  108 steps  645s  needs_human=True
+n8n-43306 deepseek_deepseek-v4-flash-amd-off: tests fail  $0.1792  73 steps  744s  needs_human=False
+control n8n-42475: base_fails=True ['obtains a token when all Gmail scopes are authorized', 'obtains a token when only the selected mail scope is authori…']
+n8n-41838 deepseek_deepseek-v4-flash-amd-on: tests fail  $0.1212  113 steps  1020s  needs_human=False
+n8n-41116 deepseek_deepseek-v4-flash-amd-off: tests fail  $0.0687  80 steps  405s  needs_human=False
+control n8n-41064: base_fails=True ['reports bot detection and Ignore Bots in the 403 response for "curl/8.0.1"', 'reports bot detection and Ignore Bots in the 403 response for "Mozilla/5.0"']
+n8n-43353 deepseek_deepseek-v4-flash-amd-on: tests fail  $0.1739  65 steps  384s  needs_human=False
+n8n-42475 deepseek_deepseek-v4-flash-amd-off: tests fail  $0.0353  42 steps  144s  needs_human=True
+n8n-43353 deepseek_deepseek-v4-flash-amd-off: tests fail  $0.0467  46 steps  246s  needs_human=False
+control n8n-41061: base_fails=True ['returns a raw RSA-OAEP SHA-1 data key as lossless base64']
+n8n-42475 deepseek_deepseek-v4-flash-amd-on: tests fail  $0.0802  77 steps  255s  needs_human=True
+control n8n-43286: base_fails=True ['should keep a non-empty name when truncation leaves only hyphens', 'should keep a non-empty name when truncation leaves only underscores']
+n8n-41064 deepseek_deepseek-v4-flash-amd-off: tests PASS  $0.0462  65 steps  186s  needs_human=False
+n8n-41116 deepseek_deepseek-v4-flash-amd-on: tests fail  $0.5538  111 steps  1475s  needs_human=False
+control n8n-41021: base_fails=True ['should send tool results in a user turn and return the follow-up response']
+n8n-43286 deepseek_deepseek-v4-flash-amd-on: tests fail  $0.0071  8 steps  30s  needs_human=False
+n8n-41064 deepseek_deepseek-v4-flash-amd-on: tests PASS  $0.2157  107 steps  364s  needs_human=False
+n8n-43286 deepseek_deepseek-v4-flash-amd-off: tests PASS  $0.0072  18 steps  110s  needs_human=False
+n8n-41021 deepseek_deepseek-v4-flash-amd-on: tests PASS  $0.0265  31 steps  150s  needs_human=False
+control n8n-43517: base_fails=True ['should send the node filter to the hybrid search']
+n8n-41061 deepseek_deepseek-v4-flash-amd-on: tests fail  $0.0511  52 steps  546s  needs_human=False
+n8n-41021 deepseek_deepseek-v4-flash-amd-off: tests fail  $0.0089  18 steps  103s  needs_human=False
+control n8n-43518: base_fails=True ['should not clear the store in a batch, because beforeInsert does it', 'should do nothing when Clear Data is off']
+n8n-43061 deepseek_deepseek-v4-flash-amd-off: tests PASS  $0.0188  30 steps  209s  needs_human=True
+n8n-43517 deepseek_deepseek-v4-flash-amd-off: tests PASS  $0.0122  23 steps  84s  needs_human=False
+n8n-43518 deepseek_deepseek-v4-flash-amd-off: tests fail  $0.0456  48 steps  102s  needs_human=False
+control n8n-43142: base_fails=True ['should record a v2 job-finished result with its dates and waitTill', 'should keep the failedBeforeStart flag of a v2 job-finished result']
+n8n-43518 deepseek_deepseek-v4-flash-amd-on: tests fail  $0.043  40 steps  272s  needs_human=False
+n8n-43142 deepseek_deepseek-v4-flash-amd-off: tests PASS  $0.0211  31 steps  242s  needs_human=False
+n8n-43142 deepseek_deepseek-v4-flash-amd-on: tests fail  $0.1699  68 steps  458s  needs_human=False
+n8n-41061 deepseek_deepseek-v4-flash-amd-off: tests fail  $0.0728  28 steps  1546s  needs_human=False
+n8n-43517 deepseek_deepseek-v4-flash-amd-on: tests PASS  $0.1871  90 steps  1334s  needs_human=False
+ALL DONE

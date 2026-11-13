@@ -1,0 +1,7 @@
+{
+ "task": "n8n-43353",
+ "base_fails": false,
+ "failing": [],
+ "tail": "(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:\n  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest package.json\n  - ESM syntax in a file loaded as CommonJS (vitest.config.base.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest package.json\n  - ESM syntax in a file loaded as CommonJS (vitest.workspace-externals.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest package.json\nSet `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.\n\n RUN  v5.0.1 /work/runs/n8n-43353/control/packages/cli\n\nNo test files found, exiting with code 1\n\nfilter: test/integration/workflows/workflows.controller.test.ts\ninclude: src/**/*.{test,spec}.ts, test/unit/**/*.{test,spec}.ts\nexclude:  **/node_modules/**, **/.git/**, **/dist/**, **/*.integration.test.ts\n\nJUNIT report written to /work/runs/n8n-43353/control/packages/cli/junit.xml\n",
+ "excluded": "held-out test is a cli integration test (needs a database); vitest found no unit test to run"
+}

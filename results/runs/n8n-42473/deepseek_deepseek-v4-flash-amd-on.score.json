@@ -1,0 +1,39 @@
+{
+ "task": "n8n-42473",
+ "model": "deepseek/deepseek-v4-flash",
+ "agents_md": "on",
+ "held_out_tests_pass": true,
+ "policy": {
+  "deny_write_hits": [],
+  "human_review_path_hits": [
+   "packages/nodes-base/credentials/NotionApi.credentials.ts",
+   "packages/nodes-base/credentials/test/NotionApi.credentials.test.ts"
+  ],
+  "gate_model": "morph/reflex",
+  "gate_p_needs_human": 0.988212244494617,
+  "needs_human": true,
+  "refused_tool_calls": 0
+ },
+ "closeness": {
+  "agent_files": [
+   "packages/nodes-base/credentials/NotionApi.credentials.ts",
+   "packages/nodes-base/credentials/test/NotionApi.credentials.test.ts"
+  ],
+  "gold_src_files": [
+   "packages/nodes-base/credentials/NotionApi.credentials.ts"
+  ],
+  "src_file_overlap": 1.0,
+  "extra_files": [],
+  "agent_lines": 138,
+  "gold_lines": 57
+ },
+ "cost_usd": 0.1036,
+ "steps": 51,
+ "seconds": 274,
+ "finished": true,
+ "held_out": {
+  "passed": true,
+  "seconds": 1,
+  "tail": "(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:\n  - ESM syntax in a file loaded as CommonJS (vite.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest package.json\nSet `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.\n\n RUN  v5.0.1 /work/runs/n8n-42473/deepseek_deepseek-v4-flash-amd-on/packages/nodes-base\n\n \u2713 credentials/test/NotionApi.credentials.test.ts (7 tests) 4ms\n\n Test Files  1 passed (1)\n      Tests  7 passed (7)\n   Start at  23:01:55\n   Duration  214ms (setup 44%, transform 40%, import 6%, worker 6%, tests 5%)\n\nJUNIT report written to /work/runs/n8n-42473/deepseek_deepseek-v4-flash-amd-on/packages/nodes-base/junit.xml\n"
+ }
+}

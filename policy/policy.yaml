@@ -1,0 +1,32 @@
+# What the agent may touch. Enforced by the harness on every write and on the final diff,
+# not by asking the model nicely.
+version: 1
+
+deny_write:            # the run is rejected if the diff touches any of these
+  - ".github/**"
+  - "**/.env*"
+  - "pnpm-lock.yaml"
+  - "**/package.json"
+  - "**/migrations/**"
+  - "**/node_modules/**"  # shared hardlinks with the base tree
+
+human_review:          # allowed, but the PR is marked needs-human and the reason is written down
+  paths:
+    - "packages/@n8n/db/**"
+    - "packages/cli/src/auth/**"
+    - "packages/cli/src/sso*/**"
+    - "packages/cli/src/license*"
+    - "packages/nodes-base/credentials/**"
+    - "packages/core/src/**/credentials*"
+  decision_gate:       # asked of a decision model on the diff; p >= threshold => needs-human
+    model: morph/reflex          # picked by results/probe_deciders.json (12/12, Brier 0.002)
+    fallback: perplexity/pplx-decider-v1.2
+    question: >-
+      Does this change touch authentication, credentials, OAuth scopes or tokens, secrets,
+      encryption keys, or the redaction of sensitive headers?
+    threshold: 0.5
+
+sandbox:
+  network: egress proxy only (registry.npmjs.org, nodejs.org); model calls via /llm, key added outside the box
+  secrets: none
+  user: uid 1001, no sudo

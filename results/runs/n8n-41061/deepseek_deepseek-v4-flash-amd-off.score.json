@@ -1,0 +1,36 @@
+{
+ "task": "n8n-41061",
+ "model": "deepseek/deepseek-v4-flash",
+ "agents_md": "off",
+ "held_out_tests_pass": false,
+ "policy": {
+  "deny_write_hits": [],
+  "human_review_path_hits": [],
+  "gate_model": "morph/reflex",
+  "gate_p_needs_human": 0.35005594338277723,
+  "needs_human": false,
+  "refused_tool_calls": 0
+ },
+ "closeness": {
+  "agent_files": [
+   "packages/nodes-base/nodes/Crypto/v2/CryptoV2.node.ts",
+   "packages/nodes-base/nodes/Crypto/v2/test/Crypto.node.test.ts"
+  ],
+  "gold_src_files": [
+   "packages/nodes-base/nodes/Crypto/v2/CryptoV2.node.ts"
+  ],
+  "src_file_overlap": 1.0,
+  "extra_files": [],
+  "agent_lines": 10,
+  "gold_lines": 43
+ },
+ "cost_usd": 0.0728,
+ "steps": 28,
+ "seconds": 1546,
+ "finished": true,
+ "held_out": {
+  "passed": false,
+  "seconds": 5,
+  "tail": "ncrypts with public key and decrypts with private key 10ms\n         \u00d7 encrypts and decrypts RSA-OAEP with SHA-1 when selected 2ms\n         \u2713 returns a raw RSA-OAEP SHA-1 data key as lossless base64 3ms\n         \u2713 throws a clear error when RSA plaintext exceeds the key size limit 1ms\n         \u2713 wraps asymmetric decrypt failures in a NodeOperationError 30ms\n       \u2713 Payload format validation (3)\n         \u2713 throws a clear error when symmetric ciphertext is truncated 1ms\n         \u2713 throws a clear error on unsupported ciphertext version 138ms\n         \u2713 wraps symmetric decrypt failures in a NodeOperationError 278ms\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af Failed Tests 2 \u23af\u23af\u23af\u23af\u23af\u23af\u23af\n\n FAIL  nodes/Crypto/v2/test/Crypto.node.test.ts > CryptoV2 Node > Encrypt / Decrypt actions > Asymmetric round-trip > encrypts with public key and decrypts with private key\nAssertionError: expected 'VGhlIHF1aWNrIGJyb3duIGZveCBqdW1wcyBvd\u2026' to be 'The quick brown fox jumps over the la\u2026' // Object.is equality\n\nExpected: \"The quick brown fox jumps over the lazy dog\"\nReceived: \"VGhlIHF1aWNrIGJyb3duIGZveCBqdW1wcyBvdmVyIHRoZSBsYXp5IGRvZw==\"\n\n \u276f nodes/Crypto/v2/test/Crypto.node.test.ts:559:43\n    557|     const decryptResult = await cryptoNode.execute.call(mockExecuteFun\u2026\n    558|\n    559|     expect(decryptResult[0][0].json.data).toBe(plaintext);\n       |                                           ^\n    560|    });\n    561|\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[1/2]\u23af\n\n FAIL  nodes/Crypto/v2/test/Crypto.node.test.ts > CryptoV2 Node > Encrypt / Decrypt actions > Asymmetric round-trip > encrypts and decrypts RSA-OAEP with SHA-1 when selected\nAssertionError: expected 'VGhlIHF1aWNrIGJyb3duIGZveCBqdW1wcyBvd\u2026' to be 'The quick brown fox jumps over the la\u2026' // Object.is equality\n\nExpected: \"The quick brown fox jumps over the lazy dog\"\nReceived: \"VGhlIHF1aWNrIGJyb3duIGZveCBqdW1wcyBvdmVyIHRoZSBsYXp5IGRvZw==\"\n\n \u276f nodes/Crypto/v2/test/Crypto.node.test.ts:584:43\n    582|     );\n    583|     const decryptResult = await cryptoNode.execute.call(mockExecuteFun\u2026\n    584|     expect(decryptResult[0][0].json.data).toBe(plaintext);\n       |                                           ^\n    585|\n    586|     mockExecuteFunctions.getCredentials.mockResolvedValueOnce({\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[2/2]\u23af\n\n\n Test Files  1 failed (1)\n      Tests  2 failed | 30 passed (32)\n   Start at  00:19:18\n   Duration  3.94s (tests 72%, transform 19%, import 8%, setup 1%)\n\nJUNIT report written to /work/runs/n8n-41061/deepseek_deepseek-v4-flash-amd-off/packages/nodes-base/junit.xml\n"
+ }
+}

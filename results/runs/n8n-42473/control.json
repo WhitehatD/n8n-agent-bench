@@ -1,0 +1,10 @@
+{
+ "task": "n8n-42473",
+ "base_fails": true,
+ "failing": [
+  "should preserve an explicit notion-version header without adding another version",
+  "should preserve an explicit NOTION-VERSION header without adding another version",
+  "should preserve an explicit nOtIoN-vErSiOn header without adding another version"
+ ],
+ "tail": "SiOn header without adding another version 1ms\n       \u2713 should add the default version when headers are undefined 0ms\n       \u2713 should add the default version when headers are {} 0ms\n       \u2713 should add the default version when headers are {\"Content-Type\":\"application/json\"} 0ms\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af Failed Tests 3 \u23af\u23af\u23af\u23af\u23af\u23af\u23af\n\n FAIL  credentials/test/NotionApi.credentials.test.ts > NotionApi Credential > authenticate > should preserve an explicit notion-version header without adding another version\n FAIL  credentials/test/NotionApi.credentials.test.ts > NotionApi Credential > authenticate > should preserve an explicit NOTION-VERSION header without adding another version\n FAIL  credentials/test/NotionApi.credentials.test.ts > NotionApi Credential > authenticate > should preserve an explicit nOtIoN-vErSiOn header without adding another version\nAssertionError: expected [ '2026-03-11', '2022-02-22' ] to deeply equal [ '2026-03-11' ]\n\n- Expected\n+ Received\n\n  [\n    \"2026-03-11\",\n+   \"2022-02-22\",\n  ]\n\n \u276f credentials/test/NotionApi.credentials.test.ts:25:22\n     23|      .map(([, value]) => value);\n     24|\n     25|     expect(versions).toEqual(['2026-03-11']);\n       |                      ^\n     26|    },\n     27|   );\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[1/3]\u23af\n\n\n Test Files  1 failed (1)\n      Tests  3 failed | 4 passed (7)\n   Start at  22:47:36\n   Duration  307ms (setup 56%, transform 21%, tests 10%, import 7%, worker 5%)\n\nJUNIT report written to /work/runs/n8n-42473/control/packages/nodes-base/junit.xml\n"
+}

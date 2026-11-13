@@ -1,0 +1,312 @@
+{
+ "task": "n8n-41061",
+ "model": "deepseek/deepseek-v4-flash",
+ "agents_md": "off",
+ "steps": 28,
+ "seconds": 1546,
+ "usage": {
+  "prompt": 1281782,
+  "completion": 184969,
+  "cost": 0.0728384142
+ },
+ "finish": {
+  "summary": "The asymmetric decrypt path in CryptoV2.node.ts (line 823) was calling `.toString('utf8')` on the result of `privateDecrypt`. When the decrypted data is raw bytes (e.g., an AES symmetric key from the MS Graph subscription `body.dataKey`), UTF-8 encoding corrupts the binary data because it's not valid UTF-8 text.\n\n**Fix:** Changed `.toString('utf8')` to `.toString('base64')` so the decrypted raw bytes are safely represented as a base64 string. This preserves the binary data and allows it to be used in the next decryption step (symmetric decrypt of `body.data` with the key in raw bytes format).\n\n**Test updates:** Updated the two asymmetric decrypt assertions in `Crypto.node.test.ts` to expect `Buffer.from(plaintext).toString('base64')` instead of the raw `plaintext` string, matching the new base64 output format.",
+  "risks": "Low risk. The change makes the asymmetric decrypt action output base64-encoded data instead of UTF-8 text. Users who were relying on the old behavior to get a UTF-8 string directly from asymmetric decryption will now need to base64-decode the result. This is a breaking change in behavior, but the old behavior was fundamentally broken for binary data (the reported issue). The symmetric decrypt path is unchanged.",
+  "tests_run": "Ran all 31 tests in `packages/nodes-base/nodes/Crypto/v2/test/Crypto.node.test.ts` \u2014 all pass."
+ },
+ "trace": [
+  {
+   "step": 9,
+   "tool": "shell",
+   "args": {
+    "cmd": "find . -path '*/nodes/Crypto/v2/CryptoV2.node.ts' -type f"
+   },
+   "refused": false,
+   "result_head": "exit 0\n./packages/nodes-base/nodes/Crypto/v2/CryptoV2.node.ts\n"
+  },
+  {
+   "step": 10,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/nodes-base/nodes/Crypto/v2/CryptoV2.node.ts"
+   },
+   "refused": false,
+   "result_head": "1: import { formatPemBlock } from '@n8n/utils/format-pem-block';\n2: import type { BinaryToTextEncoding, CipherGCMTypes } from 'crypto';\n3: import {\n4: \tconstants,\n5: \tcreateCipheriv,\n6: \tcreateDecipheriv,\n7: \tcreateHash,\n8: \tcreateHmac,\n9: \tcreateSign,\n10: \tgetHashes,\n11: \tprivateDecrypt,\n12: \tpubli"
+  },
+  {
+   "step": 12,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/nodes-base/nodes/Crypto/v2/CryptoV2.node.ts"
+   },
+   "refused": false,
+   "result_head": "1: import { formatPemBlock } from '@n8n/utils/format-pem-block';\n2: import type { BinaryToTextEncoding, CipherGCMTypes } from 'crypto';\n3: import {\n4: \tconstants,\n5: \tcreateCipheriv,\n6: \tcreateDecipheriv,\n7: \tcreateHash,\n8: \tcreateHmac,\n9: \tcreateSign,\n10: \tgetHashes,\n11: \tprivateDecrypt,\n12: \tpubli"
+  },
+  {
+   "step": 14,
+   "tool": "read_file",
+   "args": {
+    "end": 900,
+    "path": "packages/nodes-base/nodes/Crypto/v2/CryptoV2.node.ts",
+    "start": 800
+   },
+   "refused": false,
+   "result_head": "800: \t\t\t\t\t\t\t}\n801: \t\t\t\t\t\t\tconst ivStart = 1 + SYMMETRIC_SALT_LENGTH;\n802: \t\t\t\t\t\t\tconst tagStart = ivStart + SYMMETRIC_IV_LENGTH;\n803: \t\t\t\t\t\t\tconst ctStart = tagStart + SYMMETRIC_AUTH_TAG_LENGTH;\n804: \t\t\t\t\t\t\tconst salt = payload.subarray(1, ivStart);\n805: \t\t\t\t\t\t\tconst iv = payload.subarray(ivStart, t"
+  },
+  {
+   "step": 23,
+   "tool": "shell",
+   "args": {
+    "cmd": "find . -path '*/nodes/Crypto/v2/CryptoV2.node.ts' -type f"
+   },
+   "refused": false,
+   "result_head": "exit 0\n./packages/nodes-base/nodes/Crypto/v2/CryptoV2.node.ts\n"
+  },
+  {
+   "step": 24,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/nodes-base/nodes/Crypto/v2/CryptoV2.node.ts",
+    "start": 800
+   },
+   "refused": false,
+   "result_head": ""
+  },
+  {
+   "step": 25,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/nodes-base/nodes/Crypto/v2/CryptoV2.node.ts",
+    "start": 1
+   },
+   "refused": false,
+   "result_head": "1: import { formatPemBlock } from '@n8n/utils/format-pem-block';\n2: import type { BinaryToTextEncoding, CipherGCMTypes } from 'crypto';\n3: import {\n4: \tconstants,\n5: \tcreateCipheriv,\n6: \tcreateDecipheriv,\n7: \tcreateHash,\n8: \tcreateHmac,\n9: \tcreateSign,\n10: \tgetHashes,\n11: \tprivateDecrypt,\n12: \tpubli"
+  },
+  {
+   "step": 31,
+   "tool": "shell",
+   "args": {
+    "cmd": "grep -n 'decrypted\\|privateDecrypt\\|asymmetric\\|utf8' packages/nodes-base/nodes/Crypto/v2/CryptoV2.node.ts"
+   },
+   "refused": false,
+   "result_head": "exit 0\n11:\tprivateDecrypt,\n494:\t\t\t\t\tvalue: 'asymmetric',\n541:\t\t\t\t\tmode: ['asymmetric'],\n641:\t\t\t\tif (mode === 'asymmetric' && action === 'encrypt') {\n651:\t\t\t\tif (mode === 'asymmetric' && action === 'decrypt') {\n736:\t\t\t\t\t\t\tcipherInstance.update(value, 'utf8'),\n756:\t\t\t\t\t\t\t\tBuffer.from(value, 'utf8'),\n8"
+  },
+  {
+   "step": 32,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/nodes-base/nodes/Crypto/v2/CryptoV2.node.ts",
+    "start": 630,
+    "end": 830
+   },
+   "refused": false,
+   "result_head": "630: \n631: \t\t\t\tif (mode === 'symmetric') {\n632: \t\t\t\t\tif (!credentials.encryptionPassphrase) {\n633: \t\t\t\t\t\tthrow new NodeOperationError(\n634: \t\t\t\t\t\t\tthis.getNode(),\n635: \t\t\t\t\t\t\t'No encryption passphrase set in credentials. Please add an Encryption Passphrase to your Crypto credentials.',\n636: \t\t\t\t\t\t);"
+  },
+  {
+   "step": 33,
+   "tool": "shell",
+   "args": {
+    "cmd": "grep -n 'encoding\\|Encoding\\|dataPropertyName' packages/nodes-base/nodes/Crypto/v2/CryptoV2.node.ts | head -40"
+   },
+   "refused": false,
+   "result_head": "exit 0\n2:import type { BinaryToTextEncoding, CipherGCMTypes } from 'crypto';\n233:\t\t\tname: 'dataPropertyName',\n245:\t\t\tdisplayName: 'Encoding',\n246:\t\t\tname: 'encoding',\n329:\t\t\tname: 'dataPropertyName',\n341:\t\t\tdisplayName: 'Encoding',\n342:\t\t\tname: 'encoding',\n377:\t\t\tname: 'dataPropertyName',\n404:\t\t\tdis"
+  },
+  {
+   "step": 34,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/nodes-base/nodes/Crypto/v2/CryptoV2.node.ts",
+    "start": 540,
+    "end": 610
+   },
+   "refused": false,
+   "result_head": "540: \t\t\t\t\taction: ['encrypt', 'decrypt'],\n541: \t\t\t\t\tmode: ['asymmetric'],\n542: \t\t\t\t},\n543: \t\t\t},\n544: \t\t\trequired: true,\n545: \t\t},\n546: \t\t{\n547: \t\t\tdisplayName: 'Value',\n548: \t\t\tname: 'value',\n549: \t\t\ttype: 'string',\n550: \t\t\tdefault: '',\n551: \t\t\tdescription:\n552: \t\t\t\t'For Encrypt: the plaintext to e"
+  },
+  {
+   "step": 35,
+   "tool": "shell",
+   "args": {
+    "cmd": "find . -path '*/Crypto/*' -name '*.ts' -o -path '*/Crypto/*' -name '*.test.ts' | sort"
+   },
+   "refused": false,
+   "result_head": "exit 0\n./packages/nodes-base/nodes/Crypto/Crypto.node.ts\n./packages/nodes-base/nodes/Crypto/v1/CryptoV1.node.ts\n./packages/nodes-base/nodes/Crypto/v1/test/Crypto.node.test.ts\n./packages/nodes-base/nodes/Crypto/v2/CryptoV2.node.ts\n./packages/nodes-base/nodes/Crypto/v2/test/Crypto.node.test.ts\n"
+  },
+  {
+   "step": 36,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/nodes-base/nodes/Crypto/v2/test/Crypto.node.test.ts"
+   },
+   "refused": false,
+   "result_head": "1: import { constants, generateKeyPairSync, privateDecrypt, publicEncrypt } from 'crypto';\n2: import { mockDeep } from 'vitest-mock-extended';\n3: import type { IExecuteFunctions, INodeTypeBaseDescription } from 'n8n-workflow';\n4: import { NodeOperationError } from 'n8n-workflow';\n5: \n6: import { Cry"
+  },
+  {
+   "step": 37,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/nodes-base/nodes/Crypto/v2/test/Crypto.node.test.ts",
+    "start": 400
+   },
+   "refused": false,
+   "result_head": "400: \t\t\t\tmockExecuteFunctions.getCredentials.mockResolvedValue({ encryptionPrivateKey: '' });"
+  },
+  {
+   "step": 38,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/nodes-base/nodes/Crypto/v2/test/Crypto.node.test.ts",
+    "start": 399
+   },
+   "refused": false,
+   "result_head": "399: \t\t\t\tmockExecuteFunctions.getNodeParameter.mockImplementation((name: string) => params[name]);\n400: \t\t\t\tmockExecuteFunctions.getCredentials.mockResolvedValue({ encryptionPrivateKey: '' });"
+  },
+  {
+   "step": 39,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/nodes-base/nodes/Crypto/v2/test/Crypto.node.test.ts",
+    "start": 399,
+    "end": 600
+   },
+   "refused": false,
+   "result_head": "399: \t\t\t\tmockExecuteFunctions.getNodeParameter.mockImplementation((name: string) => params[name]);\n400: \t\t\t\tmockExecuteFunctions.getCredentials.mockResolvedValue({ encryptionPrivateKey: '' });\n401: \n402: \t\t\t\tawait expect(cryptoNode.execute.call(mockExecuteFunctions)).rejects.toThrow(\n403: \t\t\t\t\t'No e"
+  },
+  {
+   "step": 40,
+   "tool": "read_file",
+   "args": {
+    "end": 650,
+    "path": "packages/nodes-base/nodes/Crypto/v2/test/Crypto.node.test.ts",
+    "start": 600
+   },
+   "refused": false,
+   "result_head": "600: \t\t\t\t\t\t},\n601: \t\t\t\t\t\tBuffer.from(encryptResult[0][0].json.data as string, 'base64'),\n602: \t\t\t\t\t).toString('utf8'),\n603: \t\t\t\t).toBe(plaintext);\n604: \t\t\t});\n605: \n606: \t\t\tit('throws a clear error when RSA plaintext exceeds the key size limit', async () => {\n607: \t\t\t\tmockExecuteFunctions.getInputDa"
+  },
+  {
+   "step": 41,
+   "tool": "read_file",
+   "args": {
+    "end": 680,
+    "path": "packages/nodes-base/nodes/Crypto/v2/test/Crypto.node.test.ts",
+    "start": 650
+   },
+   "refused": false,
+   "result_head": "650: \t\t\t\tconst decryptParams = mockDecryptParams(ciphertext, { mode: 'asymmetric' });\n651: \t\t\t\tdelete decryptParams.cipher;\n652: \t\t\t\tmockExecuteFunctions.getNodeParameter.mockImplementation(\n653: \t\t\t\t\t(name: string, _itemIndex, fallback) => decryptParams[name] ?? fallback,\n654: \t\t\t\t);\n655: \n656: \t\t\t"
+  },
+  {
+   "step": 42,
+   "tool": "edit_file",
+   "args": {
+    "path": "packages/nodes-base/nodes/Crypto/v2/CryptoV2.node.ts",
+    "old": "\t\t\t\t\t\t\tconst decrypted = privateDecrypt(\n\t\t\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\t\tkey: encryptionPrivateKey,\n\t\t\t\t\t\t\t\t\tpadding: constants.RSA_PKCS1_OAEP_PADDING,\n\t\t\t\t\t\t\t\t\toaepHash,\n\t\t\t\t\t\t\t\t},\n\t\t\t\t\t\t\t\tBuffer.from(value, 'base64'),\n\t\t\t\t\t\t\t);\n\t\t\t\t\t\t\tnewValue = decrypted.toString('utf8');",
+    "new": "\t\t\t\t\t\t\tconst decrypted = privateDecrypt(\n\t\t\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\t\tkey: encryptionPrivateKey,\n\t\t\t\t\t\t\t\t\tpadding: constants.RSA_PKCS1_OAEP_PADDING,\n\t\t\t\t\t\t\t\t\toaepHash,\n\t\t\t\t\t\t\t\t},\n\t\t\t\t\t\t\t\tBuffer.from(value, 'base64'),\n\t\t\t\t\t\t\t);\n\t\t\t\t\t\t\tnewValue = decrypted.toString('base64');"
+   },
+   "refused": false,
+   "result_head": "edited packages/nodes-base/nodes/Crypto/v2/CryptoV2.node.ts"
+  },
+  {
+   "step": 43,
+   "tool": "edit_file",
+   "args": {
+    "old": "\t\t\t\tconst decryptResult = await cryptoNode.execute.call(mockExecuteFunctions);\n\n\t\t\t\texpect(decryptResult[0][0].json.data).toBe(plaintext);\n\t\t\t});\n\n\t\t\tit('encrypts and decrypts RSA-OAEP with SHA-1 when selected', async () => {",
+    "new": "\t\t\t\tconst decryptResult = await cryptoNode.execute.call(mockExecuteFunctions);\n\n\t\t\t\texpect(decryptResult[0][0].json.data).toBe(\n\t\t\t\t\tBuffer.from(plaintext).toString('base64'),\n\t\t\t\t);\n\t\t\t});\n\n\t\t\tit('encrypts and decrypts RSA-OAEP with SHA-1 when selected', async () => {",
+    "path": "packages/nodes-base/nodes/Crypto/v2/test/Crypto.node.test.ts"
+   },
+   "refused": false,
+   "result_head": "edited packages/nodes-base/nodes/Crypto/v2/test/Crypto.node.test.ts"
+  },
+  {
+   "step": 44,
+   "tool": "edit_file",
+   "args": {
+    "new": "\t\t\t\tconst decryptResult = await cryptoNode.execute.call(mockExecuteFunctions);\n\t\t\t\texpect(decryptResult[0][0].json.data).toBe(\n\t\t\t\t\tBuffer.from(plaintext).toString('base64'),\n\t\t\t\t);",
+    "old": "\t\t\t\tconst decryptResult = await cryptoNode.execute.call(mockExecuteFunctions);\n\t\t\t\texpect(decryptResult[0][0].json.data).toBe(plaintext);",
+    "path": "packages/nodes-base/nodes/Crypto/v2/test/Crypto.node.test.ts"
+   },
+   "refused": false,
+   "result_head": "edited packages/nodes-base/nodes/Crypto/v2/test/Crypto.node.test.ts"
+  },
+  {
+   "step": 45,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd packages/nodes-base && pnpm exec vitest run nodes/Crypto/v2/test/Crypto.node.test.ts 2>&1"
+   },
+   "refused": false,
+   "result_head": "exit 0\n\u001b[33m(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:\n  - ESM syntax in a file loaded as CommonJS (vite.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest"
+  },
+  {
+   "step": 46,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/nodes-base/nodes/Crypto/v1/CryptoV1.node.ts",
+    "start": 700,
+    "end": 780
+   },
+   "refused": false,
+   "result_head": ""
+  },
+  {
+   "step": 47,
+   "tool": "shell",
+   "args": {
+    "cmd": "grep -n 'privateDecrypt\\|toString' packages/nodes-base/nodes/Crypto/v1/CryptoV1.node.ts"
+   },
+   "refused": false,
+   "result_head": "exit 0\n482:\t\t\t\t\t\t\t\t.toString(encodingType as BufferEncoding)\n487:\t\t\t\t\t\t\t\t.toString(encodingType as BufferEncoding)\n"
+  },
+  {
+   "step": 48,
+   "tool": "read_file",
+   "args": {
+    "end": 825,
+    "path": "packages/nodes-base/nodes/Crypto/v2/CryptoV2.node.ts",
+    "start": 813
+   },
+   "refused": false,
+   "result_head": "813: \t\t\t\t\t\t} else {\n814: \t\t\t\t\t\t\tconst oaepHash = this.getNodeParameter('oaepHash', i, 'sha256') as string;\n815: \t\t\t\t\t\t\tconst decrypted = privateDecrypt(\n816: \t\t\t\t\t\t\t\t{\n817: \t\t\t\t\t\t\t\t\tkey: encryptionPrivateKey,\n818: \t\t\t\t\t\t\t\t\tpadding: constants.RSA_PKCS1_OAEP_PADDING,\n819: \t\t\t\t\t\t\t\t\toaepHash,\n820: \t\t\t\t\t"
+  },
+  {
+   "step": 49,
+   "tool": "read_file",
+   "args": {
+    "end": 562,
+    "path": "packages/nodes-base/nodes/Crypto/v2/test/Crypto.node.test.ts",
+    "start": 555
+   },
+   "refused": false,
+   "result_head": "555: \t\t\t\t\t(name: string, _itemIndex, fallback) => decryptParams[name] ?? fallback,\n556: \t\t\t\t);\n557: \t\t\t\tconst decryptResult = await cryptoNode.execute.call(mockExecuteFunctions);\n558: \n559: \t\t\t\texpect(decryptResult[0][0].json.data).toBe(\n560: \t\t\t\t\tBuffer.from(plaintext).toString('base64'),\n561: \t\t\t\t"
+  },
+  {
+   "step": 50,
+   "tool": "read_file",
+   "args": {
+    "end": 590,
+    "path": "packages/nodes-base/nodes/Crypto/v2/test/Crypto.node.test.ts",
+    "start": 582
+   },
+   "refused": false,
+   "result_head": "582: \t\t\t\tmockExecuteFunctions.getNodeParameter.mockImplementation(\n583: \t\t\t\t\t(name: string) => decryptParams[name],\n584: \t\t\t\t);\n585: \t\t\t\tconst decryptResult = await cryptoNode.execute.call(mockExecuteFunctions);\n586: \t\t\t\texpect(decryptResult[0][0].json.data).toBe(\n587: \t\t\t\t\tBuffer.from(plaintext).to"
+  },
+  {
+   "step": 51,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd packages/nodes-base && pnpm exec vitest run nodes/Crypto/v2/test/Crypto.node.test.ts 2>&1"
+   },
+   "refused": false,
+   "result_head": "exit 0\n\u001b[33m(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:\n  - ESM syntax in a file loaded as CommonJS (vite.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest"
+  }
+ ],
+ "diff": "diff --git a/packages/nodes-base/nodes/Crypto/v2/CryptoV2.node.ts b/packages/nodes-base/nodes/Crypto/v2/CryptoV2.node.ts\nindex 2803b34e..a16b367f 100644\n--- a/packages/nodes-base/nodes/Crypto/v2/CryptoV2.node.ts\n+++ b/packages/nodes-base/nodes/Crypto/v2/CryptoV2.node.ts\n@@ -820,7 +820,7 @@ export class CryptoV2 implements INodeType {\n \t\t\t\t\t\t\t\t},\n \t\t\t\t\t\t\t\tBuffer.from(value, 'base64'),\n \t\t\t\t\t\t\t);\n-\t\t\t\t\t\t\tnewValue = decrypted.toString('utf8');\n+\t\t\t\t\t\t\tnewValue = decrypted.toString('base64');\n \t\t\t\t\t\t}\n \t\t\t\t\t} catch (error) {\n \t\t\t\t\t\tif (error instanceof NodeOperationError) throw error;\ndiff --git a/packages/nodes-base/nodes/Crypto/v2/test/Crypto.node.test.ts b/packages/nodes-base/nodes/Crypto/v2/test/Crypto.node.test.ts\nindex 1553e89d..ef88eff4 100644\n--- a/packages/nodes-base/nodes/Crypto/v2/test/Crypto.node.test.ts\n+++ b/packages/nodes-base/nodes/Crypto/v2/test/Crypto.node.test.ts\n@@ -556,7 +556,9 @@ describe('CryptoV2 Node', () => {\n \t\t\t\t);\n \t\t\t\tconst decryptResult = await cryptoNode.execute.call(mockExecuteFunctions);\n \n-\t\t\t\texpect(decryptResult[0][0].json.data).toBe(plaintext);\n+\t\t\t\texpect(decryptResult[0][0].json.data).toBe(\n+\t\t\t\t\tBuffer.from(plaintext).toString('base64'),\n+\t\t\t\t);\n \t\t\t});\n \n \t\t\tit('encrypts and decrypts RSA-OAEP with SHA-1 when selected', async () => {\n@@ -581,7 +583,9 @@ describe('CryptoV2 Node', () => {\n \t\t\t\t\t(name: string) => decryptParams[name],\n \t\t\t\t);\n \t\t\t\tconst decryptResult = await cryptoNode.execute.call(mockExecuteFunctions);\n-\t\t\t\texpect(decryptResult[0][0].json.data).toBe(plaintext);\n+\t\t\t\texpect(decryptResult[0][0].json.data).toBe(\n+\t\t\t\t\tBuffer.from(plaintext).toString('base64'),\n+\t\t\t\t);\n \n \t\t\t\tmockExecuteFunctions.getCredentials.mockResolvedValueOnce({\n \t\t\t\t\tencryptionPublicKey: rsaPublicKey,\n",
+ "isolation": {
+  "container": "per-run",
+  "mounts": [
+   "runs/n8n-41061/deepseek_deepseek-v4-flash-amd-off"
+  ],
+  "network": "jail (egress /llm only)",
+  "user": "1001",
+  "caps": "none",
+  "memory": "2g"
+ }
+}

@@ -1,0 +1,422 @@
+{
+ "task": "n8n-42475",
+ "model": "deepseek/deepseek-v4-flash",
+ "agents_md": "off",
+ "steps": 42,
+ "seconds": 144,
+ "usage": {
+  "prompt": 1005694,
+  "completion": 8057,
+  "cost": 0.03526427000000001
+ },
+ "finish": {
+  "summary": "**Root cause:** The JWT assertion for Google Service Account authentication unconditionally included the `sub` (subject) claim, even when no delegated user email was configured. The code used `sub: credentials.delegatedEmail || credentials.email`, which always resolves to a non-empty string \u2014 the service account's own email when delegation is disabled.\n\nPer Google's OAuth2 service-account protocol, the `sub` claim should only be present when the service account is impersonating another user (domain-wide delegation). Including `sub` with the service account's own email causes Google to reject the assertion with `unauthorized_client` because the service account is not a valid Workspace user in the domain, even though it has domain-wide delegation enabled.\n\n**Fix:** Changed both `getGoogleAccessToken()` (GenericFunctions.ts) and `authenticate()` (GoogleApi.credentials.ts) to conditionally include the `sub` claim only when `delegatedEmail` is truthy:\n\n```javascript\n// Before:\nsub: credentials.delegatedEmail || credentials.email,\n\n// After:\n...(credentials.delegatedEmail ? { sub: credentials.delegatedEmail } : {}),\n```\n\nThis matches the behavior of Google's official Python library (`google.oauth2.service_account`), which only includes the `sub` field when a `subject` parameter is explicitly provided.",
+  "risks": "Low risk. The change is semantically identical for the impersonation case (when `delegatedEmail` is set) and only changes behavior when no user is being impersonated \u2014 the `sub` claim is now omitted instead of being set to the service account's email, which is the correct behavior per Google's protocol. All existing callers pass `credentials.data` which includes `delegatedEmail` when impersonation is enabled and omits it otherwise.",
+  "tests_run": "- `packages/nodes-base/credentials/test/GoogleApi.credentials.test.ts` (10 tests) \u2014 added 2 new tests: one verifying `sub` is omitted when no `delegatedEmail`, one verifying `sub` is included with the correct email when `delegatedEmail` is set.\n- `packages/nodes-base/nodes/Google/test/GenericFunctions.accessToken.test.ts` (3 tests) \u2014 added 2 new tests with the same assertions for `getGoogleAccessToken`.\n- `packages/nodes-base/nodes/Google/Sheet/test/v2/methods/credentialTest.test.ts` (4 tests) \u2014 verified no regression."
+ },
+ "trace": [
+  {
+   "step": 0,
+   "tool": "shell",
+   "args": {
+    "cmd": "find . -type f -name \"*.ts\" | xargs grep -l \"impersonat\" -i 2>/dev/null | head -30"
+   },
+   "refused": false,
+   "result_head": "exit 0\n./node_modules/.pnpm/@microsoft+teams.graph-endpoints@2.0.16/node_modules/@microsoft/teams.graph-endpoints/dist/types/types.d.ts\n./node_modules/.pnpm/google-auth-library@9.15.1_supports-color@8.1.1/node_modules/google-auth-library/build/src/index.d.ts\n./node_modules/.pnpm/google-auth-library@"
+  },
+  {
+   "step": 0,
+   "tool": "shell",
+   "args": {
+    "cmd": "find . -type f -name \"*.ts\" | xargs grep -l \"unauthorized_client\\|subject.*service.account\\|domain.*wide\\|google.*service.*account\" -i 2>/dev/null | head -30"
+   },
+   "refused": false,
+   "result_head": "exit 0\n./node_modules/.pnpm/@aws-sdk+nested-clients@3.936.0/node_modules/@aws-sdk/nested-clients/dist-types/submodules/sso-oidc/models/errors.d.ts\n./node_modules/.pnpm/@google-cloud+storage@7.12.1_encoding@0.1.13_supports-color@8.1.1/node_modules/@google-cloud/storage/build/cjs/src/signer.d.ts\n./nod"
+  },
+  {
+   "step": 1,
+   "tool": "shell",
+   "args": {
+    "cmd": "find . -path \"*/node_modules\" -prune -o -type f -name \"*.ts\" -print | xargs grep -l -i \"google.*service.*account\\|serviceAccount\\|service_account\" 2>/dev/null | grep -v node_modules | head -30"
+   },
+   "refused": false,
+   "result_head": "exit 0\n./packages/cli/src/executions/pre-execution-checks/__tests__/subworkflow-policy-checker.test.ts\n./packages/cli/src/controllers/__tests__/change-email.controller.test.ts\n./packages/cli/src/controllers/__tests__/auth.controller.test.ts\n./packages/cli/src/controllers/__tests__/me.controller.test"
+  },
+  {
+   "step": 2,
+   "tool": "shell",
+   "args": {
+    "cmd": "find . -path \"*/node_modules\" -prune -o -type f -name \"*.ts\" -print | xargs grep -l \"googleapi\\|GoogleApi\\|google-api\" 2>/dev/null | grep -v node_modules | head -30"
+   },
+   "refused": false,
+   "result_head": "exit 0\n./packages/cli/src/evaluation.ee/insights/insights-model-resolver.ts\n./packages/cli/src/evaluation.ee/insights/__tests__/insights-model-resolver.test.ts\n./packages/cli/src/oauth/__tests__/account-identifier.test.ts\n./packages/cli/src/modules/instance-ai/eval/mock-handler.ts\n./packages/cli/src"
+  },
+  {
+   "step": 3,
+   "tool": "shell",
+   "args": {
+    "cmd": "find . -path \"*/node_modules\" -prune -o -type f -name \"*ServiceAccount*\" -print 2>/dev/null | grep -v node_modules"
+   },
+   "refused": false,
+   "result_head": "exit 0\n./packages/nodes-base/credentials/AtlassianServiceAccountApi.credentials.ts\n./packages/nodes-base/credentials/test/AtlassianServiceAccountApi.credentials.test.ts\n./packages/@n8n/db/src/migrations/common/1793100089202-CreateServiceAccountDetailsTable.ts\n"
+  },
+  {
+   "step": 4,
+   "tool": "shell",
+   "args": {
+    "cmd": "find . -path \"*/node_modules\" -prune -o -type f -name \"*.ts\" -print | xargs grep -l \"Google.*Service.*Account\\|GoogleServiceAccount\\|googleServiceAccount\" 2>/dev/null | grep -v node_modules"
+   },
+   "refused": false,
+   "result_head": "exit 0\n./packages/cli/src/credentials/credentials.controller.ts\n./packages/quality/testing/playwright/tests/e2e/credentials/crud.spec.ts\n./packages/nodes-base/credentials/common/google/utils.ts\n./packages/nodes-base/credentials/common/google/index.ts\n./packages/nodes-base/credentials/test/GoogleApi."
+  },
+  {
+   "step": 5,
+   "tool": "read_file",
+   "args": {
+    "path": "./packages/nodes-base/credentials/GoogleApi.credentials.ts"
+   },
+   "refused": false,
+   "result_head": "1: import jwt from 'jsonwebtoken';\n2: import moment from 'moment-timezone';\n3: import type {\n4: \tICredentialDataDecryptedObject,\n5: \tICredentialType,\n6: \tIHttpRequestOptions,\n7: \tINodeProperties,\n8: \tIcon,\n9: } from 'n8n-workflow';\n10: \n11: import { regions } from './common/google/regions';\n12: impo"
+  },
+  {
+   "step": 5,
+   "tool": "read_file",
+   "args": {
+    "path": "./packages/nodes-base/credentials/common/google/utils.ts"
+   },
+   "refused": false,
+   "result_head": "1: import { formatPemBlock } from '@n8n/utils/format-pem-block';\n2: import { UserError, type ICredentialDataDecryptedObject } from 'n8n-workflow';\n3: \n4: export function getGoogleServiceAccountCredentials(credentials: ICredentialDataDecryptedObject): {\n5: \tclient_email: string;\n6: \tprivate_key: stri"
+  },
+  {
+   "step": 5,
+   "tool": "read_file",
+   "args": {
+    "path": "./packages/nodes-base/credentials/common/google/index.ts"
+   },
+   "refused": false,
+   "result_head": "1: export { getGoogleAccessToken } from '../../../nodes/Google/GenericFunctions';\n2: export { getGoogleServiceAccountCredentials } from './utils';"
+  },
+  {
+   "step": 6,
+   "tool": "read_file",
+   "args": {
+    "path": "./packages/nodes-base/nodes/Google/GenericFunctions.ts"
+   },
+   "refused": false,
+   "result_head": "1: import { formatPemBlock } from '@n8n/utils/format-pem-block';\n2: import * as jwt from 'jsonwebtoken';\n3: import { DateTime } from 'luxon';\n4: import moment from 'moment-timezone';\n5: import {\n6: \ttype IExecuteFunctions,\n7: \ttype IExecuteSingleFunctions,\n8: \ttype ILoadOptionsFunctions,\n9: \ttype IC"
+  },
+  {
+   "step": 7,
+   "tool": "shell",
+   "args": {
+    "cmd": "find . -path \"*/node_modules\" -prune -o -type f -name \"*.ts\" -print | xargs grep -l \"inpersonate\\|delegatedEmail\" 2>/dev/null | grep -v node_modules"
+   },
+   "refused": false,
+   "result_head": "exit 0\n./packages/nodes-base/credentials/GoogleApi.credentials.ts\n./packages/nodes-base/nodes/Google/Chat/GoogleChat.node.ts\n./packages/nodes-base/nodes/Google/GenericFunctions.ts\n./packages/nodes-base/nodes/Google/Sheet/v1/GenericFunctions.ts\n./packages/@n8n/nodes-langchain/utils/tests/google-verte"
+  },
+  {
+   "step": 8,
+   "tool": "shell",
+   "args": {
+    "cmd": "find . -path \"*/node_modules\" -prune -o -type f -name \"*.ts\" -print | xargs grep -l \"credentialTest\\|credential.*test\\|test.*credential\" 2>/dev/null | grep -v node_modules | head -20"
+   },
+   "refused": false,
+   "result_head": "exit 0\n./packages/cli/vitest.workspace-externals.ts\n./packages/cli/src/events/relays/telemetry.event-relay.ts\n./packages/cli/src/events/maps/relay.event-map.ts\n./packages/cli/src/events/__tests__/telemetry-event-relay.test.ts\n./packages/cli/src/databases/repositories/__tests__/credentials.repository"
+  },
+  {
+   "step": 9,
+   "tool": "read_file",
+   "args": {
+    "path": "./packages/cli/src/services/credentials-tester.service.ts"
+   },
+   "refused": false,
+   "result_head": "1: /* eslint-disable @typescript-eslint/no-unsafe-argument */\n2: /* eslint-disable @typescript-eslint/no-unsafe-member-access */\n3: /* eslint-disable @typescript-eslint/no-unsafe-assignment */\n4: \n5: /* eslint-disable @typescript-eslint/no-unsafe-call */\n6: import { Logger, isObjectLiteral } from '@"
+  },
+  {
+   "step": 10,
+   "tool": "shell",
+   "args": {
+    "cmd": "grep -rn \"test:\" packages/nodes-base/credentials/GoogleApi.credentials.ts"
+   },
+   "refused": false,
+   "result_head": "exit 1\n"
+  },
+  {
+   "step": 10,
+   "tool": "shell",
+   "args": {
+    "cmd": "grep -rn \"googleApi\" packages/nodes-base/nodes/Google/ --include=\"*.ts\" | grep -v node_modules | grep -v \".test.\""
+   },
+   "refused": false,
+   "result_head": "exit 0\n, qs);\npackages/nodes-base/nodes/Google/Drive/v2/actions/folder/create.operation.ts:12:import { googleApiRequest } from '../../transport';\npackages/nodes-base/nodes/Google/Drive/v2/actions/folder/create.operation.ts:106:\tconst response = await googleApiRequest.call(this, 'POST', '/drive/v3/fi"
+  },
+  {
+   "step": 11,
+   "tool": "read_file",
+   "args": {
+    "path": "./packages/nodes-base/nodes/Google/Sheet/v1/GoogleSheetsV1.node.ts",
+    "start": 1,
+    "end": 90
+   },
+   "refused": false,
+   "result_head": "1: import type {\n2: \tIExecuteFunctions,\n3: \tICredentialsDecrypted,\n4: \tICredentialTestFunctions,\n5: \tIDataObject,\n6: \tILoadOptionsFunctions,\n7: \tINodeCredentialTestResult,\n8: \tINodeExecutionData,\n9: \tINodePropertyOptions,\n10: \tINodeType,\n11: \tINodeTypeBaseDescription,\n12: \tINodeTypeDescription,\n13: "
+  },
+  {
+   "step": 12,
+   "tool": "read_file",
+   "args": {
+    "path": "./packages/nodes-base/nodes/Google/Sheet/v2/methods/credentialTest.ts"
+   },
+   "refused": false,
+   "result_head": "1: import type {\n2: \tICredentialsDecrypted,\n3: \tICredentialTestFunctions,\n4: \tINodeCredentialTestResult,\n5: } from 'n8n-workflow';\n6: \n7: import { getGoogleAccessToken } from '../../../GenericFunctions';\n8: \n9: export async function googleApiCredentialTest(\n10: \tthis: ICredentialTestFunctions,\n11: \t"
+  },
+  {
+   "step": 13,
+   "tool": "read_file",
+   "args": {
+    "path": "./packages/nodes-base/credentials/test/GoogleApi.credentials.test.ts"
+   },
+   "refused": false,
+   "result_head": "1: import { OutboundHttp } from '@n8n/backend-network';\n2: import { Container } from '@n8n/di';\n3: import jwt from 'jsonwebtoken';\n4: import type { IHttpRequestOptions } from 'n8n-workflow';\n5: import type { Mock } from 'vitest';\n6: \n7: import { GoogleApi } from '../GoogleApi.credentials';\n8: \n9: vi"
+  },
+  {
+   "step": 14,
+   "tool": "shell",
+   "args": {
+    "cmd": "find . -path \"*/node_modules\" -prune -o -type f -name \"format-pem-block*\" -print 2>/dev/null | grep -v node_modules"
+   },
+   "refused": false,
+   "result_head": "exit 0\n./packages/@n8n/utils/src/format-pem-block.test.ts\n./packages/@n8n/utils/src/format-pem-block.ts\n./packages/@n8n/utils/dist/format-pem-block.d.mts\n./packages/@n8n/utils/dist/format-pem-block.cjs.map\n./packages/@n8n/utils/dist/format-pem-block.cjs\n./packages/@n8n/utils/dist/format-pem-block.d."
+  },
+  {
+   "step": 15,
+   "tool": "read_file",
+   "args": {
+    "path": "./packages/@n8n/utils/src/format-pem-block.ts"
+   },
+   "refused": false,
+   "result_head": "1: const PEM_BODY_LINE_LENGTH = 64;\n2: \n3: function formatCompactPem(pem: string, isPublic: boolean): string | undefined {\n4: \tconst trimmed = pem.trim();\n5: \tif ((trimmed.match(/-----BEGIN /g) ?? []).length !== 1) return undefined;\n6: \n7: \tconst labelPattern = isPublic ? '[A-Z0-9 ]*PUBLIC KEY' : '["
+  },
+  {
+   "step": 16,
+   "tool": "shell",
+   "args": {
+    "cmd": "find . -path \"*/node_modules/google-auth-library*\" -name \"jwtclient*.ts\" -o -name \"jwtclient*.js\" 2>/dev/null | head -10"
+   },
+   "refused": false,
+   "result_head": "exit 0\n./node_modules/.pnpm/google-auth-library@9.15.1_supports-color@8.1.1/node_modules/google-auth-library/build/src/auth/jwtclient.d.ts\n./node_modules/.pnpm/google-auth-library@9.15.1_supports-color@8.1.1/node_modules/google-auth-library/build/src/auth/jwtclient.js\n./node_modules/.pnpm/google-aut"
+  },
+  {
+   "step": 17,
+   "tool": "read_file",
+   "args": {
+    "path": "./node_modules/.pnpm/google-auth-library@10.9.1_supports-color@8.1.1/node_modules/google-auth-library/build/src/auth/jwtclient.js"
+   },
+   "refused": false,
+   "result_head": "1: \"use strict\";\n2: // Copyright 2013 Google LLC\n3: //\n4: // Licensed under the Apache License, Version 2.0 (the \"License\");\n5: // you may not use this file except in compliance with the License.\n6: // You may obtain a copy of the License at\n7: //\n8: //      http://www.apache.org/licenses/LICENSE-2."
+  },
+  {
+   "step": 18,
+   "tool": "read_file",
+   "args": {
+    "path": "./node_modules/.pnpm/google-auth-library@10.9.1_supports-color@8.1.1/node_modules/google-auth-library/build/src/gtoken/googleToken.js"
+   },
+   "refused": false,
+   "result_head": "1: \"use strict\";\n2: // Copyright 2025 Google LLC\n3: //\n4: // Licensed under the Apache License, Version 2.0 (the \"License\");\n5: // you may not use this file except in compliance with the License.\n6: // You may obtain a copy of the License at\n7: //\n8: //      http://www.apache.org/licenses/LICENSE-2."
+  },
+  {
+   "step": 19,
+   "tool": "shell",
+   "args": {
+    "cmd": "find . -path \"*/node_modules/google-auth-library@10.9.1*\" -name \"tokenHandler*\" -o -name \"jwsSign*\" 2>/dev/null"
+   },
+   "refused": false,
+   "result_head": "exit 0\n./node_modules/.pnpm/google-auth-library@10.9.1_supports-color@8.1.1/node_modules/google-auth-library/build/src/gtoken/jwsSign.d.ts\n./node_modules/.pnpm/google-auth-library@10.9.1_supports-color@8.1.1/node_modules/google-auth-library/build/src/gtoken/jwsSign.js\n"
+  },
+  {
+   "step": 20,
+   "tool": "read_file",
+   "args": {
+    "path": "./node_modules/.pnpm/google-auth-library@10.9.1_supports-color@8.1.1/node_modules/google-auth-library/build/src/gtoken/jwsSign.js"
+   },
+   "refused": false,
+   "result_head": "1: \"use strict\";\n2: // Copyright 2025 Google LLC\n3: //\n4: // Licensed under the Apache License, Version 2.0 (the \"License\");\n5: // you may not use this file except in compliance with the License.\n6: // You may obtain a copy of the License at\n7: //\n8: //      http://www.apache.org/licenses/LICENSE-2."
+  },
+  {
+   "step": 21,
+   "tool": "read_file",
+   "args": {
+    "path": "./packages/nodes-base/nodes/Google/test/GenericFunctions.scopes.test.ts"
+   },
+   "refused": false,
+   "result_head": "1: import { googleServiceAccountScopes } from '../GenericFunctions';\n2: \n3: describe('googleServiceAccountScopes', () => {\n4: \tit('should grant the trigger scope content-read access for shared Drive files', () => {\n5: \t\texpect(googleServiceAccountScopes.sheetV2Trigger).toEqual([\n6: \t\t\t'https://www.g"
+  },
+  {
+   "step": 22,
+   "tool": "read_file",
+   "args": {
+    "path": "./packages/nodes-base/nodes/Google/GenericFunctions.ts",
+    "start": 86,
+    "end": 115
+   },
+   "refused": false,
+   "result_head": "86: \n87: \tconst scopes = googleServiceAccountScopes[service];\n88: \n89: \tconst privateKey = formatPemBlock(credentials.privateKey as string);\n90: \tcredentials.email = ((credentials.email as string) || '').trim();\n91: \n92: \tconst now = moment().unix();\n93: \n94: \tconst signature = jwt.sign(\n95: \t\t{\n96:"
+  },
+  {
+   "step": 23,
+   "tool": "read_file",
+   "args": {
+    "path": "./packages/nodes-base/credentials/GoogleApi.credentials.ts",
+    "start": 127,
+    "end": 155
+   },
+   "refused": false,
+   "result_head": "127: \t\tcredentials.email = (credentials.email as string).trim();\n128: \n129: \t\tconst regex = /[,\\s\\n]+/;\n130: \t\tconst scopes = credentialsScopes\n131: \t\t\t.split(regex)\n132: \t\t\t.filter((scope) => scope)\n133: \t\t\t.join(' ');\n134: \n135: \t\tconst now = moment().unix();\n136: \n137: \t\tconst signature = jwt.sig"
+  },
+  {
+   "step": 24,
+   "tool": "edit_file",
+   "args": {
+    "path": "./packages/nodes-base/nodes/Google/GenericFunctions.ts",
+    "old": "const signature = jwt.sign(\n\t\t{\n\t\t\tiss: credentials.email,\n\t\t\tsub: credentials.delegatedEmail || credentials.email,\n\t\t\tscope: scopes.join(' '),\n\t\t\taud: 'https://oauth2.googleapis.com/token',\n\t\t\tiat: now,\n\t\t\texp: now + 3600,\n\t\t},",
+    "new": "const signature = jwt.sign(\n\t\t{\n\t\t\tiss: credentials.email,\n\t\t\tscope: scopes.join(' '),\n\t\t\taud: 'https://oauth2.googleapis.com/token',\n\t\t\tiat: now,\n\t\t\texp: now + 3600,\n\t\t\t...(credentials.delegatedEmail ? { sub: credentials.delegatedEmail } : {}),\n\t\t},"
+   },
+   "refused": false,
+   "result_head": "edited ./packages/nodes-base/nodes/Google/GenericFunctions.ts"
+  },
+  {
+   "step": 25,
+   "tool": "edit_file",
+   "args": {
+    "path": "./packages/nodes-base/credentials/GoogleApi.credentials.ts",
+    "old": "const signature = jwt.sign(\n\t\t\t{\n\t\t\t\tiss: credentials.email,\n\t\t\t\tsub: credentials.delegatedEmail || credentials.email,\n\t\t\t\tscope: scopes,\n\t\t\t\taud: 'https://oauth2.googleapis.com/token',\n\t\t\t\tiat: now,\n\t\t\t\texp: now + 3600,\n\t\t\t},",
+    "new": "const signature = jwt.sign(\n\t\t\t{\n\t\t\t\tiss: credentials.email,\n\t\t\t\tscope: scopes,\n\t\t\t\taud: 'https://oauth2.googleapis.com/token',\n\t\t\t\tiat: now,\n\t\t\t\texp: now + 3600,\n\t\t\t\t...(credentials.delegatedEmail ? { sub: credentials.delegatedEmail } : {}),\n\t\t\t},"
+   },
+   "refused": false,
+   "result_head": "edited ./packages/nodes-base/credentials/GoogleApi.credentials.ts"
+  },
+  {
+   "step": 26,
+   "tool": "read_file",
+   "args": {
+    "path": "./packages/nodes-base/credentials/test/GoogleApi.credentials.test.ts"
+   },
+   "refused": false,
+   "result_head": "1: import { OutboundHttp } from '@n8n/backend-network';\n2: import { Container } from '@n8n/di';\n3: import jwt from 'jsonwebtoken';\n4: import type { IHttpRequestOptions } from 'n8n-workflow';\n5: import type { Mock } from 'vitest';\n6: \n7: import { GoogleApi } from '../GoogleApi.credentials';\n8: \n9: vi"
+  },
+  {
+   "step": 27,
+   "tool": "edit_file",
+   "args": {
+    "path": "./packages/nodes-base/credentials/test/GoogleApi.credentials.test.ts",
+    "old": "it('signs the assertion with only standard JWT header fields', async () => {\n\t\t\tawait credential.authenticate(baseCredentials, requestOptions);\n\n\t\t\tconst signOptions = mockedSign.mock.calls[0][2] as { header: Record<string, unknown> };\n\t\t\texpect(signOptions.header).toEqual({ typ: 'JWT', alg: 'RS256'",
+    "new": "it('signs the assertion with only standard JWT header fields', async () => {\n\t\t\tawait credential.authenticate(baseCredentials, requestOptions);\n\n\t\t\tconst signOptions = mockedSign.mock.calls[0][2] as { header: Record<string, unknown> };\n\t\t\texpect(signOptions.header).toEqual({ typ: 'JWT', alg: 'RS256'"
+   },
+   "refused": false,
+   "result_head": "edited ./packages/nodes-base/credentials/test/GoogleApi.credentials.test.ts"
+  },
+  {
+   "step": 28,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd packages/nodes-base && pnpm exec vitest run credentials/test/GoogleApi.credentials.test.ts 2>&1"
+   },
+   "refused": false,
+   "result_head": "exit 0\n\u001b[33m(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:\n  - ESM syntax in a file loaded as CommonJS (vite.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest"
+  },
+  {
+   "step": 29,
+   "tool": "shell",
+   "args": {
+    "cmd": "find packages/nodes-base -path \"*/node_modules\" -prune -o -name \"*.test.ts\" -print | xargs grep -l \"getGoogleAccessToken\\|GenericFunctions\" 2>/dev/null"
+   },
+   "refused": false,
+   "result_head": "exit 0\nePostReceiveAction.test.ts\npackages/nodes-base/nodes/HighLevel/v2/test/DateTimeToEpochPreSendAction.test.ts\npackages/nodes-base/nodes/HighLevel/v2/test/GetPipelineStages.test.ts\npackages/nodes-base/nodes/HighLevel/v2/test/TaskUpdatePreSendAction.test.ts\npackages/nodes-base/nodes/HighLevel/v2/"
+  },
+  {
+   "step": 30,
+   "tool": "read_file",
+   "args": {
+    "path": "./packages/nodes-base/nodes/Google/test/GenericFunctions.accessToken.test.ts"
+   },
+   "refused": false,
+   "result_head": "1: import * as jwt from 'jsonwebtoken';\n2: import type { IDataObject, IExecuteFunctions } from 'n8n-workflow';\n3: import type { Mock } from 'vitest';\n4: import { mock } from 'vitest-mock-extended';\n5: \n6: import { getGoogleAccessToken } from '../GenericFunctions';\n7: \n8: vi.mock('jsonwebtoken', () ="
+  },
+  {
+   "step": 31,
+   "tool": "edit_file",
+   "args": {
+    "path": "./packages/nodes-base/nodes/Google/test/GenericFunctions.accessToken.test.ts",
+    "old": "import * as jwt from 'jsonwebtoken';\nimport type { IDataObject, IExecuteFunctions } from 'n8n-workflow';\nimport type { Mock } from 'vitest';\nimport { mock } from 'vitest-mock-extended';\n\nimport { getGoogleAccessToken } from '../GenericFunctions';\n\nvi.mock('jsonwebtoken', () => {\n\tconst sign = vi.fn(",
+    "new": "import * as jwt from 'jsonwebtoken';\nimport type { IDataObject, IExecuteFunctions } from 'n8n-workflow';\nimport type { Mock } from 'vitest';\nimport { mock } from 'vitest-mock-extended';\n\nimport { getGoogleAccessToken } from '../GenericFunctions';\n\nvi.mock('jsonwebtoken', () => {\n\tconst sign = vi.fn("
+   },
+   "refused": false,
+   "result_head": "edited ./packages/nodes-base/nodes/Google/test/GenericFunctions.accessToken.test.ts"
+  },
+  {
+   "step": 32,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd packages/nodes-base && pnpm exec vitest run credentials/test/GoogleApi.credentials.test.ts nodes/Google/test/GenericFunctions.accessToken.test.ts 2>&1"
+   },
+   "refused": false,
+   "result_head": "exit 0\n\u001b[33m(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:\n  - ESM syntax in a file loaded as CommonJS (vite.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest"
+  },
+  {
+   "step": 33,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd packages/nodes-base && pnpm exec vitest run nodes/Google/Sheet/test/v2/methods/credentialTest.test.ts 2>&1"
+   },
+   "refused": false,
+   "result_head": "exit 0\n\u001b[33m(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:\n  - ESM syntax in a file loaded as CommonJS (vite.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest"
+  },
+  {
+   "step": 34,
+   "tool": "shell",
+   "args": {
+    "cmd": "grep -rn \"getGoogleAccessToken\" packages/nodes-base/ --include=\"*.ts\" | grep -v node_modules | grep -v \".test.\" | grep -v dist"
+   },
+   "refused": false,
+   "result_head": "exit 0\npackages/nodes-base/credentials/common/google/index.ts:1:export { getGoogleAccessToken } from '../../../nodes/Google/GenericFunctions';\npackages/nodes-base/nodes/Google/Translate/GenericFunctions.ts:11:import { getGoogleAccessToken } from '../GenericFunctions';\npackages/nodes-base/nodes/Googl"
+  },
+  {
+   "step": 35,
+   "tool": "read_file",
+   "args": {
+    "path": "./packages/@n8n/nodes-langchain/credentials/GoogleVertexAiApi.credentials.ts"
+   },
+   "refused": false,
+   "result_head": "1: import type { ICredentialType, INodeProperties, Icon } from 'n8n-workflow';\n2: \n3: import { GOOGLE_VERTEX_CUSTOM_PROJECT, searchGoogleProjects } from '../utils/google-vertex';\n4: \n5: export class GoogleVertexAiApi implements ICredentialType {\n6: \tname = 'googleVertexAiApi';\n7: \n8: \textends = ['go"
+  },
+  {
+   "step": 36,
+   "tool": "shell",
+   "args": {
+    "cmd": "git diff 2>/dev/null || diff -ruN . . || echo \"Showing changed files:\"\ncat packages/nodes-base/nodes/Google/GenericFunctions.ts | head -115 | tail -40\necho \"---\"\ncat packages/nodes-base/credentials/GoogleApi.credentials.ts | head -170 | tail -50"
+   },
+   "refused": false,
+   "result_head": "exit 0\ndiff --git a/packages/nodes-base/credentials/GoogleApi.credentials.ts b/packages/nodes-base/credentials/GoogleApi.credentials.ts\nindex dacf007c..be9ed1f0 100644\n--- a/packages/nodes-base/credentials/GoogleApi.credentials.ts\n+++ b/packages/nodes-base/credentials/GoogleApi.credentials.ts\n@@ -13"
+  },
+  {
+   "step": 37,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd packages/nodes-base && pnpm exec vitest run credentials/test/GoogleApi.credentials.test.ts nodes/Google/test/GenericFunctions.accessToken.test.ts nodes/Google/Sheet/test/v2/methods/credentialTest.test.ts 2>&1"
+   },
+   "refused": false,
+   "result_head": "exit 0\n\u001b[33m(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:\n  - ESM syntax in a file loaded as CommonJS (vite.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest"
+  }
+ ],
+ "diff": "diff --git a/packages/nodes-base/credentials/GoogleApi.credentials.ts b/packages/nodes-base/credentials/GoogleApi.credentials.ts\nindex dacf007c..be9ed1f0 100644\n--- a/packages/nodes-base/credentials/GoogleApi.credentials.ts\n+++ b/packages/nodes-base/credentials/GoogleApi.credentials.ts\n@@ -137,11 +137,11 @@ export class GoogleApi implements ICredentialType {\n \t\tconst signature = jwt.sign(\n \t\t\t{\n \t\t\t\tiss: credentials.email,\n-\t\t\t\tsub: credentials.delegatedEmail || credentials.email,\n \t\t\t\tscope: scopes,\n \t\t\t\taud: 'https://oauth2.googleapis.com/token',\n \t\t\t\tiat: now,\n \t\t\t\texp: now + 3600,\n+\t\t\t\t...(credentials.delegatedEmail ? { sub: credentials.delegatedEmail } : {}),\n \t\t\t},\n \t\t\tprivateKey,\n \t\t\t{\ndiff --git a/packages/nodes-base/credentials/test/GoogleApi.credentials.test.ts b/packages/nodes-base/credentials/test/GoogleApi.credentials.test.ts\nindex 8ad36388..fd951593 100644\n--- a/packages/nodes-base/credentials/test/GoogleApi.credentials.test.ts\n+++ b/packages/nodes-base/credentials/test/GoogleApi.credentials.test.ts\n@@ -111,5 +111,23 @@ describe('GoogleApi Credential', () => {\n \t\t\texpect(signOptions.header).toEqual({ typ: 'JWT', alg: 'RS256' });\n \t\t\texpect(signOptions.header).not.toHaveProperty('kid');\n \t\t});\n+\n+\t\tit('omits the sub claim when no delegatedEmail is provided', async () => {\n+\t\t\tawait credential.authenticate(baseCredentials, requestOptions);\n+\n+\t\t\tconst payload = mockedSign.mock.calls[0][0] as Record<string, unknown>;\n+\t\t\texpect(payload).not.toHaveProperty('sub');\n+\t\t});\n+\n+\t\tit('includes the sub claim when delegatedEmail is provided', async () => {\n+\t\t\tconst credsWithImpersonation = {\n+\t\t\t\t...baseCredentials,\n+\t\t\t\tdelegatedEmail: 'user@example.com',\n+\t\t\t};\n+\t\t\tawait credential.authenticate(credsWithImpersonation, requestOptions);\n+\n+\t\t\tconst payload = mockedSign.mock.calls[0][0] as Record<string, unknown>;\n+\t\t\texpect(payload.sub).toBe('user@example.com');\n+\t\t});\n \t});\n });\ndiff --git a/packages/nodes-base/nodes/Google/GenericFunctions.ts b/packages/nodes-base/nodes/Google/GenericFunctions.ts\nindex 638f0e53..e41488e6 100644\n--- a/packages/nodes-base/nodes/Google/GenericFunctions.ts\n+++ b/packages/nodes-base/nodes/Google/GenericFunctions.ts\n@@ -94,11 +94,11 @@ export async function getGoogleAccessToken(\n \tconst signature = jwt.sign(\n \t\t{\n \t\t\tiss: credentials.email,\n-\t\t\tsub: credentials.delegatedEmail || credentials.email,\n \t\t\tscope: scopes.join(' '),\n \t\t\taud: 'https://oauth2.googleapis.com/token',\n \t\t\tiat: now,\n \t\t\texp: now + 3600,\n+\t\t\t...(credentials.delegatedEmail ? { sub: credentials.delegatedEmail } : {}),\n \t\t},\n \t\tprivateKey,\n \t\t{\ndiff --git a/packages/nodes-base/nodes/Google/test/GenericFunctions.accessToken.test.ts b/packages/nodes-base/nodes/Google/test/GenericFunctions.accessToken.test.ts\nindex 5cfa7adb..e2739970 100644\n--- a/packages/nodes-base/nodes/Google/test/GenericFunctions.accessToken.test.ts\n+++ b/packages/nodes-base/nodes/Google/test/GenericFunctions.accessToken.test.ts\n@@ -32,4 +32,35 @@ describe('getGoogleAccessToken', () => {\n \t\texpect(signOptions.header).toEqual({ typ: 'JWT', alg: 'RS256' });\n \t\texpect(signOptions.header).not.toHaveProperty('kid');\n \t});\n+\n+\tit('omits the sub claim when no delegatedEmail is provided', async () => {\n+\t\tconst ctx = mock<IExecuteFunctions>();\n+\t\tctx.helpers = { request: vi.fn().mockResolvedValue({ access_token: 'token' }) } as any;\n+\n+\t\tconst credentials: IDataObject = {\n+\t\t\temail: 'svc@project.iam.gserviceaccount.com',\n+\t\t\tprivateKey: '-----BEGIN PRIVATE KEY-----\\nkey\\n-----END PRIVATE KEY-----',\n+\t\t};\n+\n+\t\tawait getGoogleAccessToken.call(ctx, credentials, 'drive');\n+\n+\t\tconst payload = mockedSign.mock.calls[0][0] as Record<string, unknown>;\n+\t\texpect(payload).not.toHaveProperty('sub');\n+\t});\n+\n+\tit('includes the sub claim when delegatedEmail is provided', async () => {\n+\t\tconst ctx = mock<IExecuteFunctions>();\n+\t\tctx.helpers = { request: vi.fn().mockResolvedValue({ access_token: 'token' }) } as any;\n+\n+\t\tconst credentials: IDataObject = {\n+\t\t\temail: 'svc@project.iam.gserviceaccount.com',\n+\t\t\tprivateKey: '-----BEGIN PRIVATE KEY-----\\nkey\\n-----END PRIVATE KEY-----',\n+\t\t\tdelegatedEmail: 'user@example.com',\n+\t\t};\n+\n+\t\tawait getGoogleAccessToken.call(ctx, credentials, 'drive');\n+\n+\t\tconst payload = mockedSign.mock.calls[0][0] as Record<string, unknown>;\n+\t\texpect(payload.sub).toBe('user@example.com');\n+\t});\n });\n",
+ "isolation": {
+  "container": "per-run",
+  "mounts": [
+   "runs/n8n-42475/deepseek_deepseek-v4-flash-amd-off"
+  ],
+  "network": "jail (egress /llm only)",
+  "user": "1001",
+  "caps": "none",
+  "memory": "2g"
+ }
+}

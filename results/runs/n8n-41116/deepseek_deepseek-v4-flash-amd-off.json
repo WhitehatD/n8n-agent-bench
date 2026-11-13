@@ -1,0 +1,794 @@
+{
+ "task": "n8n-41116",
+ "model": "deepseek/deepseek-v4-flash",
+ "agents_md": "off",
+ "steps": 80,
+ "seconds": 405,
+ "usage": {
+  "prompt": 3048125,
+  "completion": 18595,
+  "cost": 0.06873319800000001
+ },
+ "finish": {
+  "summary": "## Bug Fix: Google Gemini node silently routes Gemma models to Gemini 3 Flash\n\n### Root Cause\nThe `modelSearch` and `audioModelSearch` functions in `listSearch.ts` did not filter out Gemma models (e.g., `models/gemma-3-1b-it`, `models/gemma-4-26b-a4b-it`) from the model dropdown list. When a user selected (or manually typed) a Gemma model ID, the node would send a request to `POST /v1beta/models/gemma-xxx:generateContent`. Google's Gemini API silently routes unrecognized model IDs to a default Gemini model (Gemini 3 Flash) and returns HTTP 200, causing unexpected billing.\n\n### Changes Made (5 files)\n\n1. **`methods/listSearch.ts`** \u2014 Added `!model.startsWith('models/gemma')` to the filter predicates in both `modelSearch` and `audioModelSearch` to exclude Gemma models from the dropdown list.\n\n2. **`methods/listSearch.test.ts`** \u2014 Updated tests to reflect that Gemma models (`models/gemma-3-1b-it`) are no longer returned by `modelSearch` or `audioModelSearch`. The \"filter by Gemma\" test now expects an empty result.\n\n3. **`actions/text/message.operation.ts`** \u2014 Added runtime validation: if the model ID starts with `models/gemma`, throw a clear `NodeOperationError` before making the API request.\n\n4. **`helpers/baseAnalyze.ts`** \u2014 Added the same runtime validation, which covers document analyze, video analyze, and audio analyze operations.\n\n5. **`actions/audio/transcribe.operation.ts`** \u2014 Added the same runtime validation for the audio transcription operation.\n\n### Tests\nAll 116 tests in the GoogleGemini test suite pass, plus the LmChatGoogleGemini tests.",
+  "risks": "Low risk. The changes are conservative: they only exclude Gemma models (which were never properly supported by the Gemini API's generateContent endpoint) from the dropdown and add explicit error messages if a user manually types a Gemma model ID. Existing Gemini workflows are unaffected.",
+  "tests_run": "- Ran all GoogleGemini node tests (116 tests across 6 test files) \u2014 all pass\n- Ran LmChatGoogleGemini tests (5 tests) \u2014 all pass\n- Ran @n8n/ai-utilities google.test.ts (13 tests) \u2014 all pass\n- TypeScript compilation (`tsc --noEmit`) \u2014 no errors"
+ },
+ "trace": [
+  {
+   "step": 0,
+   "tool": "shell",
+   "args": {
+    "cmd": "find . -type f -name \"*.ts\" -path \"*/google/gemini/*\" | head -40"
+   },
+   "refused": false,
+   "result_head": "exit 0\n"
+  },
+  {
+   "step": 0,
+   "tool": "shell",
+   "args": {
+    "cmd": "find . -type d -name \"Gemini\" | head -10"
+   },
+   "refused": false,
+   "result_head": "exit 0\n"
+  },
+  {
+   "step": 1,
+   "tool": "shell",
+   "args": {
+    "cmd": "find . -type f -name \"*.ts\" -path \"*Google*\" -o -name \"*.ts\" -path \"*google*\" | grep -i gemini | head -30"
+   },
+   "refused": false,
+   "result_head": "exit 0\n./node_modules/.pnpm/@langchain+google-common@2.1.24_patch_hash=b50436a6c7b0a82d54472dff331ba1b42ab8b816995f_7c2630179a0315efa9e03ec243b0906c/node_modules/@langchain/google-common/dist/utils/gemini.d.ts\n./node_modules/.pnpm/@langchain+google-common@2.1.24_patch_hash=b50436a6c7b0a82d54472dff33"
+  },
+  {
+   "step": 1,
+   "tool": "shell",
+   "args": {
+    "cmd": "find . -type d -name \"Google\" | head -10"
+   },
+   "refused": false,
+   "result_head": "exit 0\n./packages/nodes-base/dist/nodes/Google\n./packages/nodes-base/nodes/Google\n"
+  },
+  {
+   "step": 2,
+   "tool": "read_file",
+   "args": {
+    "path": "./packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/text/message.operation.ts"
+   },
+   "refused": false,
+   "result_head": "1: import {\n2: \ttype IDataObject,\n3: \ttype IExecuteFunctions,\n4: \ttype INodeExecutionData,\n5: \ttype INodeProperties,\n6: \tNodeOperationError,\n7: \taccumulateTokenUsage,\n8: \tjsonParse,\n9: \tupdateDisplayOptions,\n10: \tvalidateNodeParameters,\n11: } from 'n8n-workflow';\n12: import zodToJsonSchema from 'zod"
+  },
+  {
+   "step": 2,
+   "tool": "read_file",
+   "args": {
+    "path": "./packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/helpers/interfaces.ts"
+   },
+   "refused": false,
+   "result_head": "1: import type {\n2: \tGenerateContentConfig,\n3: \tGenerationConfig,\n4: \tGenerateContentParameters,\n5: } from '@google/genai';\n6: import type { IDataObject } from 'n8n-workflow';\n7: export { Modality } from '@google/genai';\n8: \n9: /* type created based on: https://ai.google.dev/api/generate-content#gen"
+  },
+  {
+   "step": 2,
+   "tool": "read_file",
+   "args": {
+    "path": "./packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/helpers/utils.ts"
+   },
+   "refused": false,
+   "result_head": "1: import { extension } from 'mime-types';\n2: import type { IDataObject, IExecuteFunctions } from 'n8n-workflow';\n3: import { NodeOperationError } from 'n8n-workflow';\n4: import { Readable } from 'node:stream';\n5: import type Stream from 'node:stream';\n6: \n7: import type { FileSearchOperation } from"
+  },
+  {
+   "step": 3,
+   "tool": "shell",
+   "args": {
+    "cmd": "find . -type f -name \"transport.ts\" -path \"*GoogleGemini*\""
+   },
+   "refused": false,
+   "result_head": "exit 0\n"
+  },
+  {
+   "step": 3,
+   "tool": "read_file",
+   "args": {
+    "path": "./packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/methods/listSearch.ts"
+   },
+   "refused": false,
+   "result_head": "1: import {\n2: \tgetGoogleModelLabel,\n3: \tparseGoogleModels,\n4: \tpinPrioritizedModels,\n5: } from '@n8n/ai-utilities/model-discovery';\n6: import type { ILoadOptionsFunctions, INodeListSearchResult } from 'n8n-workflow';\n7: \n8: import { apiRequest } from '../transport';\n9: \n10: /** Nano Banana ids do n"
+  },
+  {
+   "step": 4,
+   "tool": "read_file",
+   "args": {
+    "path": "./packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/transport.ts"
+   },
+   "refused": false,
+   "result_head": "tool error: [Errno 2] No such file or directory: './packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/transport.ts'"
+  },
+  {
+   "step": 5,
+   "tool": "shell",
+   "args": {
+    "cmd": "find . -type f -name \"*.ts\" -path \"*GoogleGemini*\" -name \"transport*\""
+   },
+   "refused": false,
+   "result_head": "exit 0\n"
+  },
+  {
+   "step": 6,
+   "tool": "shell",
+   "args": {
+    "cmd": "find . -type f -name \"*.ts\" -path \"*/GoogleGemini/*\" | sort"
+   },
+   "refused": false,
+   "result_head": "exit 0\n./packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/GoogleGemini.node.test.ts\n./packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/GoogleGemini.node.ts\n./packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/audio/analyze.operation.ts\n./packages/@n8n/nodes-langchain/no"
+  },
+  {
+   "step": 7,
+   "tool": "read_file",
+   "args": {
+    "path": "./packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/transport/index.ts"
+   },
+   "refused": false,
+   "result_head": "1: import type {\n2: \tIDataObject,\n3: \tIExecuteFunctions,\n4: \tIHttpRequestMethods,\n5: \tILoadOptionsFunctions,\n6: } from 'n8n-workflow';\n7: \n8: type RequestParameters = {\n9: \theaders?: IDataObject;\n10: \tbody?: IDataObject | string;\n11: \tqs?: IDataObject;\n12: \toption?: IDataObject;\n13: };\n14: \n15: type"
+  },
+  {
+   "step": 8,
+   "tool": "read_file",
+   "args": {
+    "path": "./packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/text/message.operation.ts",
+    "start": 400
+   },
+   "refused": false,
+   "result_head": "400: \t\ttopP: options.topP,"
+  },
+  {
+   "step": 9,
+   "tool": "read_file",
+   "args": {
+    "path": "./packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/text/message.operation.ts",
+    "start": 400,
+    "end": 600
+   },
+   "refused": false,
+   "result_head": "400: \t\ttopP: options.topP,\n401: \t\ttopK: options.topK,\n402: \t\tresponseMimeType: jsonOutput ? 'application/json' : undefined,\n403: \t};\n404: \n405: \t// Add thinkingConfig if thinkingBudget is specified\n406: \tif (options.thinkingBudget !== undefined) {\n407: \t\tgenerationConfig.thinkingConfig = {\n408: \t\t\tt"
+  },
+  {
+   "step": 10,
+   "tool": "read_file",
+   "args": {
+    "path": "./packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/text/message.operation.ts",
+    "start": 600
+   },
+   "refused": false,
+   "result_head": ""
+  },
+  {
+   "step": 11,
+   "tool": "read_file",
+   "args": {
+    "path": "./packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/text/message.operation.ts",
+    "start": 600,
+    "end": 700
+   },
+   "refused": false,
+   "result_head": "600: \n601: \tconst candidates = options.includeMergedResponse\n602: \t\t? response.candidates.map((candidate) => ({\n603: \t\t\t\t...candidate,\n604: \t\t\t\tmergedResponse: (candidate?.content?.parts ?? [])\n605: \t\t\t\t\t.filter(isTextPart)\n606: \t\t\t\t\t.map((part) => part.text)\n607: \t\t\t\t\t.join(''),\n608: \t\t\t}))\n609: \t\t"
+  },
+  {
+   "step": 12,
+   "tool": "read_file",
+   "args": {
+    "path": "./packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/descriptions.ts"
+   },
+   "refused": false,
+   "result_head": "1: import type { INodeProperties } from 'n8n-workflow';\n2: \n3: import { MODEL_SELECTION_HINT } from '@utils/model-builder-hints';\n4: \n5: export const modelRLC = (searchListMethod: string): INodeProperties => ({\n6: \tdisplayName: 'Model',\n7: \tname: 'modelId',\n8: \tbuilderHint: { propertyHint: MODEL_SEL"
+  },
+  {
+   "step": 12,
+   "tool": "shell",
+   "args": {
+    "cmd": "find . -type d -name \"model-discovery\" | head -5"
+   },
+   "refused": false,
+   "result_head": "exit 0\n./packages/@n8n/ai-utilities/src/model-discovery\n./packages/@n8n/ai-utilities/dist/cjs/model-discovery\n./packages/@n8n/ai-utilities/dist/esm/model-discovery\n"
+  },
+  {
+   "step": 13,
+   "tool": "shell",
+   "args": {
+    "cmd": "find ./packages/@n8n/ai-utilities/src/model-discovery -type f"
+   },
+   "refused": false,
+   "result_head": "exit 0\n./packages/@n8n/ai-utilities/src/model-discovery/request.ts\n./packages/@n8n/ai-utilities/src/model-discovery/providers/openai.ts\n./packages/@n8n/ai-utilities/src/model-discovery/providers/openrouter.ts\n./packages/@n8n/ai-utilities/src/model-discovery/providers/deepseek.ts\n./packages/@n8n/ai-u"
+  },
+  {
+   "step": 14,
+   "tool": "read_file",
+   "args": {
+    "path": "./packages/@n8n/ai-utilities/src/model-discovery/providers/google.ts"
+   },
+   "refused": false,
+   "result_head": "1: import { pinPrioritizedModels } from '@n8n/api-types';\n2: import { z } from 'zod';\n3: \n4: import { baseUrl, byName, getJson } from '../request';\n5: import type { ListModelsFn } from '../types';\n6: \n7: /**\n8:  * Keep only chat-capable Gemini models. A chat model reports `generateContent`\n9:  * in "
+  },
+  {
+   "step": 14,
+   "tool": "read_file",
+   "args": {
+    "path": "./packages/@n8n/ai-utilities/src/model-discovery/__tests__/google.test.ts"
+   },
+   "refused": false,
+   "result_head": "1: import { shouldIncludeGoogleModel } from '../providers/google';\n2: \n3: describe('shouldIncludeGoogleModel', () => {\n4: \tconst chat = ['generateContent', 'countTokens'];\n5: \n6: \tconst testCases: Array<{\n7: \t\tlabel: string;\n8: \t\tname: string;\n9: \t\tsupportedGenerationMethods?: unknown;\n10: \t\tinclude"
+  },
+  {
+   "step": 15,
+   "tool": "read_file",
+   "args": {
+    "path": "./packages/@n8n/nodes-langchain/nodes/llms/LmChatGoogleGemini/LmChatGoogleGemini.node.ts"
+   },
+   "refused": false,
+   "result_head": "1: import type { SafetySetting } from '@google/generative-ai';\n2: import { ChatGoogleGenerativeAI } from '@langchain/google-genai';\n3: import { NodeConnectionTypes } from 'n8n-workflow';\n4: import type {\n5: \tNodeError,\n6: \tINodeType,\n7: \tINodeTypeDescription,\n8: \tISupplyDataFunctions,\n9: \tSupplyData"
+  },
+  {
+   "step": 16,
+   "tool": "read_file",
+   "args": {
+    "path": "./packages/@n8n/ai-utilities/src/model-discovery/index.ts"
+   },
+   "refused": false,
+   "result_head": "1: import { listAlibabaModels } from './providers/alibaba';\n2: import { listAnthropicModels } from './providers/anthropic';\n3: import { listCohereModels } from './providers/cohere';\n4: import { listDeepSeekModels } from './providers/deepseek';\n5: import { listGoogleModels } from './providers/google'"
+  },
+  {
+   "step": 17,
+   "tool": "read_file",
+   "args": {
+    "path": "./packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/GoogleGemini.node.ts"
+   },
+   "refused": false,
+   "result_head": "1: import type { IExecuteFunctions, INodeType } from 'n8n-workflow';\n2: \n3: import { router } from './actions/router';\n4: import { versionDescription } from './actions/versionDescription';\n5: import { listSearch } from './methods';\n6: \n7: export class GoogleGemini implements INodeType {\n8: \tdescript"
+  },
+  {
+   "step": 18,
+   "tool": "read_file",
+   "args": {
+    "path": "./packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/router.ts"
+   },
+   "refused": false,
+   "result_head": "1: import { NodeOperationError, type IExecuteFunctions, type INodeExecutionData } from 'n8n-workflow';\n2: \n3: import * as audio from './audio';\n4: import * as document from './document';\n5: import * as file from './file';\n6: import * as fileSearch from './fileSearch';\n7: import * as image from './im"
+  },
+  {
+   "step": 19,
+   "tool": "read_file",
+   "args": {
+    "path": "./packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/image/generate.operation.ts"
+   },
+   "refused": false,
+   "result_head": "1: import type { IExecuteFunctions, INodeExecutionData, INodeProperties } from 'n8n-workflow';\n2: import { NodeOperationError, updateDisplayOptions } from 'n8n-workflow';\n3: \n4: import {\n5: \ttype GenerateContentRequest,\n6: \ttype GenerateContentResponse,\n7: \ttype ImagenResponse,\n8: \tModality,\n9: } fr"
+  },
+  {
+   "step": 19,
+   "tool": "read_file",
+   "args": {
+    "path": "./packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/baseAnalyze.ts",
+    "start": 1,
+    "end": 50
+   },
+   "refused": false,
+   "result_head": "tool error: [Errno 2] No such file or directory: './packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/baseAnalyze.ts'"
+  },
+  {
+   "step": 20,
+   "tool": "read_file",
+   "args": {
+    "path": "./packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/helpers/baseAnalyze.ts"
+   },
+   "refused": false,
+   "result_head": "1: import {\n2: \tNodeOperationError,\n3: \tvalidateNodeParameters,\n4: \ttype IExecuteFunctions,\n5: \ttype INodeExecutionData,\n6: } from 'n8n-workflow';\n7: \n8: import type { Content, GenerateContentResponse } from './interfaces';\n9: import { downloadFile, uploadFile } from './utils';\n10: import { apiReque"
+  },
+  {
+   "step": 21,
+   "tool": "read_file",
+   "args": {
+    "path": "./packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/versionDescription.ts"
+   },
+   "refused": false,
+   "result_head": "1: /* eslint-disable n8n-nodes-base/node-filename-against-convention */\n2: import { NodeConnectionTypes, type INodeTypeDescription } from 'n8n-workflow';\n3: \n4: import * as audio from './audio';\n5: import * as document from './document';\n6: import * as file from './file';\n7: import * as fileSearch f"
+  },
+  {
+   "step": 22,
+   "tool": "read_file",
+   "args": {
+    "path": "./packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/router.test.ts"
+   },
+   "refused": false,
+   "result_head": "1: import type { IExecuteFunctions } from 'n8n-workflow';\n2: import type { Mock, MockInstance } from 'vitest';\n3: import { mockDeep } from 'vitest-mock-extended';\n4: \n5: import * as audio from './audio';\n6: import * as document from './document';\n7: import * as file from './file';\n8: import * as fil"
+  },
+  {
+   "step": 23,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd packages/@n8n/nodes-langchain && grep -rn \"gemma\\|gemini-3-flash\\|model.*map\\|model.*transform\\|model.*replace\" --include=\"*.ts\" --include=\"*.js\" nodes/vendors/GoogleGemini/ nodes/llms/LmChatGoogleGemini/ | grep -v node_modules | grep -v \".test.\""
+   },
+   "refused": false,
+   "result_head": "exit 0\nnodes/vendors/GoogleGemini/actions/text/message.operation.ts:33:\t\tdefault: { mode: 'list', value: 'models/gemini-3-flash-preview' },\nnodes/llms/LmChatGoogleGemini/LmChatGoogleGemini.node.ts:139:\tdefault: 'models/gemini-3-flash-preview',\nnodes/llms/LmChatGoogleGemini/LmChatGoogleGemini.node.ts"
+  },
+  {
+   "step": 24,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd packages && grep -rn \"extractValue\" --include=\"*.ts\" --include=\"*.js\" n8n-workflow/src/ | head -20"
+   },
+   "refused": false,
+   "result_head": "exit 0\ngrep: n8n-workflow/src/: No such file or directory\n"
+  },
+  {
+   "step": 25,
+   "tool": "shell",
+   "args": {
+    "cmd": "find packages/n8n-workflow -name \"*.ts\" | head -20"
+   },
+   "refused": false,
+   "result_head": "exit 0\nfind: \u2018packages/n8n-workflow\u2019: No such file or directory\n"
+  },
+  {
+   "step": 26,
+   "tool": "shell",
+   "args": {
+    "cmd": "find . -path \"*/n8n-workflow/src*\" -name \"*.ts\" | head -10"
+   },
+   "refused": false,
+   "result_head": "exit 0\n"
+  },
+  {
+   "step": 27,
+   "tool": "shell",
+   "args": {
+    "cmd": "find . -type f -path \"*/n8n-workflow/*\" -name \"*.ts\" | head -10"
+   },
+   "refused": false,
+   "result_head": "exit 0\n"
+  },
+  {
+   "step": 28,
+   "tool": "shell",
+   "args": {
+    "cmd": "find . -type d -name \"n8n-workflow\" -not -path \"*/node_modules/*\" | head -5"
+   },
+   "refused": false,
+   "result_head": "exit 0\n"
+  },
+  {
+   "step": 29,
+   "tool": "shell",
+   "args": {
+    "cmd": "ls packages/"
+   },
+   "refused": false,
+   "result_head": "exit 0\n@n8n\ncli\ncore\nextensions\nfrontend\nmodules\nnode-dev\nnodes-base\nquality\nworkflow\n"
+  },
+  {
+   "step": 30,
+   "tool": "shell",
+   "args": {
+    "cmd": "ls packages/workflow/src/ | head -20"
+   },
+   "refused": false,
+   "result_head": "exit 0\naugment-object.ts\nauth-redaction.ts\ncommon\nconnections-diff.ts\nconstants.ts\ncredential-domain-restrictions.ts\ncredential-only-nodes.ts\ncron.ts\ndata-table.types.ts\ndynamic-credentials-helpers.ts\nempty-group-anchor.ts\nerrors\nevaluation-helpers.ts\nexecution-cancellation.ts\nexecution-context-esta"
+  },
+  {
+   "step": 31,
+   "tool": "shell",
+   "args": {
+    "cmd": "grep -rn \"extractValue\" packages/workflow/src/ | head -20"
+   },
+   "refused": false,
+   "result_head": "exit 0\npackages/workflow/src/interfaces.ts:775:\textractValue?: boolean;\npackages/workflow/src/interfaces.ts:2291:\textractValue?: INodePropertyValueExtractor;\npackages/workflow/src/interfaces.ts:2342:\textractValue?: INodePropertyValueExtractor;\n"
+  },
+  {
+   "step": 32,
+   "tool": "shell",
+   "args": {
+    "cmd": "grep -rn \"extractValue\" packages/workflow/src/ -A 2 -B 2 | head -40"
+   },
+   "refused": false,
+   "result_head": "exit 0\npackages/workflow/src/interfaces.ts-773-\tensureType?: EnsureTypeOptions;\npackages/workflow/src/interfaces.ts-774-\t// extract value from regex, works only when parameter type is resourceLocator\npackages/workflow/src/interfaces.ts:775:\textractValue?: boolean;\npackages/workflow/src/interfaces.ts"
+  },
+  {
+   "step": 33,
+   "tool": "shell",
+   "args": {
+    "cmd": "grep -rn \"extractValue\" packages/core/src/ | head -20"
+   },
+   "refused": false,
+   "result_head": "exit 0\npackages/core/src/execution-engine/node-execution-context/node-execution-context.ts:50:import { extractValue } from './utils/extract-value';\npackages/core/src/execution-engine/node-execution-context/node-execution-context.ts:595:\t\tif (options?.extractValue) {\npackages/core/src/execution-engin"
+  },
+  {
+   "step": 34,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/core/src/execution-engine/node-execution-context/utils/extract-value.ts"
+   },
+   "refused": false,
+   "result_head": "1: import get from 'lodash/get';\n2: import {\n3: \tUnexpectedError,\n4: \tUserError,\n5: \tLoggerProxy,\n6: \tNodeHelpers,\n7: \tNodeOperationError,\n8: \tWorkflowOperationError,\n9: \texecuteFilter,\n10: \tisFilterValue,\n11: \tsafeRegex,\n12: \ttype INode,\n13: \ttype INodeParameters,\n14: \ttype INodeProperties,\n15: \tty"
+  },
+  {
+   "step": 35,
+   "tool": "shell",
+   "args": {
+    "cmd": "find . -type f -path \"*/@google/genai*\" -name \"*.ts\" -o -name \"*.js\" -o -name \"*.mjs\" 2>/dev/null | head -10"
+   },
+   "refused": false,
+   "result_head": "exit 0\n./.agents/skills/testmax-n8n-ai/scripts/run_wire.mjs\n./.agents/skills/testmax-n8n-ai/scripts/wire.mjs\n./.agents/skills/testmax-n8n-ai/scripts/derive_checks.mjs\n./.agents/skills/testmax-n8n-ai/scripts/n8n_browser.mjs\n./.agents/skills/testmax-n8n-ai/scripts/record_iai.mjs\n./.agents/skills/testm"
+  },
+  {
+   "step": 36,
+   "tool": "shell",
+   "args": {
+    "cmd": "find . -type d -path \"*/@google/genai\" -not -path \"*/node_modules/.pnpm/*\" 2>/dev/null"
+   },
+   "refused": false,
+   "result_head": "exit 0\n"
+  },
+  {
+   "step": 37,
+   "tool": "shell",
+   "args": {
+    "cmd": "find . -type d -name \"genai\" -path \"*/@google/*\" 2>/dev/null | head -5"
+   },
+   "refused": false,
+   "result_head": "exit 0\n./node_modules/.pnpm/@google+genai@1.19.0_@modelcontextprotocol+sdk@1.32.0_supports-color@8.1.1_zod@3.25.76__dcb39a395cc1328554c7ff7ccff45fd8/node_modules/@google/genai\n"
+  },
+  {
+   "step": 38,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd packages/@n8n/nodes-langchain && grep -rn \"model.*valid\\|valid.*model\\|gemini.*model\\|model.*gemini\\|model.*prefix\\|models/\" --include=\"*.ts\" nodes/vendors/GoogleGemini/ | grep -v \".test.\" | grep -v \"node_modules\""
+   },
+   "refused": false,
+   "result_head": "exit 0\nnodes/vendors/GoogleGemini/methods/listSearch.ts:88:\t\tif (modelId.includes('gemini-nano-banana-2.1')) {\nnodes/vendors/GoogleGemini/methods/listSearch.ts:93:\t\tif (modelId.includes('gemini-3.1-flash-lite-image')) {\nnodes/vendors/GoogleGemini/methods/listSearch.ts:97:\t\tif (modelId.includes('gemi"
+  },
+  {
+   "step": 39,
+   "tool": "read_file",
+   "args": {
+    "path": "./packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/methods/listSearch.test.ts"
+   },
+   "refused": false,
+   "result_head": "1: import type { ILoadOptionsFunctions } from 'n8n-workflow';\n2: import type { MockInstance } from 'vitest';\n3: import { mock } from 'vitest-mock-extended';\n4: \n5: import {\n6: \taudioModelSearch,\n7: \timageEditModelSearch,\n8: \timageGenerationModelSearch,\n9: \tmodelSearch,\n10: \tvideoGenerationModelSearc"
+  },
+  {
+   "step": 40,
+   "tool": "read_file",
+   "args": {
+    "path": "./packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/text/message.operation.ts",
+    "start": 520,
+    "end": 540
+   },
+   "refused": false,
+   "result_head": "520: \t\tparts: [{ text: m.content }],\n521: \t\trole: m.role,\n522: \t}));\n523: \tconst body: GenerateContentRequest = {\n524: \t\ttools,\n525: \t\tcontents,\n526: \t\tgenerationConfig,\n527: \t\tsystemInstruction: options.systemMessage\n528: \t\t\t? { parts: [{ text: options.systemMessage }] }\n529: \t\t\t: undefined,\n530: \t"
+  },
+  {
+   "step": 41,
+   "tool": "read_file",
+   "args": {
+    "path": "./packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/audio/analyze.operation.ts"
+   },
+   "refused": false,
+   "result_head": "1: import type { IExecuteFunctions, INodeExecutionData, INodeProperties } from 'n8n-workflow';\n2: import { updateDisplayOptions } from 'n8n-workflow';\n3: \n4: import { baseAnalyze } from '../../helpers/baseAnalyze';\n5: import { modelRLC } from '../descriptions';\n6: \n7: const properties: INodeProperti"
+  },
+  {
+   "step": 41,
+   "tool": "read_file",
+   "args": {
+    "path": "./packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/audio/transcribe.operation.ts"
+   },
+   "refused": false,
+   "result_head": "1: import type { IExecuteFunctions, INodeExecutionData, INodeProperties } from 'n8n-workflow';\n2: import { updateDisplayOptions } from 'n8n-workflow';\n3: \n4: import type {\n5: \tContent,\n6: \tGenerateContentRequest,\n7: \tGenerateContentResponse,\n8: } from '../../helpers/interfaces';\n9: import { download"
+  },
+  {
+   "step": 42,
+   "tool": "read_file",
+   "args": {
+    "path": "./packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/video/analyze.operation.ts"
+   },
+   "refused": false,
+   "result_head": "1: import type { IExecuteFunctions, INodeExecutionData, INodeProperties } from 'n8n-workflow';\n2: import { updateDisplayOptions } from 'n8n-workflow';\n3: \n4: import { baseAnalyze } from '../../helpers/baseAnalyze';\n5: import { modelRLC } from '../descriptions';\n6: \n7: const properties: INodeProperti"
+  },
+  {
+   "step": 43,
+   "tool": "edit_file",
+   "args": {
+    "path": "./packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/methods/listSearch.ts",
+    "old": "export async function modelSearch(\n\tthis: ILoadOptionsFunctions,\n\tfilter?: string,\n): Promise<INodeListSearchResult> {\n\treturn await baseModelSearch.call(\n\t\tthis,\n\t\t(model) =>\n\t\t\t!isImageModel(model) &&\n\t\t\t!model.includes('embedding') &&\n\t\t\t!model.includes('aqa') &&\n\t\t\t!model.includes('vision') &&\n\t",
+    "new": "export async function modelSearch(\n\tthis: ILoadOptionsFunctions,\n\tfilter?: string,\n): Promise<INodeListSearchResult> {\n\treturn await baseModelSearch.call(\n\t\tthis,\n\t\t(model) =>\n\t\t\t!isImageModel(model) &&\n\t\t\t!model.startsWith('models/gemma') &&\n\t\t\t!model.includes('embedding') &&\n\t\t\t!model.includes('aq"
+   },
+   "refused": false,
+   "result_head": "edited ./packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/methods/listSearch.ts"
+  },
+  {
+   "step": 44,
+   "tool": "edit_file",
+   "args": {
+    "path": "./packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/text/message.operation.ts",
+    "old": "\tconst model = this.getNodeParameter('modelId', i, '', { extractValue: true }) as string;\n\tconst messages = this.getNodeParameter('messages.values', i, []) as Array<{",
+    "new": "\tconst model = this.getNodeParameter('modelId', i, '', { extractValue: true }) as string;\n\tif (model.startsWith('models/gemma')) {\n\t\tthrow new NodeOperationError(\n\t\t\tthis.getNode(),\n\t\t\t`The model \"${model}\" is not supported. Gemma models cannot be used with the Google Gemini API. Please select a Gem"
+   },
+   "refused": false,
+   "result_head": "edited ./packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/text/message.operation.ts"
+  },
+  {
+   "step": 45,
+   "tool": "read_file",
+   "args": {
+    "path": "./packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/methods/listSearch.test.ts",
+    "start": 70,
+    "end": 90
+   },
+   "refused": false,
+   "result_head": "70: \tdescribe('modelSearch', () => {\n71: \t\tit('should return regular models', async () => {\n72: \t\t\tapiRequestMock.mockResolvedValue(mockResponse);\n73: \n74: \t\t\tconst result = await modelSearch.call(mockExecuteFunctions);\n75: \n76: \t\t\texpect(result).toEqual({\n77: \t\t\t\tresults: [\n78: \t\t\t\t\t{\n79: \t\t\t\t\t\tnam"
+  },
+  {
+   "step": 46,
+   "tool": "edit_file",
+   "args": {
+    "path": "./packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/methods/listSearch.test.ts",
+    "old": "\tdescribe('modelSearch', () => {\n\t\tit('should return regular models', async () => {\n\t\t\tapiRequestMock.mockResolvedValue(mockResponse);\n\n\t\t\tconst result = await modelSearch.call(mockExecuteFunctions);\n\n\t\t\texpect(result).toEqual({\n\t\t\t\tresults: [\n\t\t\t\t\t{\n\t\t\t\t\t\tname: 'models/gemini-2.5-flash',\n\t\t\t\t\t\tvalu",
+    "new": "\tdescribe('modelSearch', () => {\n\t\tit('should return regular models', async () => {\n\t\t\tapiRequestMock.mockResolvedValue(mockResponse);\n\n\t\t\tconst result = await modelSearch.call(mockExecuteFunctions);\n\n\t\t\texpect(result).toEqual({\n\t\t\t\tresults: [\n\t\t\t\t\t{\n\t\t\t\t\t\tname: 'models/gemini-2.5-flash',\n\t\t\t\t\t\tvalu"
+   },
+   "refused": false,
+   "result_head": "edited ./packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/methods/listSearch.test.ts"
+  },
+  {
+   "step": 47,
+   "tool": "read_file",
+   "args": {
+    "path": "./packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/methods/listSearch.test.ts",
+    "start": 144,
+    "end": 168
+   },
+   "refused": false,
+   "result_head": "144: \t\t\t\t\t\tname: 'models/gemini-2.5-flash',\n145: \t\t\t\t\t\tvalue: 'models/gemini-2.5-flash',\n146: \t\t\t\t\t},\n147: \t\t\t\t\t{\n148: \t\t\t\t\t\tname: 'models/gemini-2.5-flash-preview-native-audio-dialog',\n149: \t\t\t\t\t\tvalue: 'models/gemini-2.5-flash-preview-native-audio-dialog',\n150: \t\t\t\t\t},\n151: \t\t\t\t\t{\n152: \t\t\t\t\t\tname:"
+  },
+  {
+   "step": 48,
+   "tool": "read_file",
+   "args": {
+    "path": "./packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/methods/listSearch.ts",
+    "start": 64,
+    "end": 79
+   },
+   "refused": false,
+   "result_head": "64: \n65: export async function audioModelSearch(\n66: \tthis: ILoadOptionsFunctions,\n67: \tfilter?: string,\n68: ): Promise<INodeListSearchResult> {\n69: \treturn await baseModelSearch.call(\n70: \t\tthis,\n71: \t\t(model) =>\n72: \t\t\t!isImageModel(model) &&\n73: \t\t\t!model.includes('embedding') &&\n74: \t\t\t!model.in"
+  },
+  {
+   "step": 49,
+   "tool": "edit_file",
+   "args": {
+    "path": "./packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/methods/listSearch.ts",
+    "old": "export async function audioModelSearch(\n\tthis: ILoadOptionsFunctions,\n\tfilter?: string,\n): Promise<INodeListSearchResult> {\n\treturn await baseModelSearch.call(\n\t\tthis,\n\t\t(model) =>\n\t\t\t!isImageModel(model) &&\n\t\t\t!model.includes('embedding') &&\n\t\t\t!model.includes('aqa') &&\n\t\t\t!model.includes('vision')",
+    "new": "export async function audioModelSearch(\n\tthis: ILoadOptionsFunctions,\n\tfilter?: string,\n): Promise<INodeListSearchResult> {\n\treturn await baseModelSearch.call(\n\t\tthis,\n\t\t(model) =>\n\t\t\t!isImageModel(model) &&\n\t\t\t!model.startsWith('models/gemma') &&\n\t\t\t!model.includes('embedding') &&\n\t\t\t!model.include"
+   },
+   "refused": false,
+   "result_head": "edited ./packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/methods/listSearch.ts"
+  },
+  {
+   "step": 50,
+   "tool": "edit_file",
+   "args": {
+    "path": "./packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/methods/listSearch.test.ts",
+    "old": "\tdescribe('audioModelSearch', () => {\n\t\tit('should return audio models', async () => {\n\t\t\tapiRequestMock.mockResolvedValue(mockResponse);\n\n\t\t\tconst result = await audioModelSearch.call(mockExecuteFunctions);\n\n\t\t\texpect(result).toEqual({\n\t\t\t\tresults: [\n\t\t\t\t\t{\n\t\t\t\t\t\tname: 'models/gemini-2.5-flash',\n\t\t",
+    "new": "\tdescribe('audioModelSearch', () => {\n\t\tit('should return audio models', async () => {\n\t\t\tapiRequestMock.mockResolvedValue(mockResponse);\n\n\t\t\tconst result = await audioModelSearch.call(mockExecuteFunctions);\n\n\t\t\texpect(result).toEqual({\n\t\t\t\tresults: [\n\t\t\t\t\t{\n\t\t\t\t\t\tname: 'models/gemini-2.5-flash',\n\t\t"
+   },
+   "refused": false,
+   "result_head": "edited ./packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/methods/listSearch.test.ts"
+  },
+  {
+   "step": 51,
+   "tool": "read_file",
+   "args": {
+    "path": "./packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/helpers/baseAnalyze.ts",
+    "start": 1,
+    "end": 30
+   },
+   "refused": false,
+   "result_head": "1: import {\n2: \tNodeOperationError,\n3: \tvalidateNodeParameters,\n4: \ttype IExecuteFunctions,\n5: \ttype INodeExecutionData,\n6: } from 'n8n-workflow';\n7: \n8: import type { Content, GenerateContentResponse } from './interfaces';\n9: import { downloadFile, uploadFile } from './utils';\n10: import { apiReque"
+  },
+  {
+   "step": 52,
+   "tool": "edit_file",
+   "args": {
+    "path": "./packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/helpers/baseAnalyze.ts",
+    "old": "export async function baseAnalyze(\n\tthis: IExecuteFunctions,\n\ti: number,\n\turlsPropertyName: string,\n\tfallbackMimeType: string,\n): Promise<INodeExecutionData[]> {\n\tconst model = this.getNodeParameter('modelId', i, '', { extractValue: true }) as string;\n\tconst inputType = this.getNodeParameter('inputT",
+    "new": "export async function baseAnalyze(\n\tthis: IExecuteFunctions,\n\ti: number,\n\turlsPropertyName: string,\n\tfallbackMimeType: string,\n): Promise<INodeExecutionData[]> {\n\tconst model = this.getNodeParameter('modelId', i, '', { extractValue: true }) as string;\n\tif (model.startsWith('models/gemma')) {\n\t\tthrow"
+   },
+   "refused": false,
+   "result_head": "edited ./packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/helpers/baseAnalyze.ts"
+  },
+  {
+   "step": 53,
+   "tool": "edit_file",
+   "args": {
+    "path": "./packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/audio/transcribe.operation.ts",
+    "old": "export async function execute(this: IExecuteFunctions, i: number): Promise<INodeExecutionData[]> {\n\tconst model = this.getNodeParameter('modelId', i, '', { extractValue: true }) as string;\n\tconst inputType = this.getNodeParameter('inputType', i, 'url') as string;",
+    "new": "export async function execute(this: IExecuteFunctions, i: number): Promise<INodeExecutionData[]> {\n\tconst model = this.getNodeParameter('modelId', i, '', { extractValue: true }) as string;\n\tif (model.startsWith('models/gemma')) {\n\t\tthrow new NodeOperationError(\n\t\t\tthis.getNode(),\n\t\t\t`The model \"${mo"
+   },
+   "refused": false,
+   "result_head": "edited ./packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/audio/transcribe.operation.ts"
+  },
+  {
+   "step": 54,
+   "tool": "read_file",
+   "args": {
+    "path": "./packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/audio/transcribe.operation.ts",
+    "start": 1,
+    "end": 6
+   },
+   "refused": false,
+   "result_head": "1: import type { IExecuteFunctions, INodeExecutionData, INodeProperties } from 'n8n-workflow';\n2: import { updateDisplayOptions } from 'n8n-workflow';\n3: \n4: import type {\n5: \tContent,\n6: \tGenerateContentRequest,"
+  },
+  {
+   "step": 55,
+   "tool": "edit_file",
+   "args": {
+    "path": "./packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/audio/transcribe.operation.ts",
+    "old": "import type { IExecuteFunctions, INodeExecutionData, INodeProperties } from 'n8n-workflow';\nimport { updateDisplayOptions } from 'n8n-workflow';",
+    "new": "import type { IExecuteFunctions, INodeExecutionData, INodeProperties } from 'n8n-workflow';\nimport { NodeOperationError, updateDisplayOptions } from 'n8n-workflow';"
+   },
+   "refused": false,
+   "result_head": "edited ./packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/audio/transcribe.operation.ts"
+  },
+  {
+   "step": 56,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd packages/@n8n/nodes-langchain && pnpm exec vitest run nodes/vendors/GoogleGemini/methods/listSearch.test.ts --reporter=verbose 2>&1 | head -50"
+   },
+   "refused": false,
+   "result_head": "exit 0\n\u001b[33m(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:\n  - ESM syntax in a file loaded as CommonJS (vite.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest"
+  },
+  {
+   "step": 57,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd packages/@n8n/nodes-langchain && pnpm exec vitest run nodes/vendors/GoogleGemini/actions/router.test.ts nodes/vendors/GoogleGemini/helpers/utils.test.ts --reporter=verbose 2>&1 | head -40"
+   },
+   "refused": false,
+   "result_head": "exit 0\n\u001b[33m(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:\n  - ESM syntax in a file loaded as CommonJS (vite.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest"
+  },
+  {
+   "step": 58,
+   "tool": "read_file",
+   "args": {
+    "path": "./packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/methods/listSearch.ts",
+    "start": 46,
+    "end": 80
+   },
+   "refused": false,
+   "result_head": "46: export async function modelSearch(\n47: \tthis: ILoadOptionsFunctions,\n48: \tfilter?: string,\n49: ): Promise<INodeListSearchResult> {\n50: \treturn await baseModelSearch.call(\n51: \t\tthis,\n52: \t\t(model) =>\n53: \t\t\t!isImageModel(model) &&\n54: \t\t\t!model.startsWith('models/gemma') &&\n55: \t\t\t!model.include"
+  },
+  {
+   "step": 59,
+   "tool": "read_file",
+   "args": {
+    "path": "./packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/text/message.operation.ts",
+    "start": 365,
+    "end": 380
+   },
+   "refused": false,
+   "result_head": "365: export async function execute(this: IExecuteFunctions, i: number): Promise<INodeExecutionData[]> {\n366: \tconst model = this.getNodeParameter('modelId', i, '', { extractValue: true }) as string;\n367: \tif (model.startsWith('models/gemma')) {\n368: \t\tthrow new NodeOperationError(\n369: \t\t\tthis.getNo"
+  },
+  {
+   "step": 60,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd packages/@n8n/nodes-langchain && pnpm exec vitest run nodes/vendors/GoogleGemini/ --reporter=verbose 2>&1 | tail -40"
+   },
+   "refused": false,
+   "result_head": "exit 0\n \u001b[32m\u2713\u001b[39m nodes/vendors/GoogleGemini/GoogleGemini.node.test.ts\u001b[2m > \u001b[22mGoogleGemini Node\u001b[2m > \u001b[22mAudio -> Analyze\u001b[2m > \u001b[22mshould analyze audio from Google API URL\u001b[32m 1\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m\u2713\u001b[39m nodes/vendors/GoogleGemini/GoogleGemini.node.test.ts\u001b[2m > \u001b[22mGoogleGemini Node\u001b"
+  },
+  {
+   "step": 61,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd packages/@n8n/nodes-langchain && pnpm exec vitest run nodes/vendors/GoogleGemini/actions/image/edit.operation.test.ts --reporter=verbose 2>&1 | tail -20"
+   },
+   "refused": false,
+   "result_head": "exit 0\nSet `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.\u001b[39m\n\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv5.0.1 \u001b[39m\u001b[90m/work/runs/n8n-41116/deepseek_deepseek-v4-flash-amd-off/packages/@n8n/nodes-langchain\u001b[39m\n\n \u001b[32m\u2713\u001b[39m nodes/vendors/GoogleGemini/actions/image/edit.operatio"
+  },
+  {
+   "step": 62,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd packages/@n8n/ai-utilities && pnpm exec vitest run src/model-discovery/__tests__/google.test.ts --reporter=verbose 2>&1 | tail -30"
+   },
+   "refused": false,
+   "result_head": "exit 0\n\u001b[33m(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:\n  - ESM syntax in a file loaded as CommonJS (vite.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest"
+  },
+  {
+   "step": 63,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd packages/@n8n/nodes-langchain && npx tsc --noEmit 2>&1 | head -30"
+   },
+   "refused": false,
+   "result_head": "exit 0\nnpm warn Unknown env config \"store-dir\". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.\n"
+  },
+  {
+   "step": 64,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd packages/@n8n/nodes-langchain && git diff --stat"
+   },
+   "refused": false,
+   "result_head": "exit 0\n .../GoogleGemini/actions/audio/transcribe.operation.ts    |  8 +++++++-\n .../GoogleGemini/actions/text/message.operation.ts        |  6 ++++++\n .../nodes/vendors/GoogleGemini/helpers/baseAnalyze.ts     |  6 ++++++\n .../nodes/vendors/GoogleGemini/methods/listSearch.test.ts | 15 +-------------"
+  },
+  {
+   "step": 65,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd packages/@n8n/nodes-langchain && git diff"
+   },
+   "refused": false,
+   "result_head": "exit 0\ndiff --git a/packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/audio/transcribe.operation.ts b/packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/audio/transcribe.operation.ts\nindex c03818a5..305ff80b 100644\n--- a/packages/@n8n/nodes-langchain/nodes/vendors/Google"
+  },
+  {
+   "step": 66,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd packages/@n8n/nodes-langchain && pnpm exec vitest run nodes/vendors/GoogleGemini/ --reporter=verbose 2>&1 | grep -E \"(PASS|FAIL|Test Files|Tests)\""
+   },
+   "refused": false,
+   "result_head": "exit 0\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m6 passed\u001b[39m\u001b[22m\u001b[90m (6)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m116 passed\u001b[39m\u001b[22m\u001b[90m (116)\u001b[39m\n"
+  },
+  {
+   "step": 67,
+   "tool": "read_file",
+   "args": {
+    "path": "./packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/image/edit.operation.ts",
+    "start": 140,
+    "end": 165
+   },
+   "refused": false,
+   "result_head": "140: \t},\n141: };\n142: \n143: export const description = updateDisplayOptions(displayOptions, properties);\n144: \n145: export async function execute(this: IExecuteFunctions, i: number): Promise<INodeExecutionData[]> {\n146: \tconst prompt = this.getNodeParameter('prompt', i, '');\n147: \tif (typeof prompt "
+  },
+  {
+   "step": 68,
+   "tool": "read_file",
+   "args": {
+    "path": "./packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/image/edit.operation.ts",
+    "start": 165,
+    "end": 220
+   },
+   "refused": false,
+   "result_head": "165: \tif (!isImagesParameter(imagesParam)) {\n166: \t\tthrow new Error('Invalid images parameter format');\n167: \t}\n168: \n169: \tconst imagesUi = imagesParam.values ?? [];\n170: \tconst imageFieldNames = imagesUi\n171: \t\t.map((v) => v.binaryPropertyName)\n172: \t\t.filter((n): n is string => Boolean(n));\n173: "
+  },
+  {
+   "step": 69,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd packages/@n8n/nodes-langchain && npx tsc --noEmit 2>&1"
+   },
+   "refused": false,
+   "result_head": "exit 0\nnpm warn Unknown env config \"store-dir\". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.\n"
+  },
+  {
+   "step": 70,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd packages/@n8n/nodes-langchain && pnpm exec vitest run nodes/llms/LmChatGoogleGemini/ --reporter=verbose 2>&1 | tail -15"
+   },
+   "refused": false,
+   "result_head": "exit 0\nSet `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.\u001b[39m\n\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv5.0.1 \u001b[39m\u001b[90m/work/runs/n8n-41116/deepseek_deepseek-v4-flash-amd-off/packages/@n8n/nodes-langchain\u001b[39m\n\n \u001b[32m\u2713\u001b[39m nodes/llms/LmChatGoogleGemini/test/LmChatGoogleGemini."
+  }
+ ],
+ "diff": "diff --git a/packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/audio/transcribe.operation.ts b/packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/audio/transcribe.operation.ts\nindex c03818a5..305ff80b 100644\n--- a/packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/audio/transcribe.operation.ts\n+++ b/packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/audio/transcribe.operation.ts\n@@ -1,5 +1,5 @@\n import type { IExecuteFunctions, INodeExecutionData, INodeProperties } from 'n8n-workflow';\n-import { updateDisplayOptions } from 'n8n-workflow';\n+import { NodeOperationError, updateDisplayOptions } from 'n8n-workflow';\n \n import type {\n \tContent,\n@@ -101,6 +101,12 @@ export const description = updateDisplayOptions(displayOptions, properties);\n \n export async function execute(this: IExecuteFunctions, i: number): Promise<INodeExecutionData[]> {\n \tconst model = this.getNodeParameter('modelId', i, '', { extractValue: true }) as string;\n+\tif (model.startsWith('models/gemma')) {\n+\t\tthrow new NodeOperationError(\n+\t\t\tthis.getNode(),\n+\t\t\t`The model \"${model}\" is not supported. Gemma models cannot be used with the Google Gemini API. Please select a Gemini model.`,\n+\t\t);\n+\t}\n \tconst inputType = this.getNodeParameter('inputType', i, 'url') as string;\n \tconst simplify = this.getNodeParameter('simplify', i, true) as boolean;\n \tconst options = this.getNodeParameter('options', i, {});\ndiff --git a/packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/text/message.operation.ts b/packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/text/message.operation.ts\nindex 2bfa921e..7b96fc33 100644\n--- a/packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/text/message.operation.ts\n+++ b/packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/text/message.operation.ts\n@@ -364,6 +364,12 @@ function getToolCalls(response: GenerateContentResponse) {\n \n export async function execute(this: IExecuteFunctions, i: number): Promise<INodeExecutionData[]> {\n \tconst model = this.getNodeParameter('modelId', i, '', { extractValue: true }) as string;\n+\tif (model.startsWith('models/gemma')) {\n+\t\tthrow new NodeOperationError(\n+\t\t\tthis.getNode(),\n+\t\t\t`The model \"${model}\" is not supported. Gemma models cannot be used with the Google Gemini API. Please select a Gemini model.`,\n+\t\t);\n+\t}\n \tconst messages = this.getNodeParameter('messages.values', i, []) as Array<{\n \t\tcontent: string;\n \t\trole: string;\ndiff --git a/packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/helpers/baseAnalyze.ts b/packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/helpers/baseAnalyze.ts\nindex bfb67441..30e53f1d 100644\n--- a/packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/helpers/baseAnalyze.ts\n+++ b/packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/helpers/baseAnalyze.ts\n@@ -16,6 +16,12 @@ export async function baseAnalyze(\n \tfallbackMimeType: string,\n ): Promise<INodeExecutionData[]> {\n \tconst model = this.getNodeParameter('modelId', i, '', { extractValue: true }) as string;\n+\tif (model.startsWith('models/gemma')) {\n+\t\tthrow new NodeOperationError(\n+\t\t\tthis.getNode(),\n+\t\t\t`The model \"${model}\" is not supported. Gemma models cannot be used with the Google Gemini API. Please select a Gemini model.`,\n+\t\t);\n+\t}\n \tconst inputType = this.getNodeParameter('inputType', i, 'url') as string;\n \tconst text = this.getNodeParameter('text', i, '') as string;\n \tif (!text.trim()) {\ndiff --git a/packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/methods/listSearch.test.ts b/packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/methods/listSearch.test.ts\nindex 0332137a..f4fdc0a5 100644\n--- a/packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/methods/listSearch.test.ts\n+++ b/packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/methods/listSearch.test.ts\n@@ -79,10 +79,6 @@ describe('GoogleGemini -> listSearch', () => {\n \t\t\t\t\t\tname: 'models/gemini-2.5-flash',\n \t\t\t\t\t\tvalue: 'models/gemini-2.5-flash',\n \t\t\t\t\t},\n-\t\t\t\t\t{\n-\t\t\t\t\t\tname: 'models/gemma-3-1b-it',\n-\t\t\t\t\t\tvalue: 'models/gemma-3-1b-it',\n-\t\t\t\t\t},\n \t\t\t\t],\n \t\t\t});\n \t\t});\n@@ -93,12 +89,7 @@ describe('GoogleGemini -> listSearch', () => {\n \t\t\tconst result = await modelSearch.call(mockExecuteFunctions, 'Gemma');\n \n \t\t\texpect(result).toEqual({\n-\t\t\t\tresults: [\n-\t\t\t\t\t{\n-\t\t\t\t\t\tname: 'models/gemma-3-1b-it',\n-\t\t\t\t\t\tvalue: 'models/gemma-3-1b-it',\n-\t\t\t\t\t},\n-\t\t\t\t],\n+\t\t\t\tresults: [],\n \t\t\t});\n \t\t});\n \n@@ -157,10 +148,6 @@ describe('GoogleGemini -> listSearch', () => {\n \t\t\t\t\t\tname: 'models/gemini-2.5-flash-preview-native-audio-dialog',\n \t\t\t\t\t\tvalue: 'models/gemini-2.5-flash-preview-native-audio-dialog',\n \t\t\t\t\t},\n-\t\t\t\t\t{\n-\t\t\t\t\t\tname: 'models/gemma-3-1b-it',\n-\t\t\t\t\t\tvalue: 'models/gemma-3-1b-it',\n-\t\t\t\t\t},\n \t\t\t\t],\n \t\t\t});\n \t\t});\ndiff --git a/packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/methods/listSearch.ts b/packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/methods/listSearch.ts\nindex f716d744..bcbb1137 100644\n--- a/packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/methods/listSearch.ts\n+++ b/packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/methods/listSearch.ts\n@@ -51,6 +51,7 @@ export async function modelSearch(\n \t\tthis,\n \t\t(model) =>\n \t\t\t!isImageModel(model) &&\n+\t\t\t!model.startsWith('models/gemma') &&\n \t\t\t!model.includes('embedding') &&\n \t\t\t!model.includes('aqa') &&\n \t\t\t!model.includes('vision') &&\n@@ -69,6 +70,7 @@ export async function audioModelSearch(\n \t\tthis,\n \t\t(model) =>\n \t\t\t!isImageModel(model) &&\n+\t\t\t!model.startsWith('models/gemma') &&\n \t\t\t!model.includes('embedding') &&\n \t\t\t!model.includes('aqa') &&\n \t\t\t!model.includes('vision') &&\n",
+ "isolation": {
+  "container": "per-run",
+  "mounts": [
+   "runs/n8n-41116/deepseek_deepseek-v4-flash-amd-off"
+  ],
+  "network": "jail (egress /llm only)",
+  "user": "1001",
+  "caps": "none",
+  "memory": "2g"
+ }
+}

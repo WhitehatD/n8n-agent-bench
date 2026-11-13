@@ -1,0 +1,319 @@
+{
+ "task": "n8n-41021",
+ "model": "deepseek/deepseek-v4-flash",
+ "agents_md": "on",
+ "steps": 31,
+ "seconds": 150,
+ "usage": {
+  "prompt": 778443,
+  "completion": 6729,
+  "cost": 0.026544615999999997
+ },
+ "finish": {
+  "summary": "The bug was in `packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/text/message.operation.ts` line 604. When sending function response content back to the Google Gemini API during tool call iterations, the code used `role: 'tool'`. However, the Google Gemini API only supports `'user'` and `'model'` roles for Content objects. The API rejected `'tool'` with the error: \"Role 'tool' is not supported\".\n\n**Fix:** Changed `role: 'tool'` to `role: 'user'` when pushing function response parts into the contents array (line 604).\n\n**Test added:** Added a new test case `'should use role \"user\" for function response content during tool calls'` that verifies the contents sent in the second API call (after a function call response) use `role: 'user'` for the function response parts.",
+  "risks": "The change is minimal (one word on one line) and is the correct role per the Google Gemini API specification. The only risk is if some future version of the Gemini API re-introduces support for a `tool` role, but currently only `user` and `model` are valid. All 124 tests in the GoogleGemini test suite pass.",
+  "tests_run": "`cd packages/@n8n/nodes-langchain && pnpm exec vitest run nodes/vendors/GoogleGemini/` \u2014 all 124 tests pass across 7 test files."
+ },
+ "trace": [
+  {
+   "step": 0,
+   "tool": "shell",
+   "args": {
+    "cmd": "find packages -type d -name \"Gemini\" -o -type d -name \"gemini\" 2>/dev/null | head -20"
+   },
+   "refused": false,
+   "result_head": "exit 0\npackages/@n8n/instance-ai/evaluations/fixtures/providers/gemini\n"
+  },
+  {
+   "step": 1,
+   "tool": "shell",
+   "args": {
+    "cmd": "find packages -type f -name \"*Gemini*\" -o -name \"*gemini*\" | grep -v node_modules | grep -v \".git\" | head -30"
+   },
+   "refused": false,
+   "result_head": "exit 0\npackages/frontend/editor-ui/src/features/ai/gateway/assets/service-icons/gemini.svg\npackages/modules/mcp/frontend/src/assets/client-icons/gemini.svg\npackages/@n8n/nodes-langchain/nodes/llms/LmChatGoogleGemini/test/LmChatGoogleGemini.test.ts\npackages/@n8n/nodes-langchain/nodes/llms/LmChatGoogl"
+  },
+  {
+   "step": 2,
+   "tool": "shell",
+   "args": {
+    "cmd": "find packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini -type f | head -30"
+   },
+   "refused": false,
+   "result_head": "exit 0\npackages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/helpers/utils.test.ts\npackages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/helpers/utils.ts\npackages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/helpers/baseAnalyze.ts\npackages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/hel"
+  },
+  {
+   "step": 3,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/text/message.operation.ts"
+   },
+   "refused": false,
+   "result_head": "1: import {\n2: \ttype IDataObject,\n3: \ttype IExecuteFunctions,\n4: \ttype INodeExecutionData,\n5: \ttype INodeProperties,\n6: \tNodeOperationError,\n7: \taccumulateTokenUsage,\n8: \tjsonParse,\n9: \tupdateDisplayOptions,\n10: \tvalidateNodeParameters,\n11: } from 'n8n-workflow';\n12: import zodToJsonSchema from 'zod"
+  },
+  {
+   "step": 4,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/text/message.operation.ts",
+    "start": 400
+   },
+   "refused": false,
+   "result_head": "400: \t\ttopP: options.topP,"
+  },
+  {
+   "step": 5,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/text/message.operation.ts",
+    "start": 400
+   },
+   "refused": false,
+   "result_head": "400: \t\ttopP: options.topP,"
+  },
+  {
+   "step": 6,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/text/message.operation.ts",
+    "start": 395
+   },
+   "refused": false,
+   "result_head": "395: \t\tfrequencyPenalty: options.frequencyPenalty,\n396: \t\tmaxOutputTokens: options.maxOutputTokens,\n397: \t\tcandidateCount: options.candidateCount,\n398: \t\tpresencePenalty: options.presencePenalty,\n399: \t\ttemperature: options.temperature,\n400: \t\ttopP: options.topP,"
+  },
+  {
+   "step": 7,
+   "tool": "shell",
+   "args": {
+    "cmd": "wc -l packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/text/message.operation.ts"
+   },
+   "refused": false,
+   "result_head": "exit 0\n639 packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/text/message.operation.ts\n"
+  },
+  {
+   "step": 8,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/text/message.operation.ts",
+    "start": 395
+   },
+   "refused": false,
+   "result_head": "395: \t\tfrequencyPenalty: options.frequencyPenalty,\n396: \t\tmaxOutputTokens: options.maxOutputTokens,\n397: \t\tcandidateCount: options.candidateCount,\n398: \t\tpresencePenalty: options.presencePenalty,\n399: \t\ttemperature: options.temperature,\n400: \t\ttopP: options.topP,"
+  },
+  {
+   "step": 9,
+   "tool": "shell",
+   "args": {
+    "cmd": "cat -n packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/text/message.operation.ts"
+   },
+   "refused": false,
+   "result_head": "exit 0\nions: {\n   288\t\t\t\t\t\tminValue: 0,\n   289\t\t\t\t\t\tmaxValue: 2,\n   290\t\t\t\t\t\tnumberPrecision: 1,\n   291\t\t\t\t\t},\n   292\t\t\t\t},\n   293\t\t\t\t{\n   294\t\t\t\t\tdisplayName: 'Output Randomness (Top P)',\n   295\t\t\t\t\tname: 'topP',\n   296\t\t\t\t\tdefault: 1,\n   297\t\t\t\t\tdescription: 'The maximum cumulative probability of "
+  },
+  {
+   "step": 10,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/text/message.operation.test.ts"
+   },
+   "refused": false,
+   "result_head": "1: import type { IExecuteData, IExecuteFunctions, INode } from 'n8n-workflow';\n2: import { NodeOperationError } from 'n8n-workflow';\n3: import { mock, mockDeep, mockReset } from 'vitest-mock-extended';\n4: \n5: import { execute } from './message.operation';\n6: \n7: describe('Google Gemini message model"
+  },
+  {
+   "step": 11,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/helpers/interfaces.ts"
+   },
+   "refused": false,
+   "result_head": "1: import type {\n2: \tGenerateContentConfig,\n3: \tGenerationConfig,\n4: \tGenerateContentParameters,\n5: } from '@google/genai';\n6: import type { IDataObject } from 'n8n-workflow';\n7: export { Modality } from '@google/genai';\n8: \n9: /* type created based on: https://ai.google.dev/api/generate-content#gen"
+  },
+  {
+   "step": 12,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/@n8n/nodes-langchain/nodes/llms/LmChatGoogleGemini/LmChatGoogleGemini.node.ts"
+   },
+   "refused": false,
+   "result_head": "1: import type { SafetySetting } from '@google/generative-ai';\n2: import { ChatGoogleGenerativeAI } from '@langchain/google-genai';\n3: import { isRecord } from '@n8n/utils/is-record';\n4: import { NodeConnectionTypes, OperationalError, UserError } from 'n8n-workflow';\n5: import type {\n6: \tNodeError,\n"
+  },
+  {
+   "step": 13,
+   "tool": "shell",
+   "args": {
+    "cmd": "ls packages/@n8n/nodes-langchain/nodes/llms/gemini-common/"
+   },
+   "refused": false,
+   "result_head": "exit 0\nadditional-options.ts\nsafety-options.ts\ntest\nvertex-location.ts\n"
+  },
+  {
+   "step": 14,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/helpers/utils.test.ts"
+   },
+   "refused": false,
+   "result_head": "1: import type { IBinaryData, IExecuteFunctions } from 'n8n-workflow';\n2: import { NodeOperationError } from 'n8n-workflow';\n3: import type { MockInstance } from 'vitest';\n4: import { mockDeep } from 'vitest-mock-extended';\n5: \n6: import {\n7: \tcreateFileSearchStore,\n8: \tdeleteFileSearchStore,\n9: \tdo"
+  },
+  {
+   "step": 15,
+   "tool": "shell",
+   "args": {
+    "cmd": "grep -r \"role\" packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/ --include=\"*.ts\" -l"
+   },
+   "refused": false,
+   "result_head": "exit 0\npackages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/helpers/baseAnalyze.ts\npackages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/helpers/interfaces.ts\npackages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/GoogleGemini.node.test.ts\npackages/@n8n/nodes-langchain/nodes/vendors/GoogleG"
+  },
+  {
+   "step": 16,
+   "tool": "shell",
+   "args": {
+    "cmd": "find packages/@n8n/nodes-langchain -path \"*/node_modules/@google/genai\" -type d 2>/dev/null | head -5"
+   },
+   "refused": false,
+   "result_head": "exit 0\n"
+  },
+  {
+   "step": 17,
+   "tool": "shell",
+   "args": {
+    "cmd": "find packages/@n8n/nodes-langchain -name \"package.json\" -maxdepth 1 -exec cat {} \\; | grep -i \"@google/genai\""
+   },
+   "refused": false,
+   "result_head": "exit 0\n    \"@google/genai\": \"1.19.0\",\n"
+  },
+  {
+   "step": 18,
+   "tool": "shell",
+   "args": {
+    "cmd": "find node_modules/@google/genai -name \"*.d.ts\" -type f | head -10"
+   },
+   "refused": false,
+   "result_head": "exit 0\nfind: \u2018node_modules/@google/genai\u2019: No such file or directory\n"
+  },
+  {
+   "step": 19,
+   "tool": "shell",
+   "args": {
+    "cmd": "find . -path \"*/node_modules/@google/genai\" -type d 2>/dev/null | head -5"
+   },
+   "refused": false,
+   "result_head": "exit 0\n./node_modules/.pnpm/@google+genai@1.19.0_@modelcontextprotocol+sdk@1.32.0_supports-color@8.1.1_zod@3.25.76__dcb39a395cc1328554c7ff7ccff45fd8/node_modules/@google/genai\n"
+  },
+  {
+   "step": 20,
+   "tool": "shell",
+   "args": {
+    "cmd": "find ./node_modules/.pnpm/@google+genai@1.19.0_*/node_modules/@google/genai -name \"*.ts\" -o -name \"*.d.ts\" | head -10"
+   },
+   "refused": false,
+   "result_head": "exit 0\n./node_modules/.pnpm/@google+genai@1.19.0_@modelcontextprotocol+sdk@1.32.0_supports-color@8.1.1_zod@3.25.76__dcb39a395cc1328554c7ff7ccff45fd8/node_modules/@google/genai/dist/node/node.d.ts\n./node_modules/.pnpm/@google+genai@1.19.0_@modelcontextprotocol+sdk@1.32.0_supports-color@8.1.1_zod@3.25"
+  },
+  {
+   "step": 21,
+   "tool": "shell",
+   "args": {
+    "cmd": "grep -n \"role\" ./node_modules/.pnpm/@google+genai@1.19.0_@modelcontextprotocol+sdk@1.32.0_supports-color@8.1.1_zod@3.25.76__dcb39a395cc1328554c7ff7ccff45fd8/node_modules/@google/genai/dist/genai.d.ts | head -30"
+   },
+   "refused": false,
+   "result_head": "exit 0\n1112:     empty. If role is not specified, SDK will determine the role. */\n1113:    role?: string;\n1382:     must be a list of `Content` alternating between 'user' and 'model' roles.\n1450: * Creates a `Content` object with a model role from a `PartListUnion` object or `string`.\n1547: * Create"
+  },
+  {
+   "step": 22,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/transport/index.ts"
+   },
+   "refused": false,
+   "result_head": "1: import type {\n2: \tIDataObject,\n3: \tIExecuteFunctions,\n4: \tIHttpRequestMethods,\n5: \tILoadOptionsFunctions,\n6: } from 'n8n-workflow';\n7: \n8: type RequestParameters = {\n9: \theaders?: IDataObject;\n10: \tbody?: IDataObject | string;\n11: \tqs?: IDataObject;\n12: \toption?: IDataObject;\n13: };\n14: \n15: type"
+  },
+  {
+   "step": 23,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/text/message.operation.test.ts"
+   },
+   "refused": false,
+   "result_head": "1: import type { IExecuteData, IExecuteFunctions, INode } from 'n8n-workflow';\n2: import { NodeOperationError } from 'n8n-workflow';\n3: import { mock, mockDeep, mockReset } from 'vitest-mock-extended';\n4: \n5: import { execute } from './message.operation';\n6: \n7: describe('Google Gemini message model"
+  },
+  {
+   "step": 24,
+   "tool": "edit_file",
+   "args": {
+    "path": "packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/text/message.operation.ts",
+    "old": "\t\t\tcontents.push({\n\t\t\t\tparts: [\n\t\t\t\t\t{\n\t\t\t\t\t\tfunctionResponse: {\n\t\t\t\t\t\t\tid: functionCall.id,\n\t\t\t\t\t\t\tname: functionCall.name,\n\t\t\t\t\t\t\tresponse: {\n\t\t\t\t\t\t\t\tresult: toolResponse,\n\t\t\t\t\t\t\t},\n\t\t\t\t\t\t},\n\t\t\t\t\t},\n\t\t\t\t],\n\t\t\t\trole: 'tool',\n\t\t\t});",
+    "new": "\t\t\tcontents.push({\n\t\t\t\tparts: [\n\t\t\t\t\t{\n\t\t\t\t\t\tfunctionResponse: {\n\t\t\t\t\t\t\tid: functionCall.id,\n\t\t\t\t\t\t\tname: functionCall.name,\n\t\t\t\t\t\t\tresponse: {\n\t\t\t\t\t\t\t\tresult: toolResponse,\n\t\t\t\t\t\t\t},\n\t\t\t\t\t\t},\n\t\t\t\t\t},\n\t\t\t\t],\n\t\t\t\trole: 'user',\n\t\t\t});"
+   },
+   "refused": false,
+   "result_head": "edited packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/text/message.operation.ts"
+  },
+  {
+   "step": 25,
+   "tool": "shell",
+   "args": {
+    "cmd": "grep -rn \"role.*tool\" packages/@n8n/nodes-langchain/nodes/llms/LmChatGoogleGemini/ --include=\"*.ts\" 2>/dev/null"
+   },
+   "refused": false,
+   "result_head": "exit 1\n"
+  },
+  {
+   "step": 26,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/text/message.operation.test.ts"
+   },
+   "refused": false,
+   "result_head": "1: import type { IExecuteData, IExecuteFunctions, INode } from 'n8n-workflow';\n2: import { NodeOperationError } from 'n8n-workflow';\n3: import { mock, mockDeep, mockReset } from 'vitest-mock-extended';\n4: \n5: import { execute } from './message.operation';\n6: \n7: describe('Google Gemini message model"
+  },
+  {
+   "step": 27,
+   "tool": "edit_file",
+   "args": {
+    "path": "packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/text/message.operation.test.ts",
+    "old": "\tit('should reject a different model in a tool follow-up response', async () => {\n\t\texecuteFunctionsMock.helpers.httpRequestWithAuthentication\n\t\t\t.mockResolvedValueOnce({\n\t\t\t\t...response,\n\t\t\t\tusageMetadata: { promptTokenCount: 20, candidatesTokenCount: 3 },\n\t\t\t\tcandidates: [\n\t\t\t\t\t{\n\t\t\t\t\t\tcontent: {\n",
+    "new": "\tit('should reject a different model in a tool follow-up response', async () => {\n\t\texecuteFunctionsMock.helpers.httpRequestWithAuthentication\n\t\t\t.mockResolvedValueOnce({\n\t\t\t\t...response,\n\t\t\t\tusageMetadata: { promptTokenCount: 20, candidatesTokenCount: 3 },\n\t\t\t\tcandidates: [\n\t\t\t\t\t{\n\t\t\t\t\t\tcontent: {\n"
+   },
+   "refused": false,
+   "result_head": "edited packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/text/message.operation.test.ts"
+  },
+  {
+   "step": 28,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd packages/@n8n/nodes-langchain && pnpm exec vitest run nodes/vendors/GoogleGemini/actions/text/message.operation.test.ts --no-color 2>&1"
+   },
+   "refused": false,
+   "result_head": "exit 0\n(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:\n  - ESM syntax in a file loaded as CommonJS (vite.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest pack"
+  },
+  {
+   "step": 29,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/text/message.operation.ts",
+    "start": 591,
+    "end": 608
+   },
+   "refused": false,
+   "result_head": "591: \n592: \t\t\tcontents.push({\n593: \t\t\t\tparts: [\n594: \t\t\t\t\t{\n595: \t\t\t\t\t\tfunctionResponse: {\n596: \t\t\t\t\t\t\tid: functionCall.id,\n597: \t\t\t\t\t\t\tname: functionCall.name,\n598: \t\t\t\t\t\t\tresponse: {\n599: \t\t\t\t\t\t\t\tresult: toolResponse,\n600: \t\t\t\t\t\t\t},\n601: \t\t\t\t\t\t},\n602: \t\t\t\t\t},\n603: \t\t\t\t],\n604: \t\t\t\trole: 'user',\n605"
+  },
+  {
+   "step": 30,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd packages/@n8n/nodes-langchain && pnpm exec vitest run nodes/vendors/GoogleGemini/ --no-color 2>&1"
+   },
+   "refused": false,
+   "result_head": "exit 0\n(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:\n  - ESM syntax in a file loaded as CommonJS (vite.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest pack"
+  }
+ ],
+ "diff": "diff --git a/packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/text/message.operation.test.ts b/packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/text/message.operation.test.ts\nindex 68e12dfe..b41a55f5 100644\n--- a/packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/text/message.operation.test.ts\n+++ b/packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/text/message.operation.test.ts\n@@ -124,4 +124,40 @@ describe('Google Gemini message model identity', () => {\n \t\t\ttokenUsage: { inputTokens: 30, outputTokens: 8 },\n \t\t});\n \t});\n+\n+\tit('should use role \"user\" for function response content during tool calls', async () => {\n+\t\texecuteFunctionsMock.helpers.httpRequestWithAuthentication\n+\t\t\t.mockResolvedValueOnce({\n+\t\t\t\t...response,\n+\t\t\t\tusageMetadata: { promptTokenCount: 20, candidatesTokenCount: 3 },\n+\t\t\t\tcandidates: [\n+\t\t\t\t\t{\n+\t\t\t\t\t\tcontent: {\n+\t\t\t\t\t\t\tparts: [{ functionCall: { name: 'lookup', args: {} } }],\n+\t\t\t\t\t\t\trole: 'model',\n+\t\t\t\t\t\t},\n+\t\t\t\t\t},\n+\t\t\t\t],\n+\t\t\t})\n+\t\t\t.mockResolvedValueOnce({ ...response });\n+\n+\t\tconst result = await execute.call(executeFunctionsMock, 0);\n+\n+\t\t// The first API call sends the original user message\n+\t\t// The second API call should include:\n+\t\t//   1. the model's function call response (role: 'model')\n+\t\t//   2. the function response (role: 'user', not 'tool')\n+\t\tconst secondCallArg =\n+\t\t\texecuteFunctionsMock.helpers.httpRequestWithAuthentication.mock.calls[1][1];\n+\t\tconst contents = secondCallArg.body.contents;\n+\t\texpect(contents).toHaveLength(3);\n+\t\texpect(contents[0]).toEqual({ role: 'user', parts: [{ text: 'Hello, world!' }] });\n+\t\texpect(contents[1]).toEqual({\n+\t\t\trole: 'model',\n+\t\t\tparts: [{ functionCall: { name: 'lookup', args: {} } }],\n+\t\t});\n+\t\texpect(contents[2].role).toBe('user');\n+\t\texpect(contents[2].parts[0]).toHaveProperty('functionResponse');\n+\t\texpect(result).toEqual([{ json: response.candidates[0], pairedItem: { item: 0 } }]);\n+\t});\n });\ndiff --git a/packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/text/message.operation.ts b/packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/text/message.operation.ts\nindex 8f2728cf..278d072e 100644\n--- a/packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/text/message.operation.ts\n+++ b/packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/text/message.operation.ts\n@@ -601,7 +601,7 @@ export async function execute(this: IExecuteFunctions, i: number): Promise<INode\n \t\t\t\t\t\t},\n \t\t\t\t\t},\n \t\t\t\t],\n-\t\t\t\trole: 'tool',\n+\t\t\t\trole: 'user',\n \t\t\t});\n \t\t}\n \n",
+ "isolation": {
+  "container": "per-run",
+  "mounts": [
+   "runs/n8n-41021/deepseek_deepseek-v4-flash-amd-on"
+  ],
+  "network": "jail (egress /llm only)",
+  "user": "1001",
+  "caps": "none",
+  "memory": "2g"
+ }
+}

@@ -1,0 +1,38 @@
+{
+ "task": "n8n-41570",
+ "model": "deepseek/deepseek-v4-flash",
+ "agents_md": "on",
+ "held_out_tests_pass": false,
+ "policy": {
+  "deny_write_hits": [],
+  "human_review_path_hits": [],
+  "gate_model": "morph/reflex",
+  "gate_p_needs_human": 3.0170500432908895e-05,
+  "needs_human": false,
+  "refused_tool_calls": 0
+ },
+ "closeness": {
+  "agent_files": [
+   "packages/core/src/execution-engine/node-execution-context/__tests__/shared-tests.ts",
+   "packages/core/src/execution-engine/node-execution-context/base-execute-context.ts"
+  ],
+  "gold_src_files": [
+   "packages/core/src/execution-engine/node-execution-context/base-execute-context.ts"
+  ],
+  "src_file_overlap": 1.0,
+  "extra_files": [
+   "packages/core/src/execution-engine/node-execution-context/__tests__/shared-tests.ts"
+  ],
+  "agent_lines": 33,
+  "gold_lines": 42
+ },
+ "cost_usd": 0.0309,
+ "steps": 36,
+ "seconds": 60,
+ "finished": true,
+ "held_out": {
+  "passed": false,
+  "seconds": 3,
+  "tail": "ngine/node-execution-context/__tests__/execute-context.test.ts:290:26\n    288|     expect.soft(warnSpy).not.toHaveBeenCalled();\n    289|     expect(sendDataToUI).toHaveBeenCalledTimes(1);\n    290|     expect(sendDataToUI).toHaveBeenCalledWith('sendConsoleMessage', {\n       |                          ^\n    291|      source: '[Node: \"Code\"]',\n    292|      messages,\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[1/3]\u23af\n\n FAIL  src/execution-engine/node-execution-context/__tests__/execute-context.test.ts > ExecuteContext > logNodeOutput > should forward console.log(undefined) to the editor in manual mode without warnings\nAssertionError: expected \"vi.fn()\" to be called with arguments: [ 'sendConsoleMessage', \u2026(1) ]\n\nReceived:\n\n  1st vi.fn() call:\n\n  [\n    \"sendConsoleMessage\",\n    {\n      \"messages\": [\n-       \"undefined\",\n+       undefined,\n      ],\n      \"source\": \"[Node: \\\"Code\\\"]\",\n    },\n  ]\n\n\nNumber of calls: 1\n\n \u276f src/execution-engine/node-execution-context/__tests__/execute-context.test.ts:290:26\n    288|     expect.soft(warnSpy).not.toHaveBeenCalled();\n    289|     expect(sendDataToUI).toHaveBeenCalledTimes(1);\n    290|     expect(sendDataToUI).toHaveBeenCalledWith('sendConsoleMessage', {\n       |                          ^\n    291|      source: '[Node: \"Code\"]',\n    292|      messages,\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[2/3]\u23af\n\n FAIL  src/execution-engine/node-execution-context/__tests__/execute-context.test.ts > ExecuteContext > logNodeOutput > should forward console.log(\"x\", null) to the editor in manual mode without warnings\nAssertionError: expected \"vi.fn()\" to be called with arguments: [ 'sendConsoleMessage', \u2026(1) ]\n\nReceived:\n\n  1st vi.fn() call:\n\n  [\n    \"sendConsoleMessage\",\n    {\n      \"messages\": [\n        \"x\",\n-       \"null\",\n+       null,\n      ],\n      \"source\": \"[Node: \\\"Code\\\"]\",\n    },\n  ]\n\n\nNumber of calls: 1\n\n \u276f src/execution-engine/node-execution-context/__tests__/execute-context.test.ts:290:26\n    288|     expect.soft(warnSpy).not.toHaveBeenCalled();\n    289|     expect(sendDataToUI).toHaveBeenCalledTimes(1);\n    290|     expect(sendDataToUI).toHaveBeenCalledWith('sendConsoleMessage', {\n       |                          ^\n    291|      source: '[Node: \"Code\"]',\n    292|      messages,\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[3/3]\u23af\n\n\n Test Files  1 failed (1)\n      Tests  3 failed | 91 passed (94)\n   Start at  22:40:50\n   Duration  1.91s (transform 51%, import 44%, tests 4%)\n\nJUNIT report written to /work/runs/n8n-41570/deepseek_deepseek-v4-flash-amd-on/packages/core/junit.xml\n"
+ }
+}

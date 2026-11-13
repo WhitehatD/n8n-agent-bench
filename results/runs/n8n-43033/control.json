@@ -1,0 +1,9 @@
+{
+ "task": "n8n-43033",
+ "base_fails": true,
+ "failing": [
+  "should await queue bindings sequentially before returning the channel",
+  "should reject when a queue binding fails"
+ ],
+ "tail": "./node_modules/.pnpm/vitest@5.0.1_@opentelemetry+api@1.9.1_@types+node@20.19.41_@vitest+browser-playwright@5_81b5844da54ceb396b642a41cad5b1c3/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:3319:20\n \u276f runWithCancel ../../node_modules/.pnpm/vitest@5.0.1_@opentelemetry+api@1.9.1_@types+node@20.19.41_@vitest+browser-playwright@5_81b5844da54ceb396b642a41cad5b1c3/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:3314:10\n \u276f ../../node_modules/.pnpm/vitest@5.0.1_@opentelemetry+api@1.9.1_@types+node@20.19.41_@vitest+browser-playwright@5_81b5844da54ceb396b642a41cad5b1c3/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:3299:20\n \u276f runWithTimeout ../../node_modules/.pnpm/vitest@5.0.1_@opentelemetry+api@1.9.1_@types+node@20.19.41_@vitest+browser-playwright@5_81b5844da54ceb396b642a41cad5b1c3/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:3257:10\n \u276f ../../node_modules/.pnpm/vitest@5.0.1_@opentelemetry+api@1.9.1_@types+node@20.19.41_@vitest+browser-playwright@5_81b5844da54ceb396b642a41cad5b1c3/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:3876:64\n\nThis error originated in \"nodes/RabbitMQ/test/GenericFunctions.test.ts\" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\n\n\n Test Files  1 failed (1)\n      Tests  2 failed | 24 passed (26)\n     Errors  1 error\n   Start at  23:05:40\n   Duration  7.17s (import 78%, transform 21%, setup 1%)\n\nJUNIT report written to /work/runs/n8n-43033/control/packages/nodes-base/junit.xml\n"
+}

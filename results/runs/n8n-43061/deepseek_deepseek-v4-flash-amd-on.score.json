@@ -1,0 +1,36 @@
+{
+ "task": "n8n-43061",
+ "model": "deepseek/deepseek-v4-flash",
+ "agents_md": "on",
+ "held_out_tests_pass": true,
+ "policy": {
+  "deny_write_hits": [],
+  "human_review_path_hits": [],
+  "gate_model": "morph/reflex",
+  "gate_p_needs_human": 0.9998878846103014,
+  "needs_human": true,
+  "refused_tool_calls": 0
+ },
+ "closeness": {
+  "agent_files": [
+   "packages/workflow/src/auth-redaction.ts",
+   "packages/workflow/test/auth-redaction.test.ts"
+  ],
+  "gold_src_files": [
+   "packages/workflow/src/auth-redaction.ts"
+  ],
+  "src_file_overlap": 1.0,
+  "extra_files": [],
+  "agent_lines": 35,
+  "gold_lines": 22
+ },
+ "cost_usd": 0.0039,
+ "steps": 11,
+ "seconds": 28,
+ "finished": true,
+ "held_out": {
+  "passed": true,
+  "seconds": 3,
+  "tail": "(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:\n  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest package.json\nSet `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.\n\n RUN  v5.0.1 /work/runs/n8n-43061/deepseek_deepseek-v4-flash-amd-on/packages/workflow\n\n \u2713  default  test/auth-redaction.test.ts (9 tests) 4ms\n\n Test Files  1 passed (1)\n      Tests  9 passed (9)\n   Start at  22:29:18\n   Duration  1.23s (transform 66%, setup 33%, worker 1%)\n\nJUNIT report written to /work/runs/n8n-43061/deepseek_deepseek-v4-flash-amd-on/packages/workflow/junit.xml\n"
+ }
+}

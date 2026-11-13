@@ -1,0 +1,26 @@
+{
+ "deny_write": [
+  ".github/**",
+  "**/.env*",
+  "pnpm-lock.yaml",
+  "**/package.json",
+  "**/migrations/**",
+  "**/node_modules/**"
+ ],
+ "human_review": {
+  "paths": [
+   "packages/@n8n/db/**",
+   "packages/cli/src/auth/**",
+   "packages/cli/src/sso*/**",
+   "packages/cli/src/license*",
+   "packages/nodes-base/credentials/**",
+   "packages/core/src/**/credentials*"
+  ],
+  "decision_gate": {
+   "model": "morph/reflex",
+   "fallback": "perplexity/pplx-decider-v1.2",
+   "question": "Does this change touch authentication, credentials, OAuth scopes or tokens, secrets, encryption keys, or the redaction of sensitive headers?",
+   "threshold": 0.5
+  }
+ }
+}

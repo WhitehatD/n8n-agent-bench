@@ -1,0 +1,36 @@
+{
+ "task": "n8n-43517",
+ "model": "deepseek/deepseek-v4-flash",
+ "agents_md": "off",
+ "held_out_tests_pass": true,
+ "policy": {
+  "deny_write_hits": [],
+  "human_review_path_hits": [],
+  "gate_model": "morph/reflex",
+  "gate_p_needs_human": 5.757714627720033e-05,
+  "needs_human": false,
+  "refused_tool_calls": 0
+ },
+ "closeness": {
+  "agent_files": [
+   "packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts",
+   "packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.ts"
+  ],
+  "gold_src_files": [
+   "packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.ts"
+  ],
+  "src_file_overlap": 1.0,
+  "extra_files": [],
+  "agent_lines": 33,
+  "gold_lines": 23
+ },
+ "cost_usd": 0.0122,
+ "steps": 23,
+ "seconds": 84,
+ "finished": true,
+ "held_out": {
+  "passed": true,
+  "seconds": 2,
+  "tail": "(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:\n  - ESM syntax in a file loaded as CommonJS (vite.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest package.json\nSet `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.\n\n RUN  v5.0.1 /work/runs/n8n-43517/deepseek_deepseek-v4-flash-amd-off/packages/@n8n/nodes-langchain\n\n \u2713 nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts (25 tests) 42ms\n\n Test Files  1 passed (1)\n      Tests  25 passed (25)\n   Start at  00:04:25\n   Duration  779ms (import 64%, transform 26%, tests 6%, setup 3%, worker 1%)\n\nJUNIT report written to /work/runs/n8n-43517/deepseek_deepseek-v4-flash-amd-off/packages/@n8n/nodes-langchain/junit.xml\n"
+ }
+}

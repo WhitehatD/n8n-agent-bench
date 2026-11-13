@@ -1,0 +1,9 @@
+{
+ "task": "n8n-41064",
+ "base_fails": true,
+ "failing": [
+  "reports bot detection and Ignore Bots in the 403 response for \"curl/8.0.1\"",
+  "reports bot detection and Ignore Bots in the 403 response for \"Mozilla/5.0\""
+ ],
+ "tail": "est.ts > Webhook Ignore Bots without authentication > reports bot detection and Ignore Bots in the 403 response for \"curl/8.0.1\"\n FAIL  nodes/Webhook/test/ignore-bots.test.ts > Webhook Ignore Bots without authentication > reports bot detection and Ignore Bots in the 403 response for \"Mozilla/5.0\"\nAssertionError: expected \"vi.fn()\" to be called with arguments: [ StringMatching /bot/i ]\n\nReceived:\n\n  1st vi.fn() call:\n\n  [\n-   StringMatching /bot/i,\n+   \"Authorization data is wrong!\",\n  ]\n\n\nNumber of calls: 1\n\n \u276f nodes/Webhook/test/ignore-bots.test.ts:60:20\n     58|    expect(result).toEqual({ noWebhookResponse: true });\n     59|    expect(context.getCredentials).not.toHaveBeenCalled();\n     60|    expect(res.end).toHaveBeenCalledWith(expect.stringMatching(/bot/i));\n       |                    ^\n     61|    expect(res.end).toHaveBeenCalledWith(expect.stringContaining('Ignor\u2026\n     62|   },\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[1/2]\u23af\n\n\n Test Files  1 failed (1)\n      Tests  2 failed | 2 passed (4)\n   Start at  23:44:41\n   Duration  2.98s (transform 80%, import 15%, setup 5%)\n\n  Transform  transforming modules took 2.23s \u00b7 80% of tracked time, re-done on every run\n             persist transforms across runs with fsModuleCache: true\n             on CI this only helps when the cache directory is persisted between runs\n             learn more: https://vitest.dev/guide/improving-performance#caching-between-reruns\n\nJUNIT report written to /work/runs/n8n-41064/control/packages/nodes-base/junit.xml\n"
+}

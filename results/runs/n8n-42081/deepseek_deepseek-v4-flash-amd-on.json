@@ -1,0 +1,1097 @@
+{
+ "task": "n8n-42081",
+ "model": "deepseek/deepseek-v4-flash",
+ "agents_md": "on",
+ "steps": 112,
+ "seconds": 804,
+ "usage": {
+  "prompt": 6275073,
+  "completion": 81962,
+  "cost": 0.13730504060000007
+ },
+ "finish": {
+  "risks": "None known. The fix is minimal and targeted: it removes the `staticData` parameter from the lightweight `Workflow` constructor in `establishContextForPersistence()` that is documented as not needing it. The actual execution `Workflow` built in `runMainProcess()` is untouched and still correctly receives staticData. The change only affects the masking/prologue path.",
+  "summary": "Fixed GitHub issue #42077: Static data written from a webhook trigger's `webhook()` was not persisted since 2.19.2.\n\n**Root cause:** `establishContextForPersistence()` creates a lightweight `Workflow` to run `establishExecutionContext()`. It was passing `data.workflowData.staticData` (the shared object) as `staticData` to the `Workflow` constructor. The constructor calls `ObservableObject.create()` on it, which resets `__dataChanged` to `false`. In a webhook execution, the trigger's `webhook()` method had already modified this shared object and set `__dataChanged = true`, but after `establishContextForPersistence()` runs, it's silently reset to `false`. When the webhook callback later calls `saveStaticData()`, it checks `__dataChanged` \u2014 which is now `false` \u2014 and skips the save.\n\n**Fix:** Removed `staticData: data.workflowData.staticData` from the `Workflow` constructor call in `establishContextForPersistence()`. The code comment already stated \"no pinData, no staticData loading\" \u2014 it only needs the workflow for node lookups and settings (redaction policy). The actual execution `Workflow` built in `runMainProcess()` still receives staticData correctly.\n\n**Test:** Added a regression test that verifies `establishContextForPersistence` does not reset `__dataChanged` on the shared static data object.",
+  "tests_run": "All 61 tests in `packages/cli/src/__tests__/workflow-runner.test.ts` pass (60 existing + 1 new regression test). The new test was also verified to fail (with an assertion showing expected `true` but received `false`) when run against the buggy code before the fix."
+ },
+ "trace": [
+  {
+   "step": 0,
+   "tool": "shell",
+   "args": {
+    "cmd": "git log --oneline -5"
+   },
+   "refused": false,
+   "result_head": "exit 0\n5a696f62 base\n"
+  },
+  {
+   "step": 0,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg -l \"establishContextForPersistence\" --type ts"
+   },
+   "refused": false,
+   "result_head": "exit 0\npackages/cli/src/workflows/workflow-execution.service.ts\npackages/cli/src/workflows/__tests__/workflow-execution.service.test.ts\npackages/cli/src/__tests__/workflow-runner.test.ts\npackages/cli/src/workflow-runner.ts\n"
+  },
+  {
+   "step": 1,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/cli/src/workflow-runner.ts"
+   },
+   "refused": false,
+   "result_head": "1: /* eslint-disable @typescript-eslint/no-unsafe-argument */\n2: \n3: import { Logger } from '@n8n/backend-common';\n4: import { EventService } from '@n8n/backend-services';\n5: import { ExecutionsConfig } from '@n8n/config';\n6: import { Time } from '@n8n/constants';\n7: import { ExecutionRepository } f"
+  },
+  {
+   "step": 1,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/cli/src/__tests__/workflow-runner.test.ts"
+   },
+   "refused": false,
+   "result_head": "1: import { testDb, createWorkflow, mockInstance } from '@n8n/backend-test-utils';\n2: import { GlobalConfig } from '@n8n/config';\n3: import {\n4: \ttype User,\n5: \ttype ExecutionEntity,\n6: \ttype IExecutionBase,\n7: \ttype IExecutionResponse,\n8: \tGLOBAL_OWNER_ROLE,\n9: \tProject,\n10: \tExecutionRepository,\n1"
+  },
+  {
+   "step": 2,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/cli/src/workflow-runner.ts",
+    "start": 355
+   },
+   "refused": false,
+   "result_head": "355: \t/**\n356: \t * Returns the masking error, if any, having already emptied the trigger-item stack\n357: \t * either way.\n358: \t */\n359: \tasync establishContextForPersistence(\n360: \t\tdata: IWorkflowExecutionDataProcess,\n361: \t): Promise<(ExecutionError & { node?: INode }) | undefined> {\n362: \t\t// Est"
+  },
+  {
+   "step": 2,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg \"getWorkflowStaticData\" --type ts -l"
+   },
+   "refused": false,
+   "result_head": "exit 0\nify.ts\npackages/@n8n/task-runner/src/js-task-runner/js-task-runner.ts\npackages/@n8n/nodes-langchain/nodes/tools/ToolWorkflow/v2/ToolWorkflowV2.test.ts\npackages/@n8n/task-runner/src/js-task-runner/__tests__/js-task-runner.test.ts\npackages/@n8n/workflow-sdk/src/prompts/sdk-reference/sdk-languag"
+  },
+  {
+   "step": 3,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg \"ObservableObject\" --type ts -l"
+   },
+   "refused": false,
+   "result_head": "exit 0\npackages/workflow/test/observable-object.test.ts\npackages/workflow/src/workflow.ts\npackages/workflow/src/interfaces.ts\npackages/workflow/src/index.ts\npackages/workflow/src/observable-object.ts\npackages/cli/src/webhooks/__tests__/waiting-webhooks.test.ts\npackages/cli/src/__tests__/workflow-exe"
+  },
+  {
+   "step": 3,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg \"class Workflow\" --type ts -l"
+   },
+   "refused": false,
+   "result_head": "exit 0\n-review-request-reviewer.repository.ts\npackages/@n8n/db/src/repositories/workflow-review-lifecycle.repository.ts\npackages/@n8n/db/src/entities/workflow-review-request.ee.ts\npackages/@n8n/db/src/repositories/workflow-review-request.repository.ts\npackages/@n8n/db/src/repositories/workflow-publi"
+  },
+  {
+   "step": 4,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/workflow/src/workflow.ts",
+    "start": 1
+   },
+   "refused": false,
+   "result_head": "1: /* eslint-disable @typescript-eslint/no-unsafe-member-access */\n2: /* eslint-disable @typescript-eslint/no-unsafe-return */\n3: /* eslint-disable @typescript-eslint/no-for-in-array */\n4: import {\n5: \tgetConnectedNodes,\n6: \tgetChildNodes,\n7: \tgetParentNodes,\n8: \tmapConnectionsByDestination,\n9: } fr"
+  },
+  {
+   "step": 4,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/workflow/src/observable-object.ts"
+   },
+   "refused": false,
+   "result_head": "1: /* eslint-disable @typescript-eslint/no-unsafe-return */\n2: \n3: import type { IDataObject, IObservableObject } from './interfaces';\n4: \n5: interface IObservableOptions {\n6: \tignoreEmptyOnFirstChild?: boolean;\n7: }\n8: \n9: export function create(\n10: \ttarget: IDataObject,\n11: \tparent?: IObservableO"
+  },
+  {
+   "step": 5,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/cli/src/workflows/workflow-static-data.service.ts"
+   },
+   "refused": false,
+   "result_head": "1: import { Logger } from '@n8n/backend-common';\n2: import { WorkflowRepository } from '@n8n/db';\n3: import { Service } from '@n8n/di';\n4: import { ErrorReporter } from 'n8n-core';\n5: import type { IDataObject, Workflow } from 'n8n-workflow';\n6: \n7: import { isWorkflowIdValid } from '@/utils';\n8: \n9"
+  },
+  {
+   "step": 5,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/cli/src/workflows/workflow-execution.service.ts",
+    "start": 1
+   },
+   "refused": false,
+   "result_head": "1: import { Logger } from '@n8n/backend-common';\n2: import {\n3: \tEventService,\n4: \tInstanceWriteAccessService,\n5: \tWorkflowPublishedDataService,\n6: } from '@n8n/backend-services';\n7: import { GlobalConfig, WorkflowsConfig } from '@n8n/config';\n8: import type {\n9: \tProject,\n10: \tUser,\n11: \tCreateExec"
+  },
+  {
+   "step": 6,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg \"establishContextForPersistence\" --type ts -A2 -B2"
+   },
+   "refused": false,
+   "result_head": "exit 0\npackages/cli/src/workflows/workflow-execution.service.ts-\t\t// never holds raw header data. `run` below establishes the context again, which\npackages/cli/src/workflows/workflow-execution.service.ts-\t\t// early-exits once it is in place.\npackages/cli/src/workflows/workflow-execution.service.ts:\t"
+  },
+  {
+   "step": 7,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/cli/src/workflow-runner.ts",
+    "start": 430
+   },
+   "refused": false,
+   "result_head": ""
+  },
+  {
+   "step": 8,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/cli/src/workflow-runner.ts",
+    "start": 390
+   },
+   "refused": false,
+   "result_head": "390: \t\t\ttry {\n391: \t\t\t\tawait establishExecutionContext(\n392: \t\t\t\t\tcontextWorkflow,\n393: \t\t\t\t\tdata.executionData,\n394: \t\t\t\t\t{ encryptedRunnerIdentity: data.encryptedRunnerIdentity },\n395: \t\t\t\t\tdata.executionMode,\n396: \t\t\t\t);\n397: \t\t\t} catch (error) {\n398: \t\t\t\t// Masking may have failed partway throug"
+  },
+  {
+   "step": 9,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg \"async run\\(\" packages/cli/src/workflow-runner.ts -A3 -B3"
+   },
+   "refused": false,
+   "result_head": "exit 0\n\t/** Run the workflow\n\t * @param realtime This is used in queue mode to change the priority of an execution, making sure they are picked up quicker.\n\t */\n\tasync run(\n\t\tdata: IWorkflowExecutionDataProcess,\n\t\tloadStaticData?: boolean,\n\t\trealtime?: boolean,\n"
+  },
+  {
+   "step": 9,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg \"saveStaticData\" --type ts -l"
+   },
+   "refused": false,
+   "result_head": "exit 0\npackages/core/src/execution-engine/__tests__/active-workflow-triggers.test.ts\npackages/core/src/execution-engine/poll-trigger-executor.ts\npackages/cli/test/integration/services/workflow-static-data.service.test.ts\npackages/cli/src/execution-lifecycle/__tests__/execution-lifecycle-hooks.test.t"
+  },
+  {
+   "step": 10,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/cli/src/workflow-runner.ts",
+    "start": 430
+   },
+   "refused": false,
+   "result_head": ""
+  },
+  {
+   "step": 10,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg \"async run\\(\" packages/cli/src/workflow-runner.ts"
+   },
+   "refused": false,
+   "result_head": "exit 0\n\tasync run(\n"
+  },
+  {
+   "step": 11,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/cli/src/workflow-runner.ts",
+    "start": 500
+   },
+   "refused": false,
+   "result_head": ""
+  },
+  {
+   "step": 12,
+   "tool": "shell",
+   "args": {
+    "cmd": "wc -l packages/cli/src/workflow-runner.ts"
+   },
+   "refused": false,
+   "result_head": "exit 0\n989 packages/cli/src/workflow-runner.ts\n"
+  },
+  {
+   "step": 12,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/cli/src/workflow-runner.ts",
+    "start": 450
+   },
+   "refused": false,
+   "result_head": ""
+  },
+  {
+   "step": 13,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg -n \"async run\\(\" packages/cli/src/workflow-runner.ts"
+   },
+   "refused": false,
+   "result_head": "exit 0\n412:\tasync run(\n"
+  },
+  {
+   "step": 14,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/cli/src/workflow-runner.ts",
+    "start": 412
+   },
+   "refused": false,
+   "result_head": ""
+  },
+  {
+   "step": 15,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/cli/src/workflow-runner.ts",
+    "start": 400
+   },
+   "refused": false,
+   "result_head": "400: \t\t\t\t// activeExecutions.add() persists the execution row."
+  },
+  {
+   "step": 16,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/cli/src/workflow-runner.ts",
+    "start": 395
+   },
+   "refused": false,
+   "result_head": "395: \t\t\t\t\tdata.executionMode,\n396: \t\t\t\t);\n397: \t\t\t} catch (error) {\n398: \t\t\t\t// Masking may have failed partway through, so the trigger-item\n399: \t\t\t\t// stack can still contain raw header data. Drop it before\n400: \t\t\t\t// activeExecutions.add() persists the execution row."
+  },
+  {
+   "step": 17,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/cli/src/workflow-runner.ts",
+    "start": 395
+   },
+   "refused": false,
+   "result_head": "395: \t\t\t\t\tdata.executionMode,\n396: \t\t\t\t);\n397: \t\t\t} catch (error) {\n398: \t\t\t\t// Masking may have failed partway through, so the trigger-item\n399: \t\t\t\t// stack can still contain raw header data. Drop it before\n400: \t\t\t\t// activeExecutions.add() persists the execution row."
+  },
+  {
+   "step": 18,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/cli/src/workflow-runner.ts",
+    "start": 355
+   },
+   "refused": false,
+   "result_head": "355: \t/**\n356: \t * Returns the masking error, if any, having already emptied the trigger-item stack\n357: \t * either way.\n358: \t */\n359: \tasync establishContextForPersistence(\n360: \t\tdata: IWorkflowExecutionDataProcess,\n361: \t): Promise<(ExecutionError & { node?: INode }) | undefined> {\n362: \t\t// Est"
+  },
+  {
+   "step": 19,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/cli/src/webhooks/live-webhooks.ts"
+   },
+   "refused": false,
+   "result_head": "1: import { Logger } from '@n8n/backend-common';\n2: import { ExpressionEngineConfig, WorkflowsConfig } from '@n8n/config';\n3: import { WorkflowRepository, type WorkflowEntity, type WorkflowHistory } from '@n8n/db';\n4: import { Service } from '@n8n/di';\n5: import type { Response } from 'express';\n6: "
+  },
+  {
+   "step": 19,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg \"runMainProcess\" --type ts -l"
+   },
+   "refused": false,
+   "result_head": "exit 0\npackages/cli/src/modules/instance-ai/eval/__tests__/execution.service.test.ts\npackages/cli/src/scaling/job-processor.ts\npackages/cli/src/workflow-runner.ts\n"
+  },
+  {
+   "step": 20,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg \"executeWebhook\" packages/cli/src/webhooks/webhook-helpers.ts -A2 -B2"
+   },
+   "refused": false,
+   "result_head": "exit 0\n */\n// eslint-disable-next-line complexity\nexport async function executeWebhook(\n\tworkflow: Workflow,\n\twebhookData: IWebhookData,\n"
+  },
+  {
+   "step": 20,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/cli/src/webhooks/webhook-helpers.ts",
+    "start": 1
+   },
+   "refused": false,
+   "result_head": "1: import { Logger } from '@n8n/backend-common';\n2: import { EventService } from '@n8n/backend-services';\n3: import { OAuth2FlowProxy, ProtectedResourceRegistry } from '@n8n/backend-services/auth';\n4: import { ExecutionsConfig, GlobalConfig } from '@n8n/config';\n5: import type { Project } from '@n8n"
+  },
+  {
+   "step": 21,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg -n \"runMainProcess\" packages/cli/src/workflow-runner.ts"
+   },
+   "refused": false,
+   "result_head": "exit 0\n378:\t\t\t// runMainProcess() builds its own fully-configured Workflow for\n486:\t\t\t\tawait this.runMainProcess(\n571:\tprivate async runMainProcess(\n"
+  },
+  {
+   "step": 21,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg -n \"processError|run\\b|runMainProcess|prepareNewExecution\" packages/cli/src/workflow-runner.ts"
+   },
+   "refused": false,
+   "result_head": "exit 0\n57:import { FailedRunFactory } from '@/executions/failed-run-factory';\n74:/** How long to keep rechecking the execution status after a max-stalled-count error before failing the run */\n132:\tasync processError(\n155:\t\t// in queue mode, first do a sanity run for the edge case that the execution "
+  },
+  {
+   "step": 22,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg -n \"async function executeWebhook\" packages/cli/src/webhooks/webhook-helpers.ts"
+   },
+   "refused": false,
+   "result_head": "exit 0\n1005:export async function executeWebhook(\n"
+  },
+  {
+   "step": 22,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/cli/src/webhooks/webhook-helpers.ts",
+    "start": 395
+   },
+   "refused": false,
+   "result_head": "395: \n396: \tif (\n397: \t\t[FORM_NODE_TYPE, FORM_TRIGGER_NODE_TYPE, WAIT_NODE_TYPE].includes(workflowStartNode.type) &&\n398: \t\t(data?.headers as IDataObject)?.location &&\n399: \t\tString(data?.responseCode).startsWith('3')\n400: \t) {"
+  },
+  {
+   "step": 23,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/cli/src/workflow-runner.ts",
+    "start": 412
+   },
+   "refused": false,
+   "result_head": ""
+  },
+  {
+   "step": 24,
+   "tool": "read_file",
+   "args": {
+    "end": 989,
+    "path": "packages/cli/src/workflow-runner.ts",
+    "start": 400
+   },
+   "refused": false,
+   "result_head": "400: \t\t\t\t// activeExecutions.add() persists the execution row.\n401: \t\t\t\tdata.executionData.executionData.nodeExecutionStack = [];\n402: \t\t\t\testablishContextError = error as ExecutionError & { node?: INode };\n403: \t\t\t}\n404: \t\t}\n405: \n406: \t\treturn establishContextError;\n407: \t}\n408: \n409: \t/** Run the"
+  },
+  {
+   "step": 25,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/cli/src/webhooks/webhook-helpers.ts",
+    "start": 1005
+   },
+   "refused": false,
+   "result_head": ""
+  },
+  {
+   "step": 26,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg -n \"executeWebhook\" packages/cli/src/webhooks/webhook-helpers.ts"
+   },
+   "refused": false,
+   "result_head": "exit 0\n1005:export async function executeWebhook(\n"
+  },
+  {
+   "step": 27,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg -n \"workflowRunner.run\\|WorkflowRunner.run\\|runner.run\" packages/cli/src/webhooks/webhook-helpers.ts -B5 -A5"
+   },
+   "refused": false,
+   "result_head": "exit 1\n"
+  },
+  {
+   "step": 27,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg -n \"executeWebhook\" packages/cli/src/webhooks/webhook-helpers.ts -A3"
+   },
+   "refused": false,
+   "result_head": "exit 0\n1005:export async function executeWebhook(\n1006-\tworkflow: Workflow,\n1007-\twebhookData: IWebhookData,\n1008-\tworkflowData: IWorkflowBase,\n"
+  },
+  {
+   "step": 28,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/cli/src/webhooks/webhook-helpers.ts",
+    "start": 1005
+   },
+   "refused": false,
+   "result_head": ""
+  },
+  {
+   "step": 29,
+   "tool": "shell",
+   "args": {
+    "cmd": "wc -l packages/cli/src/webhooks/webhook-helpers.ts"
+   },
+   "refused": false,
+   "result_head": "exit 0\n1836 packages/cli/src/webhooks/webhook-helpers.ts\n"
+  },
+  {
+   "step": 30,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg \"establishExecutionContext\" --type ts -l"
+   },
+   "refused": false,
+   "result_head": "exit 0\npackages/core/src/execution-engine/workflow-execute.ts\npackages/core/src/execution-engine/index.ts\npackages/core/src/execution-engine/__tests__/execution-context.test.ts\npackages/core/src/execution-engine/__tests__/workflow-execute-node-error-reporting.test.ts\npackages/core/src/execution-engi"
+  },
+  {
+   "step": 31,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg -n \"WorkflowRunner|workflowRunner|runner\\.run\" packages/cli/src/webhooks/webhook-helpers.ts"
+   },
+   "refused": false,
+   "result_head": "exit 0\n94:import { WorkflowRunner } from '@/workflow-runner';\n1028:\t\t/** Called before WorkflowRunner.run for an existing execution. */\n1347:\t\texecutionId = await Container.get(WorkflowRunner).run(\n1359:\t\t * We track the webhook response mode so that `WorkflowRunner` can decide whether it\n"
+  },
+  {
+   "step": 32,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg -n \"executeWebhook\" packages/cli/src/webhooks/webhook-helpers.ts | head -20"
+   },
+   "refused": false,
+   "result_head": "exit 0\n1005:export async function executeWebhook(\n"
+  },
+  {
+   "step": 32,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/cli/src/webhooks/webhook-helpers.ts",
+    "start": 1300
+   },
+   "refused": false,
+   "result_head": ""
+  },
+  {
+   "step": 33,
+   "tool": "read_file",
+   "args": {
+    "end": 1400,
+    "path": "packages/cli/src/webhooks/webhook-helpers.ts",
+    "start": 1250
+   },
+   "refused": false,
+   "result_head": "1250: \t\tif (!runData.pushRef) {\n1251: \t\t\trunData.pushRef = runExecutionData.pushRef;\n1252: \t\t}\n1253: \n1254: \t\tconst didPublishMcpRelay = await prepareMcpQueueExecution(\n1255: \t\t\tworkflowStartNode,\n1256: \t\t\treq,\n1257: \t\t\twebhookResultData,\n1258: \t\t\trunData,\n1259: \t\t);\n1260: \t\tif (didPublishMcpRelay) "
+  },
+  {
+   "step": 34,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/core/src/execution-engine/execution-context.ts",
+    "start": 1
+   },
+   "refused": false,
+   "result_head": "1: import { Logger } from '@n8n/backend-common';\n2: import { Container } from '@n8n/di';\n3: import {\n4: \ttoErrorWorkflowContext,\n5: \ttype IExecutionContext,\n6: \ttype IRunExecutionData,\n7: \ttype Workflow,\n8: \ttype WorkflowExecuteMode,\n9: } from 'n8n-workflow';\n10: \n11: import { assertExecutionDataExi"
+  },
+  {
+   "step": 35,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/cli/src/executions/pre-execution-checks/workflow-pre-execute.ts"
+   },
+   "refused": false,
+   "result_head": "1: import { ExecutionsConfig } from '@n8n/config';\n2: import { Service } from '@n8n/di';\n3: import { ensureError } from '@n8n/utils/errors/ensure-error';\n4: import type {\n5: \tINode,\n6: \tIPinData,\n7: \tIWorkflowBase,\n8: \tWorkflowExecuteMode,\n9: \tWorkflowExecutionSource,\n10: } from 'n8n-workflow';\n11: "
+  },
+  {
+   "step": 36,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/cli/src/webhooks/webhook-helpers.ts",
+    "start": 1005
+   },
+   "refused": false,
+   "result_head": ""
+  },
+  {
+   "step": 37,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/cli/src/webhooks/webhook-helpers.ts",
+    "start": 1170
+   },
+   "refused": false,
+   "result_head": ""
+  },
+  {
+   "step": 38,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg \"staticData\" packages/core/src/execution-engine/execution-context.service.ts"
+   },
+   "refused": false,
+   "result_head": "exit 1\n"
+  },
+  {
+   "step": 38,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg \"augmentExecutionContextWithHooks\\|augmentSubExecutionContext\" packages/core/src/execution-engine/execution-context.service.ts -A5"
+   },
+   "refused": false,
+   "result_head": "exit 1\n"
+  },
+  {
+   "step": 39,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg \"staticData\" packages/core/src/execution-engine/execution-context.service.ts -B2 -A2"
+   },
+   "refused": false,
+   "result_head": "exit 1\n"
+  },
+  {
+   "step": 39,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg \"augmentExecutionContextWithHooks\" packages/core/src/execution-engine/execution-context.service.ts -A20"
+   },
+   "refused": false,
+   "result_head": "exit 0\n\tasync augmentExecutionContextWithHooks(\n\t\tworkflow: Workflow,\n\t\tstartItem: IExecuteData,\n\t\tcontextToAugment: IExecutionContext,\n\t): Promise<{\n\t\tcontext: IExecutionContext;\n\t\ttriggerItems: INodeExecutionData[] | null;\n\t}> {\n\t\t// Main input data is an array of items, each item represents an ev"
+  },
+  {
+   "step": 40,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/cli/src/__tests__/workflow-runner.test.ts",
+    "start": 400
+   },
+   "refused": false,
+   "result_head": "400: \t\t);"
+  },
+  {
+   "step": 41,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg -n \"establishContextForPersistence\\b\" packages/cli/src/__tests__/workflow-runner.test.ts -B3 -A20"
+   },
+   "refused": false,
+   "result_head": "exit 0\n747-\tit('reloads static data for a new queued execution', async () => {\n748-\t\tglobalConfig.executions.mode = 'queue';\n749-\t\ttry {\n750:\t\t\tvi.spyOn(runner, 'establishContextForPersistence').mockResolvedValue(undefined);\n751-\t\t\tvi.spyOn(runner, 'prepareNewExecution').mockResolvedValue(mock<Workf"
+  },
+  {
+   "step": 42,
+   "tool": "edit_file",
+   "args": {
+    "new": "staticData: undefined,",
+    "old": "staticData: data.workflowData.staticData,",
+    "path": "packages/cli/src/workflow-runner.ts"
+   },
+   "refused": false,
+   "result_head": "edit failed: old text found 2 times, need exactly 1"
+  },
+  {
+   "step": 43,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg -n \"staticData: data.workflowData.staticData,\" packages/cli/src/workflow-runner.ts"
+   },
+   "refused": false,
+   "result_head": "exit 0\n387:\t\t\t\tstaticData: data.workflowData.staticData,\n605:\t\t\t\tstaticData: data.workflowData.staticData,\n"
+  },
+  {
+   "step": 44,
+   "tool": "edit_file",
+   "args": {
+    "new": "const contextWorkflow = new Workflow({\n\t\t\t\tid: data.workflowData.id,\n\t\t\t\tname: data.workflowData.name,\n\t\t\t\tnodes: data.workflowData.nodes,\n\t\t\t\tconnections: data.workflowData.connections,\n\t\t\t\tactive: data.workflowData.activeVersionId !== null,\n\t\t\t\tnodeTypes: this.nodeTypes,\n\t\t\t\tstaticData: undefined,",
+    "old": "const contextWorkflow = new Workflow({\n\t\t\t\tid: data.workflowData.id,\n\t\t\t\tname: data.workflowData.name,\n\t\t\t\tnodes: data.workflowData.nodes,\n\t\t\t\tconnections: data.workflowData.connections,\n\t\t\t\tactive: data.workflowData.activeVersionId !== null,\n\t\t\t\tnodeTypes: this.nodeTypes,\n\t\t\t\tstaticData: data.workf",
+    "path": "packages/cli/src/workflow-runner.ts"
+   },
+   "refused": false,
+   "result_head": "edited packages/cli/src/workflow-runner.ts"
+  },
+  {
+   "step": 45,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg -n \"staticData\" packages/core/src/execution-engine/execution-context.service.ts"
+   },
+   "refused": false,
+   "result_head": "exit 1\n"
+  },
+  {
+   "step": 45,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg \"staticData\" packages/core/src/execution-engine/"
+   },
+   "refused": false,
+   "result_head": "exit 0\npackages/core/src/execution-engine/__tests__/workflow-execute.test.ts:\t\t\tworkflow.staticData.__dataChanged = true;\npackages/core/src/execution-engine/__tests__/workflow-execute.test.ts:\t\t\tworkflow.staticData.testData = 'changed';\npackages/core/src/execution-engine/__tests__/workflow-execute.t"
+  },
+  {
+   "step": 46,
+   "tool": "read_file",
+   "args": {
+    "end": 100,
+    "path": "packages/cli/src/__tests__/workflow-runner.test.ts",
+    "start": 1
+   },
+   "refused": false,
+   "result_head": "1: import { testDb, createWorkflow, mockInstance } from '@n8n/backend-test-utils';\n2: import { GlobalConfig } from '@n8n/config';\n3: import {\n4: \ttype User,\n5: \ttype ExecutionEntity,\n6: \ttype IExecutionBase,\n7: \ttype IExecutionResponse,\n8: \tGLOBAL_OWNER_ROLE,\n9: \tProject,\n10: \tExecutionRepository,\n1"
+  },
+  {
+   "step": 47,
+   "tool": "read_file",
+   "args": {
+    "end": 1200,
+    "path": "packages/cli/src/webhooks/webhook-helpers.ts",
+    "start": 1100
+   },
+   "refused": false,
+   "result_head": "1100: \tlet cleanupMultipartFiles: (() => Promise<void>) | undefined;\n1101: \ttry {\n1102: \t\t// Before the node runs: a streaming node, and the chat, MCP and Agent365\n1103: \t\t// triggers, answer the request themselves, so a later refusal could not send\n1104: \t\t// the 400. Also before the request body i"
+  },
+  {
+   "step": 48,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg \"staticData\" packages/core/src/execution-engine/execution-context.service.ts -B5 -A5"
+   },
+   "refused": false,
+   "result_head": "exit 1\n"
+  },
+  {
+   "step": 48,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg \"staticData\" packages/core/src/execution-engine/"
+   },
+   "refused": false,
+   "result_head": "exit 0\npackages/core/src/execution-engine/__tests__/workflow-execute.test.ts:\t\t\tworkflow.staticData.__dataChanged = true;\npackages/core/src/execution-engine/__tests__/workflow-execute.test.ts:\t\t\tworkflow.staticData.testData = 'changed';\npackages/core/src/execution-engine/__tests__/workflow-execute.t"
+  },
+  {
+   "step": 49,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/cli/src/__tests__/workflow-runner.test.ts",
+    "start": 100
+   },
+   "refused": false,
+   "result_head": "100: \n101: \trunner = Container.get(WorkflowRunner);\n102: });\n103: \n104: afterAll(() => {\n105: \tvi.restoreAllMocks();\n106: });\n107: \n108: beforeEach(async () => {\n109: \tawait testDb.truncate(['WorkflowEntity', 'SharedWorkflow']);\n110: \tvi.clearAllMocks();\n111: \tvi.spyOn(Container.get(ExecutionReposit"
+  },
+  {
+   "step": 50,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg -n \"establishContextForPersistence\\b\" packages/cli/src/__tests__/workflow-runner.test.ts"
+   },
+   "refused": false,
+   "result_head": "exit 0\n750:\t\t\tvi.spyOn(runner, 'establishContextForPersistence').mockResolvedValue(undefined);\n"
+  },
+  {
+   "step": 51,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg -n \"describe\\|it\\b\\|test\\b\" packages/cli/src/__tests__/workflow-runner.test.ts"
+   },
+   "refused": false,
+   "result_head": "exit 1\n"
+  },
+  {
+   "step": 52,
+   "tool": "shell",
+   "args": {
+    "cmd": "tail -200 packages/cli/src/__tests__/workflow-runner.test.ts"
+   },
+   "refused": false,
+   "result_head": "exit 0\n\tit('does not run preExecute when credential authorization fails', async () => {\n\t\tconst unauthorized = new Error('unauthorized');\n\t\tconst permissionChecker = Container.get(CredentialsPermissionChecker);\n\t\tvi.spyOn(permissionChecker, 'check').mockRejectedValueOnce(unauthorized);\n\n\t\taddSpy.moc"
+  },
+  {
+   "step": 53,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg -n \"describe\\|it\\b\\|test\\b\\|\\.each\" packages/cli/src/__tests__/workflow-runner.test.ts"
+   },
+   "refused": false,
+   "result_head": "exit 1\n"
+  },
+  {
+   "step": 54,
+   "tool": "shell",
+   "args": {
+    "cmd": "grep -n \"describe\\|it(\" packages/cli/src/__tests__/workflow-runner.test.ts"
+   },
+   "refused": false,
+   "result_head": "exit 0\n65:// reference the class without a temporal-dead-zone error \u2014 a describe-scoped\n114:describe('processError', () => {\n746:describe('run', () => {\n747:\tit('reloads static data for a new queued execution', async () => {\n776:\tit('uses recreateNodeExecutionStack to create a partial execution if a"
+  },
+  {
+   "step": 55,
+   "tool": "read_file",
+   "args": {
+    "end": 1700,
+    "path": "packages/cli/src/__tests__/workflow-runner.test.ts",
+    "start": 1600
+   },
+   "refused": false,
+   "result_head": "1600: \t\tconst result = runner.needsFullExecutionData('integrated', 'exec-id', undefined);\n1601: \n1602: \t\texpect(result).toBe(true);\n1603: \t});\n1604: });\n1605: \n1606: describe('pre-persist context establishment', () => {\n1607: \tconst callOrder: string[] = [];\n1608: \tlet establishSpy: MockInstance;\n16"
+  },
+  {
+   "step": 56,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/core/src/execution-engine/execution-context.service.ts",
+    "start": 1
+   },
+   "refused": false,
+   "result_head": "1: import { Logger } from '@n8n/backend-common';\n2: import { Service } from '@n8n/di';\n3: import {\n4: \tICredentialContext,\n5: \tIExecuteData,\n6: \tIExecutionContext,\n7: \tIN8NOAuthMetadata,\n8: \tINodeExecutionData,\n9: \tN8NOAuthMetadataSchema,\n10: \tOAuthResourceGrant,\n11: \tPlaintextExecutionContext,\n12: "
+  },
+  {
+   "step": 57,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd packages/cli && pnpm exec vitest run src/__tests__/workflow-runner.test.ts --reporter=verbose 2>&1 | tail -30"
+   },
+   "refused": false,
+   "result_head": "exit 0\n\u001b[33m(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:\n  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the close"
+  },
+  {
+   "step": 58,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd packages/cli && NODE_OPTIONS=\"--max-old-space-size=4096\" pnpm exec vitest run src/__tests__/workflow-runner.test.ts --maxWorkers=1 --reporter=verbose 2>&1 | tail -40"
+   },
+   "refused": false,
+   "result_head": "exit 0\n \u001b[32m\u2713\u001b[39m src/__tests__/workflow-runner.test.ts\u001b[2m > \u001b[22mrun\u001b[2m > \u001b[22mstartup failure\u001b[2m > \u001b[22mrejects on startup errors\u001b[32m 3\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m\u2713\u001b[39m src/__tests__/workflow-runner.test.ts\u001b[2m > \u001b[22menqueueExecution\u001b[2m > \u001b[22mshould setup queue when scalingService is not init"
+  },
+  {
+   "step": 59,
+   "tool": "read_file",
+   "args": {
+    "end": 1700,
+    "path": "packages/cli/src/__tests__/workflow-runner.test.ts",
+    "start": 1694
+   },
+   "refused": false,
+   "result_head": "1694: \tafterEach(() => {\n1695: \t\testablishSpy.mockRestore();\n1696: \t\taddSpy.mockRestore();\n1697: \t\tgateSpy?.mockRestore();\n1698: \t\tgateSpy = undefined;\n1699: \t});\n1700: "
+  },
+  {
+   "step": 60,
+   "tool": "read_file",
+   "args": {
+    "end": 1702,
+    "path": "packages/cli/src/__tests__/workflow-runner.test.ts",
+    "start": 1694
+   },
+   "refused": false,
+   "result_head": "1694: \tafterEach(() => {\n1695: \t\testablishSpy.mockRestore();\n1696: \t\taddSpy.mockRestore();\n1697: \t\tgateSpy?.mockRestore();\n1698: \t\tgateSpy = undefined;\n1699: \t});\n1700: \n1701: \tit('calls establishExecutionContext before activeExecutions.add', async () => {\n1702: \t\tconst data = buildRunData(buildExec"
+  },
+  {
+   "step": 61,
+   "tool": "edit_file",
+   "args": {
+    "new": "it('skips establishExecutionContext when nodeExecutionStack has not been populated yet', async () => {\n\t\t// Queue mode with OFFLOAD_MANUAL_EXECUTIONS_TO_WORKERS=true creates\n\t\t// the outer IRunExecutionData with `executionData: null`, which\n\t\t// `createRunExecutionData` normalises to an object whose",
+    "old": "it('skips establishExecutionContext when nodeExecutionStack has not been populated yet', async () => {\n\t\t// Queue mode with OFFLOAD_MANUAL_EXECUTIONS_TO_WORKERS=true creates\n\t\t// the outer IRunExecutionData with `executionData: null`, which\n\t\t// `createRunExecutionData` normalises to an object whose",
+    "path": "packages/cli/src/__tests__/workflow-runner.test.ts"
+   },
+   "refused": false,
+   "result_head": "edited packages/cli/src/__tests__/workflow-runner.test.ts"
+  },
+  {
+   "step": 62,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg \"IDataObject\" packages/cli/src/__tests__/workflow-runner.test.ts"
+   },
+   "refused": false,
+   "result_head": "exit 0\n\t\tconst staticData: IDataObject & { __dataChanged?: boolean } = { remoteId: 'remote-1' };\n"
+  },
+  {
+   "step": 63,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg \"IDataObject\" packages/cli/src/__tests__/workflow-runner.test.ts | head -5"
+   },
+   "refused": false,
+   "result_head": "exit 0\n\t\tconst staticData: IDataObject & { __dataChanged?: boolean } = { remoteId: 'remote-1' };\n"
+  },
+  {
+   "step": 64,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg \"IDataObject\" packages/workflow/src/index.ts | head -3"
+   },
+   "refused": false,
+   "result_head": "exit 0\n"
+  },
+  {
+   "step": 65,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg \"IDataObject\" packages/workflow/src/index.ts"
+   },
+   "refused": false,
+   "result_head": "exit 1\n"
+  },
+  {
+   "step": 66,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg \"IDataObject\" packages/workflow/src/ -l"
+   },
+   "refused": false,
+   "result_head": "exit 0\npackages/workflow/src/workflow.ts\npackages/workflow/src/interfaces.ts\npackages/workflow/src/augment-object.ts\npackages/workflow/src/expression.ts\npackages/workflow/src/telemetry-helpers.ts\npackages/workflow/src/observable-object.ts\npackages/workflow/src/schemas.ts\npackages/workflow/src/workfl"
+  },
+  {
+   "step": 67,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg \"IDataObject\" packages/workflow/src/index.ts -B2"
+   },
+   "refused": false,
+   "result_head": "exit 1\n"
+  },
+  {
+   "step": 68,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg \"IDataObject\" packages/workflow/src/index.ts -l"
+   },
+   "refused": false,
+   "result_head": "exit 1\n"
+  },
+  {
+   "step": 69,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg \"from 'n8n-workflow'\" packages/cli/src/__tests__/workflow-runner.test.ts | grep -i \"dataobject\""
+   },
+   "refused": false,
+   "result_head": "exit 1\n"
+  },
+  {
+   "step": 70,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg \"IDataObject\" packages/workflow/src/index.ts 2>/dev/null || rg \"export.*IDataObject\" packages/workflow/src/index.ts"
+   },
+   "refused": false,
+   "result_head": "exit 1\n"
+  },
+  {
+   "step": 71,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg \"IDataObject\" packages/workflow/src/index.ts --no-filename || head -5 packages/workflow/src/index.ts"
+   },
+   "refused": false,
+   "result_head": "exit 0\nimport * as LoggerProxy from './logger-proxy';\nimport * as NodeHelpers from './node-helpers';\nimport * as ObservableObject from './observable-object';\nimport * as TelemetryHelpers from './telemetry-helpers';\n\n"
+  },
+  {
+   "step": 72,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg \"import.*n8n-workflow\" packages/cli/src/__tests__/workflow-runner.test.ts"
+   },
+   "refused": false,
+   "result_head": "exit 1\n"
+  },
+  {
+   "step": 73,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg \"export.*IDataObject\" packages/workflow/src/index.ts 2>/dev/null; rg \"IDataObject\" packages/workflow/src/TypeScript.d.ts 2>/dev/null; grept \"export.*IDataObject\" packages/workflow/src/index.ts || rg \"IDataObject\" packages/workflow/src/index.ts --no-filename 2>/dev/null || rg \"IDataObject\" package"
+   },
+   "refused": false,
+   "result_head": "exit 0\nnot found\n/bin/sh: 1: grept: not found\n"
+  },
+  {
+   "step": 74,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg \"IDataObject\" packages/workflow/src/index.ts 2>/dev/null || rg \"from.*interfaces\" packages/workflow/src/index.ts"
+   },
+   "refused": false,
+   "result_head": "exit 0\nexport * from './interfaces';\n"
+  },
+  {
+   "step": 75,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg \"IDataObject\" packages/workflow/src/interfaces.ts | head -1"
+   },
+   "refused": false,
+   "result_head": "exit 0\n\tbody: IDataObject;\n"
+  },
+  {
+   "step": 76,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg \"interface IDataObject\\|type IDataObject\\|export.*IDataObject\" packages/workflow/src/interfaces.ts"
+   },
+   "refused": false,
+   "result_head": "exit 1\n"
+  },
+  {
+   "step": 77,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg \"IDataObject\" packages/workflow/src/ -l | grep -v test | grep -v __tests__"
+   },
+   "refused": false,
+   "result_head": "exit 0\npackages/workflow/src/workflow.ts\npackages/workflow/src/interfaces.ts\npackages/workflow/src/augment-object.ts\npackages/workflow/src/expression.ts\npackages/workflow/src/telemetry-helpers.ts\npackages/workflow/src/observable-object.ts\npackages/workflow/src/workflow-data-proxy.ts\npackages/workflo"
+  },
+  {
+   "step": 78,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg \"type IDataObject\" packages/workflow/src/interfaces.ts -B2"
+   },
+   "refused": false,
+   "result_head": "exit 1\n"
+  },
+  {
+   "step": 79,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg \"IDataObject\" packages/workflow/src/interfaces.ts -B1 -A1"
+   },
+   "refused": false,
+   "result_head": "exit 0\n\t};\n\tbody: IDataObject;\n\theaders: IDataObject;\n\tqs: IDataObject;\n}\n--\n\t};\n\tbody?: IDataObject;\n\theaders?: IDataObject;\n\tqs?: IDataObject;\n\turl?: string;\n--\n\t\t\tdata: {\n\t\t\t\tparameterValue: string | IDataObject | undefined;\n\t\t\t};\n--\n\t\tcredentials: ICredentialDataDecryptedObject,\n\t) => Promise<ID"
+  },
+  {
+   "step": 80,
+   "tool": "edit_file",
+   "args": {
+    "new": "import {\n\ttype IDataObject,\n\ttype IExecuteData,\n\ttype IExecuteResponsePromiseData,\n\ttype INode,",
+    "old": "import {\n\ttype IExecuteData,\n\ttype IExecuteResponsePromiseData,\n\ttype INode,",
+    "path": "packages/cli/src/__tests__/workflow-runner.test.ts"
+   },
+   "refused": false,
+   "result_head": "edited packages/cli/src/__tests__/workflow-runner.test.ts"
+  },
+  {
+   "step": 81,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd packages/cli && NODE_OPTIONS=\"--max-old-space-size=4096\" pnpm exec vitest run src/__tests__/workflow-runner.test.ts --maxWorkers=1 -t \"does not reset __dataChanged\" --reporter=verbose 2>&1 | tail -25"
+   },
+   "refused": false,
+   "result_head": "exit 0\n \u001b[2m\u001b[90m\u2193\u001b[39m\u001b[22m src/__tests__/workflow-runner.test.ts\u001b[2m > \u001b[22mneedsFullExecutionData\u001b[2m > \u001b[22mshould return true when mode is integrated\n \u001b[2m\u001b[90m\u2193\u001b[39m\u001b[22m src/__tests__/workflow-runner.test.ts\u001b[2m > \u001b[22mpre-persist context establishment\u001b[2m > \u001b[22mcalls establishExecutionConte"
+  },
+  {
+   "step": 82,
+   "tool": "edit_file",
+   "args": {
+    "new": "staticData: data.workflowData.staticData,",
+    "old": "staticData: undefined,",
+    "path": "packages/cli/src/workflow-runner.ts"
+   },
+   "refused": false,
+   "result_head": "edited packages/cli/src/workflow-runner.ts"
+  },
+  {
+   "step": 83,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg -n \"staticData:\" packages/cli/src/workflow-runner.ts"
+   },
+   "refused": false,
+   "result_head": "exit 0\n387:\t\t\t\tstaticData: data.workflowData.staticData,\n605:\t\t\t\tstaticData: data.workflowData.staticData,\n"
+  },
+  {
+   "step": 84,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd packages/cli && NODE_OPTIONS=\"--max-old-space-size=4096\" pnpm exec vitest run src/__tests__/workflow-runner.test.ts --maxWorkers=1 -t \"does not reset __dataChanged\" --reporter=verbose 2>&1 | tail -15"
+   },
+   "refused": false,
+   "result_head": "exit 0\n    \u001b[90m1819|\u001b[39m\n\n\u001b[31m\u001b[2m\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[1/1]\u23af\u001b[22m\u001b[39m\n\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[31m1 failed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[31m1 failed\u001b[39m\u001b[22m\u001b[2m | \u001b[22m\u001b[33m60 skipped\u001b[39m\u001b[90m (61)\u001b[39m\n\u001b[2m   Start at \u001b[22m 22:54:46\n\u001b[2m   Duration \u001b[22m 23.11s"
+  },
+  {
+   "step": 85,
+   "tool": "edit_file",
+   "args": {
+    "new": "staticData: undefined,",
+    "old": "staticData: data.workflowData.staticData,",
+    "path": "packages/cli/src/workflow-runner.ts"
+   },
+   "refused": false,
+   "result_head": "edit failed: old text found 2 times, need exactly 1"
+  },
+  {
+   "step": 86,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg -n \"staticData: data.workflowData.staticData,\" packages/cli/src/workflow-runner.ts"
+   },
+   "refused": false,
+   "result_head": "exit 0\n387:\t\t\t\tstaticData: data.workflowData.staticData,\n605:\t\t\t\tstaticData: data.workflowData.staticData,\n"
+  },
+  {
+   "step": 87,
+   "tool": "read_file",
+   "args": {
+    "end": 395,
+    "path": "packages/cli/src/workflow-runner.ts",
+    "start": 380
+   },
+   "refused": false,
+   "result_head": "380: \t\t\tconst contextWorkflow = new Workflow({\n381: \t\t\t\tid: data.workflowData.id,\n382: \t\t\t\tname: data.workflowData.name,\n383: \t\t\t\tnodes: data.workflowData.nodes,\n384: \t\t\t\tconnections: data.workflowData.connections,\n385: \t\t\t\tactive: data.workflowData.activeVersionId !== null,\n386: \t\t\t\tnodeTypes: this"
+  },
+  {
+   "step": 88,
+   "tool": "read_file",
+   "args": {
+    "end": 610,
+    "path": "packages/cli/src/workflow-runner.ts",
+    "start": 596
+   },
+   "refused": false,
+   "result_head": "596: \t\tconst workflow =\n597: \t\t\texecutionWorkflow ??\n598: \t\t\tnew Workflow({\n599: \t\t\t\tid: workflowId,\n600: \t\t\t\tname: data.workflowData.name,\n601: \t\t\t\tnodes: data.workflowData.nodes,\n602: \t\t\t\tconnections: data.workflowData.connections,\n603: \t\t\t\tactive: data.workflowData.activeVersionId !== null,\n604: "
+  },
+  {
+   "step": 89,
+   "tool": "edit_file",
+   "args": {
+    "new": "const contextWorkflow = new Workflow({\n\t\t\t\tid: data.workflowData.id,\n\t\t\t\tname: data.workflowData.name,\n\t\t\t\tnodes: data.workflowData.nodes,\n\t\t\t\tconnections: data.workflowData.connections,\n\t\t\t\tactive: data.workflowData.activeVersionId !== null,\n\t\t\t\tnodeTypes: this.nodeTypes,\n\t\t\t\t// Deliberately no sta",
+    "old": "const contextWorkflow = new Workflow({\n\t\t\t\tid: data.workflowData.id,\n\t\t\t\tname: data.workflowData.name,\n\t\t\t\tnodes: data.workflowData.nodes,\n\t\t\t\tconnections: data.workflowData.connections,\n\t\t\t\tactive: data.workflowData.activeVersionId !== null,\n\t\t\t\tnodeTypes: this.nodeTypes,\n\t\t\t\tstaticData: data.workf",
+    "path": "packages/cli/src/workflow-runner.ts"
+   },
+   "refused": false,
+   "result_head": "edited packages/cli/src/workflow-runner.ts"
+  },
+  {
+   "step": 90,
+   "tool": "read_file",
+   "args": {
+    "end": 610,
+    "path": "packages/cli/src/workflow-runner.ts",
+    "start": 596
+   },
+   "refused": false,
+   "result_head": "596: \t\tif (workflowTimeout > 0) {\n597: \t\t\tworkflowTimeout = Math.min(workflowTimeout, this.executionsConfig.maxTimeout);\n598: \t\t}\n599: \n600: \t\tconst pinData = this.resolvePinData(data);\n601: \t\tconst workflow =\n602: \t\t\texecutionWorkflow ??\n603: \t\t\tnew Workflow({\n604: \t\t\t\tid: workflowId,\n605: \t\t\t\tname"
+  },
+  {
+   "step": 91,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd packages/cli && NODE_OPTIONS=\"--max-old-space-size=4096\" pnpm exec vitest run src/__tests__/workflow-runner.test.ts --maxWorkers=1 --reporter=verbose 2>&1 | grep -E \"(PASS|FAIL|\u2713|\u00d7|passed|failed|Tests|Test Files)\""
+   },
+   "refused": false,
+   "result_head": "exit 0\n \u001b[32m\u2713\u001b[39m src/__tests__/workflow-runner.test.ts\u001b[2m > \u001b[22mprocessError\u001b[2m > \u001b[22mprocessError should return early in Bull stalled edge case\u001b[32m 41\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m\u2713\u001b[39m src/__tests__/workflow-runner.test.ts\u001b[2m > \u001b[22mprocessError\u001b[2m > \u001b[22mprocessError deletes the false-positiv"
+  },
+  {
+   "step": 92,
+   "tool": "shell",
+   "args": {
+    "cmd": "git diff"
+   },
+   "refused": false,
+   "result_head": "exit 0\ndiff --git a/packages/cli/src/__tests__/workflow-runner.test.ts b/packages/cli/src/__tests__/workflow-runner.test.ts\nindex 20dc2fe6..87d6ad6c 100644\n--- a/packages/cli/src/__tests__/workflow-runner.test.ts\n+++ b/packages/cli/src/__tests__/workflow-runner.test.ts\n@@ -18,6 +18,7 @@ import type "
+  }
+ ],
+ "diff": "diff --git a/packages/cli/src/__tests__/workflow-runner.test.ts b/packages/cli/src/__tests__/workflow-runner.test.ts\nindex 20dc2fe6..87d6ad6c 100644\n--- a/packages/cli/src/__tests__/workflow-runner.test.ts\n+++ b/packages/cli/src/__tests__/workflow-runner.test.ts\n@@ -18,6 +18,7 @@ import type { Response } from 'express';\n import { DirectedGraph, StorageConfig, WorkflowExecute } from 'n8n-core';\n import * as core from 'n8n-core';\n import {\n+\ttype IDataObject,\n \ttype IExecuteData,\n \ttype IExecuteResponsePromiseData,\n \ttype INode,\n@@ -1787,6 +1788,35 @@ describe('pre-persist context establishment', () => {\n \t\texpect(callOrder).toEqual(['activeExecutions.add']);\n \t});\n \n+\tit('does not reset __dataChanged when staticData was already modified by the webhook trigger', async () => {\n+\t\t// Regression test for issue #42077: `establishContextForPersistence`\n+\t\t// must not pass staticData to the Workflow constructor, because that\n+\t\t// re-wraps the shared object in ObservableObject.create() which resets\n+\t\t// __dataChanged to false, causing the changed static data to never be\n+\t\t// persisted on subsequent webhook deliveries.\n+\t\t//\n+\t\t// In a real webhook execution the trigger modifies the object before\n+\t\t// the runner is invoked; `establishContextForPersistence` should not\n+\t\t// touch that flag.\n+\t\tconst staticData: IDataObject & { __dataChanged?: boolean } = { remoteId: 'remote-1' };\n+\t\tObject.defineProperty(staticData, '__dataChanged', { value: true, writable: true });\n+\n+\t\tconst data = buildRunData(buildExecutionDataWithHeader());\n+\t\tdata.workflowData.staticData = staticData;\n+\n+\t\t// Make activeExecutions.add throw so we short-circuit before the\n+\t\t// full run and can inspect the staticData state.\n+\t\taddSpy.mockReset();\n+\t\taddSpy.mockRejectedValue(new Error('short-circuit'));\n+\t\t// Prevent the error path from calling establishContextForPersistence\n+\t\t// again (it won't because the throw is after context establishment).\n+\t\tvi.spyOn(runner, 'failExecution').mockResolvedValue();\n+\n+\t\tawait runner.run(data).catch(() => {});\n+\n+\t\texpect(staticData.__dataChanged).toBe(true);\n+\t});\n+\n \tdescribe('when establishExecutionContext throws', () => {\n \t\tconst lifecycleRunHook = vi.fn().mockResolvedValue(undefined);\n \t\tconst responseReject = vi.fn();\ndiff --git a/packages/cli/src/workflow-runner.ts b/packages/cli/src/workflow-runner.ts\nindex 1e0b9121..556b20da 100644\n--- a/packages/cli/src/workflow-runner.ts\n+++ b/packages/cli/src/workflow-runner.ts\n@@ -384,7 +384,12 @@ export class WorkflowRunner {\n \t\t\t\tconnections: data.workflowData.connections,\n \t\t\t\tactive: data.workflowData.activeVersionId !== null,\n \t\t\t\tnodeTypes: this.nodeTypes,\n-\t\t\t\tstaticData: data.workflowData.staticData,\n+\t\t\t\t// Deliberately no staticData: the webhook trigger may have\n+\t\t\t\t// already modified it and set __dataChanged=true on the shared\n+\t\t\t\t// object; passing it here would re-wrap it in\n+\t\t\t\t// ObservableObject.create() and reset __dataChanged to false,\n+\t\t\t\t// causing the changed static data to never be persisted.\n+\t\t\t\tstaticData: undefined,\n \t\t\t\tsettings: data.workflowData.settings ?? {},\n \t\t\t});\n \t\t\ttry {\n",
+ "isolation": {
+  "container": "per-run",
+  "mounts": [
+   "runs/n8n-42081/deepseek_deepseek-v4-flash-amd-on"
+  ],
+  "network": "jail (egress /llm only)",
+  "user": "1001",
+  "caps": "none",
+  "memory": "2g"
+ }
+}

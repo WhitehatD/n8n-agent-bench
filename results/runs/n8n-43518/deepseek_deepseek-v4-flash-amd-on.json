@@ -1,0 +1,414 @@
+{
+ "task": "n8n-43518",
+ "model": "deepseek/deepseek-v4-flash",
+ "agents_md": "on",
+ "steps": 40,
+ "seconds": 272,
+ "usage": {
+  "prompt": 1022631,
+  "completion": 20445,
+  "cost": 0.04302274000000001
+ },
+ "finish": {
+  "summary": "Bug: \"Clear Data\" in Weaviate Vector Store (node version >= 1.1) deleted the collection or tenant inside `populateVectorStore`, which is called once per batch. With multiple batches (more than `embeddingBatchSize` documents), only the last batch survived because the store was cleared before each batch.\n\nFix: Moved the clear logic from `populateVectorStore` to the `beforeInsert` hook, which the batch insert operation (`insertOperation.ts`) calls exactly once before the first batch. The `beforeInsert` hook is the designated API for one-time setup (clearing an index), per its JSDoc in `types.ts`.\n\nChanges:\n- `VectorStoreWeaviate.node.ts`: Added `beforeInsert` method with the clear-store logic; removed the same logic from `populateVectorStore`, which now only inserts documents.\n- `VectorStoreWeaviate.node.test.ts`: Added `beforeInsert` test block (delete collection, remove tenant, no-op when clear is off); updated `populateVectorStore` tests to verify it no longer clears data; updated the mock factory to also expose `beforeInsert`.",
+  "risks": "Low risk. The `beforeInsert` hook was already designed for this purpose and works identically for the v1 version path (non-batched). The Azure AI Search node already uses this same pattern. The change is well-tested with 27 passing tests.",
+  "tests_run": "All 27 tests in `packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts` \u2014 27 passed, 0 failed."
+ },
+ "trace": [
+  {
+   "step": 0,
+   "tool": "shell",
+   "args": {
+    "cmd": "find packages -name \"VectorStoreWeaviate*\" -type f | head -20"
+   },
+   "refused": false,
+   "result_head": "exit 0\npackages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts\npackages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.ts\n"
+  },
+  {
+   "step": 1,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.ts"
+   },
+   "refused": false,
+   "result_head": "1: import { Document } from '@langchain/core/documents';\n2: import type { Embeddings } from '@langchain/core/embeddings';\n3: import type { WeaviateLibArgs as OriginalWeaviateLibArgs } from '@langchain/weaviate';\n4: import { WeaviateStore } from '@langchain/weaviate';\n5: import type {\n6: \tIDataObject"
+  },
+  {
+   "step": 2,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.ts",
+    "start": 400
+   },
+   "refused": false,
+   "result_head": "400: \t\tif (options.clearStore) {"
+  },
+  {
+   "step": 3,
+   "tool": "read_file",
+   "args": {
+    "start": 395,
+    "path": "packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.ts"
+   },
+   "refused": false,
+   "result_head": "395: \t\t\ttenant: options.tenant ?? undefined,\n396: \t\t\ttextKey: options.textKey ? options.textKey : 'text',\n397: \t\t\tmetadataKeys: metadataKeys as string[] | undefined,\n398: \t\t};\n399: \n400: \t\tif (options.clearStore) {"
+  },
+  {
+   "step": 4,
+   "tool": "shell",
+   "args": {
+    "cmd": "sed -n '374,430p' packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.ts"
+   },
+   "refused": false,
+   "result_head": "exit 0\n\tasync populateVectorStore(context, embeddings, documents, itemIndex) {\n\t\tconst collectionName = context.getNodeParameter('weaviateCollection', itemIndex, '', {\n\t\t\textractValue: true,\n\t\t}) as string;\n\n\t\tconst options = context.getNodeParameter('options', itemIndex, {}) as {\n\t\t\ttenant?: string"
+  },
+  {
+   "step": 5,
+   "tool": "shell",
+   "args": {
+    "cmd": "find packages -path \"*/ai-utilities*\" -type f | head -20"
+   },
+   "refused": false,
+   "result_head": "exit 0\npackages/@n8n/ai-utilities/node_modules/.bin/oxlint\npackages/@n8n/ai-utilities/node_modules/.bin/vitest\npackages/@n8n/ai-utilities/node_modules/.bin/pdf-parse\npackages/@n8n/ai-utilities/node_modules/.bin/tsx\npackages/@n8n/ai-utilities/node_modules/.bin/vite\npackages/@n8n/ai-utilities/node_mod"
+  },
+  {
+   "step": 5,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg \"createVectorStoreNode\" packages --include \"*.ts\" -l | head -20"
+   },
+   "refused": false,
+   "result_head": "exit 0\nerror: Found argument '--include' which wasn't expected, or isn't valid in this context\n\tDid you mean --include-zero?\n\nUSAGE:\n    \n    rg [OPTIONS] PATTERN [PATH ...]\n    rg [OPTIONS] -e PATTERN ... [PATH ...]\n    rg [OPTIONS] -f PATTERNFILE ... [PATH ...]\n    rg [OPTIONS] --files [PATH ...]\n"
+  },
+  {
+   "step": 6,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg \"createVectorStoreNode\" packages/@n8n/ai-utilities/src -l"
+   },
+   "refused": false,
+   "result_head": "exit 0\npackages/@n8n/ai-utilities/src/index.ts\npackages/@n8n/ai-utilities/src/utils/vector-store/createVectorStoreNode/constants.ts\npackages/@n8n/ai-utilities/src/utils/vector-store/createVectorStoreNode/__snapshots__/createVectorStoreNode.test.ts.snap\npackages/@n8n/ai-utilities/src/utils/vector-sto"
+  },
+  {
+   "step": 7,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/@n8n/ai-utilities/src/utils/vector-store/createVectorStoreNode/createVectorStoreNode.ts"
+   },
+   "refused": false,
+   "result_head": "1: import type { Embeddings } from '@langchain/core/embeddings';\n2: import type { VectorStore } from '@langchain/core/vectorstores';\n3: import { NodeConnectionTypes, NodeOperationError } from 'n8n-workflow';\n4: import type {\n5: \tIExecuteFunctions,\n6: \tINodeExecutionData,\n7: \tINodeTypeDescription,\n8:"
+  },
+  {
+   "step": 8,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/@n8n/ai-utilities/src/utils/vector-store/createVectorStoreNode/operations.ts"
+   },
+   "refused": false,
+   "result_head": "tool error: [Errno 2] No such file or directory: 'packages/@n8n/ai-utilities/src/utils/vector-store/createVectorStoreNode/operations.ts'"
+  },
+  {
+   "step": 9,
+   "tool": "shell",
+   "args": {
+    "cmd": "find packages/@n8n/ai-utilities -name \"operations*\" -type f"
+   },
+   "refused": false,
+   "result_head": "exit 0\n"
+  },
+  {
+   "step": 10,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg \"handleInsertOperation\" packages/@n8n/ai-utilities -l"
+   },
+   "refused": false,
+   "result_head": "exit 0\npackages/@n8n/ai-utilities/src/utils/vector-store/createVectorStoreNode/README.md\npackages/@n8n/ai-utilities/src/utils/vector-store/createVectorStoreNode/createVectorStoreNode.ts\npackages/@n8n/ai-utilities/src/utils/vector-store/createVectorStoreNode/operations/insertOperation.ts\npackages/@n8"
+  },
+  {
+   "step": 11,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/@n8n/ai-utilities/src/utils/vector-store/createVectorStoreNode/operations/insertOperation.ts"
+   },
+   "refused": false,
+   "result_head": "1: import type { Document } from '@langchain/core/documents';\n2: import type { Embeddings } from '@langchain/core/embeddings';\n3: import type { VectorStore } from '@langchain/core/vectorstores';\n4: import { NodeConnectionTypes } from 'n8n-workflow';\n5: import type { IExecuteFunctions, INodeExecution"
+  },
+  {
+   "step": 12,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/@n8n/ai-utilities/src/utils/vector-store/createVectorStoreNode/types.ts"
+   },
+   "refused": false,
+   "result_head": "1: import type { Document } from '@langchain/core/documents';\n2: import type { Embeddings } from '@langchain/core/embeddings';\n3: import type { VectorStore } from '@langchain/core/vectorstores';\n4: import type {\n5: \tIExecuteFunctions,\n6: \tINodeCredentialDescription,\n7: \tINodeProperties,\n8: \tINodeTyp"
+  },
+  {
+   "step": 13,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts"
+   },
+   "refused": false,
+   "result_head": "1: import type { Document } from '@langchain/core/documents';\n2: import type { Embeddings } from '@langchain/core/embeddings';\n3: import { Document as LcDocument } from '@langchain/core/documents';\n4: import { WeaviateStore } from '@langchain/weaviate';\n5: import type { IDataObject, INode, ISupplyDa"
+  },
+  {
+   "step": 14,
+   "tool": "read_file",
+   "args": {
+    "start": 400,
+    "path": "packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts"
+   },
+   "refused": false,
+   "result_head": "400: \t});"
+  },
+  {
+   "step": 15,
+   "tool": "shell",
+   "args": {
+    "cmd": "wc -l packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts"
+   },
+   "refused": false,
+   "result_head": "exit 0\n461 packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts\n"
+  },
+  {
+   "step": 16,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg \"beforeInsert\" packages --include \"*.ts\" -l | grep -v node_modules | grep -v __tests__"
+   },
+   "refused": false,
+   "result_head": "exit 1\nerror: Found argument '--include' which wasn't expected, or isn't valid in this context\n\tDid you mean --include-zero?\n\nUSAGE:\n    \n    rg [OPTIONS] PATTERN [PATH ...]\n    rg [OPTIONS] -e PATTERN ... [PATH ...]\n    rg [OPTIONS] -f PATTERNFILE ... [PATH ...]\n    rg [OPTIONS] --files [PATH ...]\n"
+  },
+  {
+   "step": 17,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg -l \"beforeInsert\" packages/ | grep -v node_modules"
+   },
+   "refused": false,
+   "result_head": "exit 0\npackages/@n8n/db/src/subscribers/workflow-entity-subscriber.ts\npackages/@n8n/db/src/subscribers/__tests__/workflow-entity-subscriber.test.ts\npackages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreAzureAISearch/VectorStoreAzureAISearch.node.ts\npackages/@n8n/nodes-langchain/nodes/vector_st"
+  },
+  {
+   "step": 18,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg -A 10 \"beforeInsert\" packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreAzureAISearch/VectorStoreAzureAISearch.node.ts | head -40"
+   },
+   "refused": false,
+   "result_head": "exit 0\n\tasync beforeInsert(context, _embeddings, itemIndex) {\n\t\tawait clearAzureSearchIndex(context, itemIndex);\n\t},\n\tasync getVectorStoreClient(context, _filter, embeddings, itemIndex) {\n\t\tconst vectorStore = await getAzureAISearchClient(context, embeddings, itemIndex);\n\n\t\t// Apply OData filter to "
+  },
+  {
+   "step": 19,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg \"beforeInsert\" packages/@n8n/ai-utilities/src/utils/vector-store/createVectorStoreNode/createVectorStoreNode.ts"
+   },
+   "refused": false,
+   "result_head": "exit 1\n"
+  },
+  {
+   "step": 20,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg -n \"beforeInsert\" packages/@n8n/ai-utilities/src/"
+   },
+   "refused": false,
+   "result_head": "exit 0\npackages/@n8n/ai-utilities/src/utils/vector-store/createVectorStoreNode/types.ts:56:\tbeforeInsert?: (\npackages/@n8n/ai-utilities/src/utils/vector-store/createVectorStoreNode/operations/__tests__/insertOperation.test.ts:178:\tit('should call beforeInsert once before the batches', async () => {\n"
+  },
+  {
+   "step": 21,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg -B 2 -A 10 \"VectorStoreNodeConstructorArgs\" packages/@n8n/ai-utilities/src/utils/vector-store/createVectorStoreNode/createVectorStoreNode.ts | head -30"
+   },
+   "refused": false,
+   "result_head": "exit 0\n\thandleRetrieveAsToolExecuteOperation,\n} from './operations';\nimport type { NodeOperationMode, VectorStoreNodeConstructorArgs } from './types';\n// Import utility functions\nimport {\n\ttransformDescriptionForOperationMode,\n\tgetOperationModeOptions,\n\tnormalizeVectorStoreError,\n} from './utils';\ni"
+  },
+  {
+   "step": 22,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.ts",
+    "start": 288
+   },
+   "refused": false,
+   "result_head": "288: export class VectorStoreWeaviate extends createVectorStoreNode<ExtendedWeaviateVectorStore>({\n289: \tmeta: {\n290: \t\tdisplayName: 'Weaviate Vector Store',\n291: \t\tname: 'vectorStoreWeaviate',\n292: \t\tdescription: 'Work with your data in a Weaviate Cluster',\n293: \t\ticon: 'file:weaviate.svg',\n294: \t\t"
+  },
+  {
+   "step": 23,
+   "tool": "read_file",
+   "args": {
+    "start": 400,
+    "path": "packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.ts"
+   },
+   "refused": false,
+   "result_head": "400: \t\tif (options.clearStore) {"
+  },
+  {
+   "step": 24,
+   "tool": "shell",
+   "args": {
+    "cmd": "sed -n '400,420p' packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.ts"
+   },
+   "refused": false,
+   "result_head": "exit 0\n\t\tif (options.clearStore) {\n\t\t\tif (!options.tenant) {\n\t\t\t\tawait client.collections.delete(collectionName);\n\t\t\t} else {\n\t\t\t\tconst collection = client.collections.get(collectionName);\n\t\t\t\tawait collection.tenants.remove([{ name: options.tenant }]);\n\t\t\t}\n\t\t}\n\n\t\tawait WeaviateStore.fromDocuments("
+  },
+  {
+   "step": 25,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg -n \"populateVectorStore\" packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts"
+   },
+   "refused": false,
+   "result_head": "exit 0\n39:\t\tpopulateVectorStore: (...args: unknown[]) => unknown;\n43:\t\t\tpopulateVectorStore = config.populateVectorStore;\n60:\tpopulateVectorStore: (\n173:\t\tawait node.populateVectorStore(\n402:\tdescribe('populateVectorStore', () => {\n415:\t\t\tawait node.populateVectorStore(createContext(options), embedd"
+  },
+  {
+   "step": 26,
+   "tool": "read_file",
+   "args": {
+    "start": 402,
+    "path": "packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts"
+   },
+   "refused": false,
+   "result_head": ""
+  },
+  {
+   "step": 27,
+   "tool": "read_file",
+   "args": {
+    "end": 461,
+    "path": "packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts",
+    "start": 400
+   },
+   "refused": false,
+   "result_head": "400: \t});\n401: \n402: \tdescribe('populateVectorStore', () => {\n403: \t\tconst deleteCollection = vi.fn();\n404: \t\tconst removeTenants = vi.fn();\n405: \t\tconst client = mock<WeaviateClient>({\n406: \t\t\tcollections: mock<WeaviateClient['collections']>({\n407: \t\t\t\tdelete: deleteCollection,\n408: \t\t\t\tget: vi.fn("
+  },
+  {
+   "step": 28,
+   "tool": "edit_file",
+   "args": {
+    "path": "packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.ts",
+    "old": "\tasync populateVectorStore(context, embeddings, documents, itemIndex) {\n\t\tconst collectionName = context.getNodeParameter('weaviateCollection', itemIndex, '', {\n\t\t\textractValue: true,\n\t\t}) as string;\n\n\t\tconst options = context.getNodeParameter('options', itemIndex, {}) as {\n\t\t\ttenant?: string;\n\t\t\tte",
+    "new": "\tasync beforeInsert(context, _embeddings, itemIndex) {\n\t\tconst collectionName = context.getNodeParameter('weaviateCollection', itemIndex, '', {\n\t\t\textractValue: true,\n\t\t}) as string;\n\n\t\tconst options = context.getNodeParameter('options', itemIndex, {}) as {\n\t\t\ttenant?: string;\n\t\t\tclearStore?: boolea"
+   },
+   "refused": false,
+   "result_head": "edited packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.ts"
+  },
+  {
+   "step": 29,
+   "tool": "edit_file",
+   "args": {
+    "path": "packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts",
+    "old": "type TestNode = {\n\tgetVectorStoreClient: (\n\t\tcontext: ISupplyDataFunctions,\n\t\tfilter: IDataObject | undefined,\n\t\tembeddings: Embeddings,\n\t\titemIndex: number,\n\t) => Promise<unknown>;\n\tpopulateVectorStore: (\n\t\tcontext: ISupplyDataFunctions,\n\t\tembeddings: Embeddings,\n\t\tdocuments: Document[],\n\t\titemInde",
+    "new": "type TestNode = {\n\tgetVectorStoreClient: (\n\t\tcontext: ISupplyDataFunctions,\n\t\tfilter: IDataObject | undefined,\n\t\tembeddings: Embeddings,\n\t\titemIndex: number,\n\t) => Promise<unknown>;\n\tbeforeInsert: (\n\t\tcontext: ISupplyDataFunctions,\n\t\tembeddings: Embeddings,\n\t\titemIndex: number,\n\t) => Promise<void>;\n"
+   },
+   "refused": false,
+   "result_head": "edited packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts"
+  },
+  {
+   "step": 30,
+   "tool": "edit_file",
+   "args": {
+    "path": "packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts",
+    "old": "vi.mock('@n8n/ai-utilities', () => ({\n\tcreateVectorStoreNode: (config: {\n\t\tgetVectorStoreClient: (...args: unknown[]) => unknown;\n\t\tpopulateVectorStore: (...args: unknown[]) => unknown;\n\t}) =>\n\t\tclass BaseNode {\n\t\t\tgetVectorStoreClient = config.getVectorStoreClient;\n\t\t\tpopulateVectorStore = config.p",
+    "new": "vi.mock('@n8n/ai-utilities', () => ({\n\tcreateVectorStoreNode: (config: {\n\t\tbeforeInsert?: (...args: unknown[]) => unknown;\n\t\tgetVectorStoreClient: (...args: unknown[]) => unknown;\n\t\tpopulateVectorStore: (...args: unknown[]) => unknown;\n\t}) =>\n\t\tclass BaseNode {\n\t\t\tbeforeInsert = config.beforeInsert;"
+   },
+   "refused": false,
+   "result_head": "edited packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts"
+  },
+  {
+   "step": 31,
+   "tool": "edit_file",
+   "args": {
+    "path": "packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts",
+    "old": "\t\tit('should delete the collection before the insert when Clear Data is on', async () => {\n\t\t\tawait insert({ clearStore: true });\n\n\t\t\texpect(deleteCollection).toHaveBeenCalledWith('TestCollection');\n\t\t\texpect(removeTenants).not.toHaveBeenCalled();\n\t\t});\n\n\t\tit('should remove only the tenant when Clea",
+    "new": "\t\tit('should not clear data before every batch', async () => {\n\t\t\t// populateVectorStore is called per batch; clearing must happen in beforeInsert\n\t\t\tawait insert({ clearStore: true });\n\n\t\t\texpect(deleteCollection).not.toHaveBeenCalled();\n\t\t\texpect(removeTenants).not.toHaveBeenCalled();\n\t\t});"
+   },
+   "refused": false,
+   "result_head": "edited packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts"
+  },
+  {
+   "step": 32,
+   "tool": "read_file",
+   "args": {
+    "end": 465,
+    "path": "packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts",
+    "start": 398
+   },
+   "refused": false,
+   "result_head": "398: \t\t\tstore.hybridSearch.mockResolvedValue([\n399: \t\t\t\tnew LcDocument({ pageContent: 'A cat', metadata: { score: 'high' } }),\n400: \t\t\t]);\n401: \t\t\tconst vectorStore = await getStore(hybridOptions);\n402: \n403: \t\t\tawait expect(vectorStore.similaritySearchVectorWithScore([0.1], 3)).rejects.toThrow(\n404"
+  },
+  {
+   "step": 33,
+   "tool": "edit_file",
+   "args": {
+    "path": "packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts",
+    "old": "\tdescribe('populateVectorStore', () => {\n\t\tconst deleteCollection = vi.fn();\n\t\tconst removeTenants = vi.fn();\n\t\tconst client = mock<WeaviateClient>({\n\t\t\tcollections: mock<WeaviateClient['collections']>({\n\t\t\t\tdelete: deleteCollection,\n\t\t\t\tget: vi.fn().mockReturnValue({ tenants: { remove: removeTenant",
+    "new": "\tdescribe('beforeInsert', () => {\n\t\tconst deleteCollection = vi.fn();\n\t\tconst removeTenants = vi.fn();\n\t\tconst client = mock<WeaviateClient>({\n\t\t\tcollections: mock<WeaviateClient['collections']>({\n\t\t\t\tdelete: deleteCollection,\n\t\t\t\tget: vi.fn().mockReturnValue({ tenants: { remove: removeTenants } }),"
+   },
+   "refused": false,
+   "result_head": "edited packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts"
+  },
+  {
+   "step": 34,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd packages/@n8n/nodes-langchain && pnpm exec vitest run nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts 2>&1"
+   },
+   "refused": false,
+   "result_head": "exit 0\n\u001b[33m(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:\n  - ESM syntax in a file loaded as CommonJS (vite.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest"
+  },
+  {
+   "step": 35,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.ts",
+    "end": 373
+   },
+   "refused": false,
+   "result_head": "1: import { Document } from '@langchain/core/documents';\n2: import type { Embeddings } from '@langchain/core/embeddings';\n3: import type { WeaviateLibArgs as OriginalWeaviateLibArgs } from '@langchain/weaviate';\n4: import { WeaviateStore } from '@langchain/weaviate';\n5: import type {\n6: \tIDataObject"
+  },
+  {
+   "step": 36,
+   "tool": "read_file",
+   "args": {
+    "start": 373,
+    "path": "packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.ts"
+   },
+   "refused": false,
+   "result_head": "373: \t},\n374: \tasync beforeInsert(context, _embeddings, itemIndex) {\n375: \t\tconst collectionName = context.getNodeParameter('weaviateCollection', itemIndex, '', {\n376: \t\t\textractValue: true,\n377: \t\t}) as string;\n378: \n379: \t\tconst options = context.getNodeParameter('options', itemIndex, {}) as {\n380"
+  },
+  {
+   "step": 37,
+   "tool": "read_file",
+   "args": {
+    "start": 400,
+    "end": 430,
+    "path": "packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.ts"
+   },
+   "refused": false,
+   "result_head": "400: \t\t}) as string;\n401: \n402: \t\tconst options = context.getNodeParameter('options', itemIndex, {}) as {\n403: \t\t\ttenant?: string;\n404: \t\t\ttextKey?: string;\n405: \t\t\tmetadataKeys?: string;\n406: \t\t};\n407: \n408: \t\tconst credentials = await context.getCredentials('weaviateApi');\n409: \n410: \t\tconst metad"
+  },
+  {
+   "step": 38,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd packages/@n8n/nodes-langchain && pnpm exec vitest run nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts 2>&1"
+   },
+   "refused": false,
+   "result_head": "exit 0\n\u001b[33m(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:\n  - ESM syntax in a file loaded as CommonJS (vite.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest"
+  }
+ ],
+ "diff": "diff --git a/packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts b/packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts\nindex 760dfd4d..5aec32ce 100644\n--- a/packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts\n+++ b/packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts\n@@ -35,10 +35,12 @@ vi.mock('@langchain/weaviate', () => {\n \n vi.mock('@n8n/ai-utilities', () => ({\n \tcreateVectorStoreNode: (config: {\n+\t\tbeforeInsert?: (...args: unknown[]) => unknown;\n \t\tgetVectorStoreClient: (...args: unknown[]) => unknown;\n \t\tpopulateVectorStore: (...args: unknown[]) => unknown;\n \t}) =>\n \t\tclass BaseNode {\n+\t\t\tbeforeInsert = config.beforeInsert;\n \t\t\tgetVectorStoreClient = config.getVectorStoreClient;\n \t\t\tpopulateVectorStore = config.populateVectorStore;\n \t\t},\n@@ -57,6 +59,11 @@ type TestNode = {\n \t\tembeddings: Embeddings,\n \t\titemIndex: number,\n \t) => Promise<unknown>;\n+\tbeforeInsert: (\n+\t\tcontext: ISupplyDataFunctions,\n+\t\tembeddings: Embeddings,\n+\t\titemIndex: number,\n+\t) => Promise<void>;\n \tpopulateVectorStore: (\n \t\tcontext: ISupplyDataFunctions,\n \t\tembeddings: Embeddings,\n@@ -399,6 +406,48 @@ describe('VectorStoreWeaviate.node', () => {\n \t\t});\n \t});\n \n+\tdescribe('beforeInsert', () => {\n+\t\tconst deleteCollection = vi.fn();\n+\t\tconst removeTenants = vi.fn();\n+\t\tconst client = mock<WeaviateClient>({\n+\t\t\tcollections: mock<WeaviateClient['collections']>({\n+\t\t\t\tdelete: deleteCollection,\n+\t\t\t\tget: vi.fn().mockReturnValue({ tenants: { remove: removeTenants } }),\n+\t\t\t}),\n+\t\t});\n+\t\tconst embeddings = mock<Embeddings>();\n+\n+\t\tconst clear = async (options: Record<string, unknown>) =>\n+\t\t\tawait node.beforeInsert(createContext(options), embeddings, 0);\n+\n+\t\tbeforeEach(() => {\n+\t\t\tconnectSpy.mockResolvedValue(client);\n+\t\t\tdeleteCollection.mockClear();\n+\t\t\tremoveTenants.mockClear();\n+\t\t});\n+\n+\t\tit('should delete the collection before the insert when Clear Data is on', async () => {\n+\t\t\tawait clear({ clearStore: true });\n+\n+\t\t\texpect(deleteCollection).toHaveBeenCalledWith('TestCollection');\n+\t\t\texpect(removeTenants).not.toHaveBeenCalled();\n+\t\t});\n+\n+\t\tit('should remove only the tenant when Clear Data is on and a tenant is set', async () => {\n+\t\t\tawait clear({ clearStore: true, tenant: 'tenantA' });\n+\n+\t\t\texpect(removeTenants).toHaveBeenCalledWith([{ name: 'tenantA' }]);\n+\t\t\texpect(deleteCollection).not.toHaveBeenCalled();\n+\t\t});\n+\n+\t\tit('should not clear when Clear Data is off', async () => {\n+\t\t\tawait clear({});\n+\n+\t\t\texpect(deleteCollection).not.toHaveBeenCalled();\n+\t\t\texpect(removeTenants).not.toHaveBeenCalled();\n+\t\t});\n+\t});\n+\n \tdescribe('populateVectorStore', () => {\n \t\tconst deleteCollection = vi.fn();\n \t\tconst removeTenants = vi.fn();\n@@ -444,18 +493,12 @@ describe('VectorStoreWeaviate.node', () => {\n \t\t\t);\n \t\t});\n \n-\t\tit('should delete the collection before the insert when Clear Data is on', async () => {\n+\t\tit('should not clear data before every batch', async () => {\n+\t\t\t// populateVectorStore is called per batch; clearing must happen in beforeInsert\n \t\t\tawait insert({ clearStore: true });\n \n-\t\t\texpect(deleteCollection).toHaveBeenCalledWith('TestCollection');\n-\t\t\texpect(removeTenants).not.toHaveBeenCalled();\n-\t\t});\n-\n-\t\tit('should remove only the tenant when Clear Data is on and a tenant is set', async () => {\n-\t\t\tawait insert({ clearStore: true, tenant: 'tenantA' });\n-\n-\t\t\texpect(removeTenants).toHaveBeenCalledWith([{ name: 'tenantA' }]);\n \t\t\texpect(deleteCollection).not.toHaveBeenCalled();\n+\t\t\texpect(removeTenants).not.toHaveBeenCalled();\n \t\t});\n \t});\n });\ndiff --git a/packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.ts b/packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.ts\nindex ab6b1265..c9862d21 100644\n--- a/packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.ts\n+++ b/packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.ts\n@@ -371,6 +371,29 @@ export class VectorStoreWeaviate extends createVectorStoreNode<ExtendedWeaviateV\n \t\t\tvalidFilter,\n \t\t);\n \t},\n+\tasync beforeInsert(context, _embeddings, itemIndex) {\n+\t\tconst collectionName = context.getNodeParameter('weaviateCollection', itemIndex, '', {\n+\t\t\textractValue: true,\n+\t\t}) as string;\n+\n+\t\tconst options = context.getNodeParameter('options', itemIndex, {}) as {\n+\t\t\ttenant?: string;\n+\t\t\tclearStore?: boolean;\n+\t\t};\n+\n+\t\tif (options.clearStore) {\n+\t\t\tconst credentials = await context.getCredentials('weaviateApi');\n+\t\t\tconst client = await createWeaviateClient(credentials as WeaviateCredential);\n+\n+\t\t\tif (!options.tenant) {\n+\t\t\t\tawait client.collections.delete(collectionName);\n+\t\t\t} else {\n+\t\t\t\tconst collection = client.collections.get(collectionName);\n+\t\t\t\tawait collection.tenants.remove([{ name: options.tenant }]);\n+\t\t\t}\n+\t\t}\n+\t},\n+\n \tasync populateVectorStore(context, embeddings, documents, itemIndex) {\n \t\tconst collectionName = context.getNodeParameter('weaviateCollection', itemIndex, '', {\n \t\t\textractValue: true,\n@@ -379,7 +402,6 @@ export class VectorStoreWeaviate extends createVectorStoreNode<ExtendedWeaviateV\n \t\tconst options = context.getNodeParameter('options', itemIndex, {}) as {\n \t\t\ttenant?: string;\n \t\t\ttextKey?: string;\n-\t\t\tclearStore?: boolean;\n \t\t\tmetadataKeys?: string;\n \t\t};\n \n@@ -397,15 +419,6 @@ export class VectorStoreWeaviate extends createVectorStoreNode<ExtendedWeaviateV\n \t\t\tmetadataKeys: metadataKeys as string[] | undefined,\n \t\t};\n \n-\t\tif (options.clearStore) {\n-\t\t\tif (!options.tenant) {\n-\t\t\t\tawait client.collections.delete(collectionName);\n-\t\t\t} else {\n-\t\t\t\tconst collection = client.collections.get(collectionName);\n-\t\t\t\tawait collection.tenants.remove([{ name: options.tenant }]);\n-\t\t\t}\n-\t\t}\n-\n \t\tawait WeaviateStore.fromDocuments(documents, embeddings, config);\n \t},\n }) {}\n",
+ "isolation": {
+  "container": "per-run",
+  "mounts": [
+   "runs/n8n-43518/deepseek_deepseek-v4-flash-amd-on"
+  ],
+  "network": "jail (egress /llm only)",
+  "user": "1001",
+  "caps": "none",
+  "memory": "2g"
+ }
+}

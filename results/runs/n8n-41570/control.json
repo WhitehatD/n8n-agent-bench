@@ -1,0 +1,10 @@
+{
+ "task": "n8n-41570",
+ "base_fails": true,
+ "failing": [
+  "should forward console.log(null) to the editor in manual mode without warnings",
+  "should forward console.log(undefined) to the editor in manual mode without warnings",
+  "should forward console.log(\"x\", null) to the editor in manual mode without warnings"
+ ],
+ "tail": "ngine/node-execution-context/__tests__/execute-context.test.ts:289:26\n    287|\n    288|     expect.soft(warnSpy).not.toHaveBeenCalled();\n    289|     expect(sendDataToUI).toHaveBeenCalledTimes(1);\n       |                          ^\n    290|     expect(sendDataToUI).toHaveBeenCalledWith('sendConsoleMessage', {\n    291|      source: '[Node: \"Code\"]',\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[2/6]\u23af\n\n FAIL  src/execution-engine/node-execution-context/__tests__/execute-context.test.ts > ExecuteContext > logNodeOutput > should forward console.log(undefined) to the editor in manual mode without warnings\nAssertionError: expected \"warn\" to not be called at all, but actually been called 1 times\n\nReceived:\n\n  1st warn call:\n\n    Array [\n      \"There was a problem sending message to UI: Cannot read properties of undefined (reading 'isLuxonDateTime')\",\n    ]\n\n\nNumber of calls: 1\n\n \u276f src/execution-engine/node-execution-context/__tests__/execute-context.test.ts:288:30\n    286|     context.logNodeOutput(...args);\n    287|\n    288|     expect.soft(warnSpy).not.toHaveBeenCalled();\n       |                              ^\n    289|     expect(sendDataToUI).toHaveBeenCalledTimes(1);\n    290|     expect(sendDataToUI).toHaveBeenCalledWith('sendConsoleMessage', {\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[3/6]\u23af\n\n\n Test Files  1 failed (1)\n      Tests  3 failed | 87 passed (90)\n   Start at  22:39:04\n   Duration  2.28s (import 52%, transform 45%, tests 3%)\n\nJUNIT report written to /work/runs/n8n-41570/control/packages/core/junit.xml\n"
+}

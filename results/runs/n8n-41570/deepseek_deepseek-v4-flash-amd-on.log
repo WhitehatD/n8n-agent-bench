@@ -1,0 +1,2 @@
+{"task": "n8n-41570", "held_out_tests_pass": false, "cost_usd": 0.0309, "steps": 36} {"deny_write_hits": [], "human_review_path_hits": [], "gate_model": "morph/reflex", "gate_p_needs_human": 3.0170500432908895e-05, "needs_human": false, "refused_tool_calls": 0} {"src_file_overlap": 1.0, "agent_lines": 33, "gold_lines": 42}
+n8n-41570 deepseek_deepseek-v4-flash-amd-on: done in 80s

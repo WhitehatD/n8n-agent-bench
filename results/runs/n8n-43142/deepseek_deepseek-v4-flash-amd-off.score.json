@@ -1,0 +1,37 @@
+{
+ "task": "n8n-43142",
+ "model": "deepseek/deepseek-v4-flash",
+ "agents_md": "off",
+ "held_out_tests_pass": true,
+ "policy": {
+  "deny_write_hits": [],
+  "human_review_path_hits": [],
+  "gate_model": "morph/reflex",
+  "gate_p_needs_human": 0.0006619310749906295,
+  "needs_human": false,
+  "refused_tool_calls": 0
+ },
+ "closeness": {
+  "agent_files": [
+   "packages/cli/src/scaling/__tests__/scaling.service.test.ts",
+   "packages/cli/src/scaling/scaling.service.ts"
+  ],
+  "gold_src_files": [
+   "packages/cli/src/scaling/job-outcome-tracker.ts",
+   "packages/cli/src/scaling/scaling.service.ts"
+  ],
+  "src_file_overlap": 0.5,
+  "extra_files": [],
+  "agent_lines": 201,
+  "gold_lines": 188
+ },
+ "cost_usd": 0.0211,
+ "steps": 31,
+ "seconds": 242,
+ "finished": true,
+ "held_out": {
+  "passed": true,
+  "seconds": 12,
+  "tail": "(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:\n  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest package.json\n  - ESM syntax in a file loaded as CommonJS (vitest.config.base.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest package.json\n  - ESM syntax in a file loaded as CommonJS (vitest.workspace-externals.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest package.json\nSet `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.\n\n RUN  v5.0.1 /work/runs/n8n-43142/deepseek_deepseek-v4-flash-amd-off/packages/cli\n\n(node:30171) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 connection-recovered listeners added to [RedisClientService]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit\n(Use `node --trace-warnings ...` to show where the warning was created)\n \u2713 src/scaling/__tests__/scaling.service.test.ts (85 tests) 329ms\n\n Test Files  1 passed (1)\n      Tests  85 passed (85)\n   Start at  00:15:29\n   Duration  10.67s (transform 80%, import 10%, setup 6%, tests 4%)\n\n  Transform  transforming modules took 7.12s \u00b7 80% of tracked time, re-done on every run\n             persist transforms across runs with fsModuleCache: true\n             on CI this only helps when the cache directory is persisted between runs\n             learn more: https://vitest.dev/guide/improving-performance#caching-between-reruns\n\nJUNIT report written to /work/runs/n8n-43142/deepseek_deepseek-v4-flash-amd-off/packages/cli/junit.xml\n"
+ }
+}

@@ -1,0 +1,13 @@
+Traceback (most recent call last):
+  File "D:\playground\n8n-agent-bench\harness\run_one.py", line 30, in <module>
+    p = subprocess.run([
+        ^^^^^^^^^^^^^^^^
+  File "D:\anaconda\Lib\subprocess.py", line 550, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\anaconda\Lib\subprocess.py", line 1209, in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\anaconda\Lib\subprocess.py", line 1630, in _communicate
+    raise TimeoutExpired(self.args, orig_timeout)
+subprocess.TimeoutExpired: Command '['docker', 'run', '--rm', '--name', 'agent-n8n-42569-deepseek_deepseek-v4-flash-amd-off', '--network', 'n8n-agent-bench_jail', '--user', '1001', '--cap-drop', 'ALL', '--security-opt', 'no-new-privileges', '--memory', '2g', '--memory-swap', '2g', '--cpus', '4', '--pids-limit', '1024', '--mount', 'type=volume,src=n8n-agent-bench_work,dst=/work/runs/n8n-42569/deepseek_deepseek-v4-flash-amd-off,volume-subpath=runs/n8n-42569/deepseek_deepseek-v4-flash-amd-off', '--mount', 'type=volume,src=n8n-agent-bench_work,dst=/bench,volume-subpath=runs/n8n-42569/deepseek_deepseek-v4-flash-amd-off.bench', '-w', '/work/runs/n8n-42569/deepseek_deepseek-v4-flash-amd-off', 'n8n-agent-bench-sandbox', 'python3', '/bench/agent.py', '/work/runs/n8n-42569/deepseek_deepseek-v4-flash-amd-off', '/bench/task.json', '/bench/run.json', '--model', 'deepseek/deepseek-v4-flash', '--agents-md', 'off', '--policy', '/bench/policy.json', '--run-id', 'n8n-42569/deepseek_deepseek-v4-flash-amd-off']' timed out after 3000 seconds

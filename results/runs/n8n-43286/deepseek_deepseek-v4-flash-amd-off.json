@@ -1,0 +1,203 @@
+{
+ "task": "n8n-43286",
+ "model": "deepseek/deepseek-v4-flash",
+ "agents_md": "off",
+ "steps": 18,
+ "seconds": 110,
+ "usage": {
+  "prompt": 84596,
+  "completion": 6427,
+  "cost": 0.0071690600000000005
+ },
+ "finish": {
+  "summary": "**Root cause**: In `packages/workflow/src/tool-helpers.ts`, the `nodeNameToToolName` function truncates a tool name to 64 characters and then runs `toolName.replace(/[_-]+$/, '')` to strip trailing separators left by truncation. When the first 64 characters consist entirely of underscores or hyphens (e.g. `'-'.repeat(64) + 'Suffix'`), the regex removes the entire string, returning `''`.\n\n**Fix**: Before applying the trailing-separator removal, save the stripped result and only overwrite `toolName` if the stripped result is non-empty. If stripping would produce an empty string, the original truncated name (all separators) is kept, guaranteeing a non-empty result.\n\n**Files changed**:\n- `packages/workflow/src/tool-helpers.ts` \u2013 added a guard `if (stripped.length > 0) { toolName = stripped; }` so the entire name is never wiped.\n- `packages/workflow/test/tool-helpers.test.ts` \u2013 added 3 new tests covering all-hyphen and all-underscore truncated names, plus a pure-separator long string.\n\nAll 25 tests pass (22 existing + 3 new).",
+  "risks": "Very low. The change only guards the existing regex replacement, preserving existing behavior for all normal cases (where the stripped string is non-empty). The only change is that names composed entirely of separators will keep their full 64-char separator string instead of becoming empty \u2013 still a valid tool name (contains only `[a-zA-Z0-9_-]`).",
+  "tests_run": "`cd packages/workflow && pnpm exec vitest run test/tool-helpers.test.ts` \u2013 all 25 tests pass."
+ },
+ "trace": [
+  {
+   "step": 0,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/workflow/src/tool-helpers.ts"
+   },
+   "refused": false,
+   "result_head": "1: import type { INode } from './interfaces';\n2: \n3: const MAX_TOOL_NAME_LENGTH = 64;\n4: \n5: /**\n6:  * Converts a node name to a valid tool name by replacing special characters with underscores,\n7:  * collapsing consecutive underscores into a single one, and truncating to 64 characters\n8:  * (which "
+  },
+  {
+   "step": 0,
+   "tool": "shell",
+   "args": {
+    "cmd": "find packages/workflow -name \"*.test.*\" | xargs grep -l \"nodeNameToToolName\" 2>/dev/null"
+   },
+   "refused": false,
+   "result_head": "exit 0\npackages/workflow/test/tool-helpers.test.ts\n"
+  },
+  {
+   "step": 1,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/workflow/test/tool-helpers.test.ts"
+   },
+   "refused": false,
+   "result_head": "1: import type { INode } from '../src/interfaces';\n2: import { nodeNameToToolName } from '../src/tool-helpers';\n3: \n4: describe('nodeNameToToolName', () => {\n5: \tconst getNodeWithName = (name: string): INode => ({\n6: \t\tid: 'test-node',\n7: \t\tname,\n8: \t\ttype: 'test',\n9: \t\ttypeVersion: 1,\n10: \t\tpositio"
+  },
+  {
+   "step": 2,
+   "tool": "edit_file",
+   "args": {
+    "path": "packages/workflow/src/tool-helpers.ts",
+    "old": "if (toolName.length > MAX_TOOL_NAME_LENGTH) {\n\t\ttoolName = toolName.slice(0, MAX_TOOL_NAME_LENGTH);\n\t\t// Remove trailing underscore or hyphen left from truncation\n\t\ttoolName = toolName.replace(/[_-]+$/, '');\n\t}",
+    "new": "if (toolName.length > MAX_TOOL_NAME_LENGTH) {\n\t\ttoolName = toolName.slice(0, MAX_TOOL_NAME_LENGTH);\n\t\t// Remove trailing underscore or hyphen left from truncation,\n\t\t// but never remove the entire name\n\t\tconst stripped = toolName.replace(/[_-]+$/, '');\n\t\tif (stripped.length > 0) {\n\t\t\ttoolName = stri"
+   },
+   "refused": false,
+   "result_head": "edited packages/workflow/src/tool-helpers.ts"
+  },
+  {
+   "step": 3,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd packages/workflow && cat package.json | grep -E '\"test|\"jest|\"vitest\"'"
+   },
+   "refused": false,
+   "result_head": "exit 0\n    \"test\": \"vitest run\",\n    \"test:unit\": \"vitest run\",\n    \"test:changed\": \"janitor test-scoped\",\n    \"test:dev\": \"vitest --watch\",\n    \"vitest\": \"catalog:\",\n"
+  },
+  {
+   "step": 4,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd packages/workflow && pnpm exec vitest run test/tool-helpers.test.ts 2>&1"
+   },
+   "refused": false,
+   "result_head": "exit 0\n\u001b[33m(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:\n  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the close"
+  },
+  {
+   "step": 5,
+   "tool": "edit_file",
+   "args": {
+    "path": "packages/workflow/src/tool-helpers.ts",
+    "old": "if (toolName.length > MAX_TOOL_NAME_LENGTH) {\n\t\ttoolName = toolName.slice(0, MAX_TOOL_NAME_LENGTH);\n\t\t// Remove trailing underscore or hyphen left from truncation,\n\t\t// but never remove the entire name\n\t\tconst stripped = toolName.replace(/[_-]+$/, '');\n\t\tif (stripped.length > 0) {\n\t\t\ttoolName = stri",
+    "new": "if (toolName.length > MAX_TOOL_NAME_LENGTH) {\n\t\ttoolName = toolName.slice(0, MAX_TOOL_NAME_LENGTH);\n\t\t// Remove trailing underscore or hyphen left from truncation\n\t\ttoolName = toolName.replace(/[_-]+$/, '');\n\t}"
+   },
+   "refused": false,
+   "result_head": "edited packages/workflow/src/tool-helpers.ts"
+  },
+  {
+   "step": 6,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/workflow/src/tool-helpers.ts"
+   },
+   "refused": false,
+   "result_head": "1: import type { INode } from './interfaces';\n2: \n3: const MAX_TOOL_NAME_LENGTH = 64;\n4: \n5: /**\n6:  * Converts a node name to a valid tool name by replacing special characters with underscores,\n7:  * collapsing consecutive underscores into a single one, and truncating to 64 characters\n8:  * (which "
+  },
+  {
+   "step": 7,
+   "tool": "edit_file",
+   "args": {
+    "path": "packages/workflow/src/tool-helpers.ts",
+    "old": "if (toolName.length > MAX_TOOL_NAME_LENGTH) {\n\t\ttoolName = toolName.slice(0, MAX_TOOL_NAME_LENGTH);\n\t\t// Remove trailing underscore or hyphen left from truncation\n\t\ttoolName = toolName.replace(/[_-]+$/, '');\n\t}",
+    "new": "if (toolName.length > MAX_TOOL_NAME_LENGTH) {\n\t\ttoolName = toolName.slice(0, MAX_TOOL_NAME_LENGTH);\n\t\t// Remove trailing underscore or hyphen left from truncation,\n\t\t// but never remove the entire name\n\t\tconst stripped = toolName.replace(/[_-]+$/, '');\n\t\tif (stripped.length > 0) {\n\t\t\ttoolName = stri"
+   },
+   "refused": false,
+   "result_head": "edited packages/workflow/src/tool-helpers.ts"
+  },
+  {
+   "step": 8,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/workflow/src/tool-helpers.ts"
+   },
+   "refused": false,
+   "result_head": "1: import type { INode } from './interfaces';\n2: \n3: const MAX_TOOL_NAME_LENGTH = 64;\n4: \n5: /**\n6:  * Converts a node name to a valid tool name by replacing special characters with underscores,\n7:  * collapsing consecutive underscores into a single one, and truncating to 64 characters\n8:  * (which "
+  },
+  {
+   "step": 9,
+   "tool": "edit_file",
+   "args": {
+    "old": "it('should remove trailing hyphens after truncation', () => {\n\t\t\tconst name = 'a'.repeat(63) + '-more text';\n\t\t\tconst result = nodeNameToToolName(name);\n\t\t\texpect(result.length).toBeLessThanOrEqual(64);\n\t\t\texpect(result).not.toMatch(/[-_]$/);\n\t\t});\n\t});",
+    "new": "it('should remove trailing hyphens after truncation', () => {\n\t\t\tconst name = 'a'.repeat(63) + '-more text';\n\t\t\tconst result = nodeNameToToolName(name);\n\t\t\texpect(result.length).toBeLessThanOrEqual(64);\n\t\t\texpect(result).not.toMatch(/[-_]$/);\n\t\t});\n\n\t\tit('should not return empty string when first 64",
+    "path": "packages/workflow/test/tool-helpers.test.ts"
+   },
+   "refused": false,
+   "result_head": "edited packages/workflow/test/tool-helpers.test.ts"
+  },
+  {
+   "step": 10,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/workflow/test/tool-helpers.test.ts",
+    "start": 82,
+    "end": 110
+   },
+   "refused": false,
+   "result_head": "82: \n83: \t\tit('should remove trailing underscores after truncation', () => {\n84: \t\t\t// 63 chars of 'a' + space (becomes underscore at position 64) + more text\n85: \t\t\tconst name = 'a'.repeat(63) + ' more text';\n86: \t\t\tconst result = nodeNameToToolName(name);\n87: \t\t\texpect(result).toBe('a'.repeat(63))"
+  },
+  {
+   "step": 11,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd packages/workflow && pnpm exec vitest run test/tool-helpers.test.ts 2>&1"
+   },
+   "refused": false,
+   "result_head": "exit 0\n\u001b[33m(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:\n  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the close"
+  },
+  {
+   "step": 12,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd packages/workflow && pnpm exec vitest run 2>&1 | tail -20"
+   },
+   "refused": false,
+   "result_head": "exit 0\n \u001b[32m\u2713\u001b[39m \u001b[30m\u001b[42m vm-engine \u001b[49m\u001b[39m test/expression-nested-data.test.ts \u001b[2m(\u001b[22m\u001b[2m21 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 300\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m\u2713\u001b[39m \u001b[30m\u001b[42m vm-engine \u001b[49m\u001b[39m test/ExpressionExtensions/number-extensions.test.ts \u001b[2m(\u001b[22m\u001b[2m16 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 388\u001b[2mms"
+  },
+  {
+   "step": 12,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg -l \"nodeNameToToolName\" packages/workflow/test/ 2>/dev/null"
+   },
+   "refused": false,
+   "result_head": "exit 0\npackages/workflow/test/tool-helpers.test.ts\n"
+  },
+  {
+   "step": 13,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/workflow/src/tool-helpers.ts"
+   },
+   "refused": false,
+   "result_head": "1: import type { INode } from './interfaces';\n2: \n3: const MAX_TOOL_NAME_LENGTH = 64;\n4: \n5: /**\n6:  * Converts a node name to a valid tool name by replacing special characters with underscores,\n7:  * collapsing consecutive underscores into a single one, and truncating to 64 characters\n8:  * (which "
+  },
+  {
+   "step": 13,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/workflow/test/tool-helpers.test.ts",
+    "start": 95
+   },
+   "refused": false,
+   "result_head": "95: \t\t\texpect(result).not.toMatch(/[-_]$/);\n96: \t\t});\n97: \n98: \t\tit('should not return empty string when first 64 chars are all hyphens', () => {\n99: \t\t\tconst name = '-'.repeat(64) + 'Suffix';\n100: \t\t\texpect(nodeNameToToolName(name)).not.toBe('');\n101: \t\t\texpect(nodeNameToToolName(name).length).toBe"
+  },
+  {
+   "step": 14,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd packages/workflow && pnpm exec vitest run test/tool-helpers.test.ts 2>&1"
+   },
+   "refused": false,
+   "result_head": "exit 0\n\u001b[33m(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:\n  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the close"
+  }
+ ],
+ "diff": "diff --git a/packages/workflow/src/tool-helpers.ts b/packages/workflow/src/tool-helpers.ts\nindex fc65cb29..d2f5fb1f 100644\n--- a/packages/workflow/src/tool-helpers.ts\n+++ b/packages/workflow/src/tool-helpers.ts\n@@ -13,8 +13,12 @@ export function nodeNameToToolName(nodeOrName: INode | string): string {\n \n \tif (toolName.length > MAX_TOOL_NAME_LENGTH) {\n \t\ttoolName = toolName.slice(0, MAX_TOOL_NAME_LENGTH);\n-\t\t// Remove trailing underscore or hyphen left from truncation\n-\t\ttoolName = toolName.replace(/[_-]+$/, '');\n+\t\t// Remove trailing underscore or hyphen left from truncation,\n+\t\t// but never remove the entire name\n+\t\tconst stripped = toolName.replace(/[_-]+$/, '');\n+\t\tif (stripped.length > 0) {\n+\t\t\ttoolName = stripped;\n+\t\t}\n \t}\n \n \treturn toolName;\ndiff --git a/packages/workflow/test/tool-helpers.test.ts b/packages/workflow/test/tool-helpers.test.ts\nindex a3396a6b..723a6943 100644\n--- a/packages/workflow/test/tool-helpers.test.ts\n+++ b/packages/workflow/test/tool-helpers.test.ts\n@@ -94,6 +94,28 @@ describe('nodeNameToToolName', () => {\n \t\t\texpect(result.length).toBeLessThanOrEqual(64);\n \t\t\texpect(result).not.toMatch(/[-_]$/);\n \t\t});\n+\n+\t\tit('should not return empty string when first 64 chars are all hyphens', () => {\n+\t\t\tconst name = '-'.repeat(64) + 'Suffix';\n+\t\t\texpect(nodeNameToToolName(name)).not.toBe('');\n+\t\t\texpect(nodeNameToToolName(name).length).toBeGreaterThan(0);\n+\t\t\texpect(nodeNameToToolName(name).length).toBeLessThanOrEqual(64);\n+\t\t});\n+\n+\t\tit('should not return empty string when first 64 chars are all underscores', () => {\n+\t\t\tconst name = '_'.repeat(64) + 'Suffix';\n+\t\t\texpect(nodeNameToToolName(name)).not.toBe('');\n+\t\t\texpect(nodeNameToToolName(name).length).toBeGreaterThan(0);\n+\t\t\texpect(nodeNameToToolName(name).length).toBeLessThanOrEqual(64);\n+\t\t});\n+\n+\t\tit('should preserve at least one character when entire truncated portion is separators', () => {\n+\t\t\tconst name = '-'.repeat(100);\n+\t\t\tconst result = nodeNameToToolName(name);\n+\t\t\texpect(result).not.toBe('');\n+\t\t\texpect(result.length).toBeGreaterThan(0);\n+\t\t\texpect(result.length).toBeLessThanOrEqual(64);\n+\t\t});\n \t});\n \n \tdescribe('when passed a string directly', () => {\n",
+ "isolation": {
+  "container": "per-run",
+  "mounts": [
+   "runs/n8n-43286/deepseek_deepseek-v4-flash-amd-off"
+  ],
+  "network": "jail (egress /llm only)",
+  "user": "1001",
+  "caps": "none",
+  "memory": "2g"
+ }
+}

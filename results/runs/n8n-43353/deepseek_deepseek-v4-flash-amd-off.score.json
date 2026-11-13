@@ -1,0 +1,39 @@
+{
+ "task": "n8n-43353",
+ "model": "deepseek/deepseek-v4-flash",
+ "agents_md": "off",
+ "held_out_tests_pass": false,
+ "policy": {
+  "deny_write_hits": [],
+  "human_review_path_hits": [],
+  "gate_model": "morph/reflex",
+  "gate_p_needs_human": 0.01420008309869915,
+  "needs_human": false,
+  "refused_tool_calls": 0
+ },
+ "closeness": {
+  "agent_files": [
+   "packages/cli/src/workflows/__tests__/workflows.controller.test.ts",
+   "packages/cli/src/workflows/workflows.controller.ts"
+  ],
+  "gold_src_files": [
+   "packages/cli/src/workflows/workflow.service.ee.ts",
+   "packages/cli/src/workflows/workflows.controller.ts"
+  ],
+  "src_file_overlap": 0.5,
+  "extra_files": [
+   "packages/cli/src/workflows/__tests__/workflows.controller.test.ts"
+  ],
+  "agent_lines": 77,
+  "gold_lines": 42
+ },
+ "cost_usd": 0.0467,
+ "steps": 46,
+ "seconds": 246,
+ "finished": true,
+ "held_out": {
+  "passed": false,
+  "seconds": 1,
+  "tail": "(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:\n  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest package.json\n  - ESM syntax in a file loaded as CommonJS (vitest.config.base.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest package.json\n  - ESM syntax in a file loaded as CommonJS (vitest.workspace-externals.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest package.json\nSet `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.\n\n RUN  v5.0.1 /work/runs/n8n-43353/deepseek_deepseek-v4-flash-amd-off/packages/cli\n\nNo test files found, exiting with code 1\n\nfilter: test/integration/workflows/workflows.controller.test.ts\ninclude: src/**/*.{test,spec}.ts, test/unit/**/*.{test,spec}.ts\nexclude:  **/node_modules/**, **/.git/**, **/dist/**, **/*.integration.test.ts\n\nJUNIT report written to /work/runs/n8n-43353/deepseek_deepseek-v4-flash-amd-off/packages/cli/junit.xml\n"
+ }
+}

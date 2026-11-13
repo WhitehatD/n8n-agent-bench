@@ -1,0 +1,172 @@
+{
+ "task": "n8n-41570",
+ "model": "deepseek/deepseek-v4-flash",
+ "agents_md": "off",
+ "steps": 15,
+ "seconds": 45,
+ "usage": {
+  "prompt": 202752,
+  "completion": 2836,
+  "cost": 0.007981942
+ },
+ "finish": {
+  "summary": "**Root cause:** In `BaseExecuteContext.sendMessageToUI()` (packages/core/src/execution-engine/node-execution-context/base-execute-context.ts), the `.map()` callback accesses `arg.isLuxonDateTime` without first checking whether `arg` is `null` or `undefined`. When a Code node calls `console.log(null)` (or `console.log(undefined)`) in manual mode, accessing a property on `null` throws `TypeError: Cannot read properties of null (reading 'isLuxonDateTime')`. This error is caught, logged as a warning (`\"There was a problem sending message to UI: ...\"`), and the message never reaches the UI.\n\n**Fix:** Added a guard at the top of the `.map()` callback that converts `null`/`undefined` args to the string `\"null\"`/`\"undefined\"` before any property access. This matches how browser DevTools renders these values.\n\n**Tests added:** Two new tests in `sendMessageToUI` test suite (shared-tests.ts):\n1. `should handle null and undefined arguments without throwing` \u2013 verifies `sendMessageToUI(null, undefined, 'x', null)` does not throw and produces `['null', 'undefined', 'x', 'null']`\n2. `should handle mixed null/undefined with valid date-like objects` \u2013 verifies that Luxon DateTime objects still serialize correctly when mixed with null/undefined args",
+  "risks": "Minimal. The change only adds a null/undefined check before property access. The early return converts them to `\"null\"`/`\"undefined\"` strings, which is how browser console behaves. All 88 existing tests continue to pass.",
+  "tests_run": "`cd packages/core && pnpm exec vitest run src/execution-engine/node-execution-context/__tests__/execute-context.test.ts` \u2013 88 tests passed (including the 2 new ones)"
+ },
+ "trace": [
+  {
+   "step": 0,
+   "tool": "shell",
+   "args": {
+    "cmd": "find . -type f -name \"base-execute-context*\" | head -20"
+   },
+   "refused": false,
+   "result_head": "exit 0\n./packages/core/src/execution-engine/node-execution-context/base-execute-context.ts\n"
+  },
+  {
+   "step": 1,
+   "tool": "read_file",
+   "args": {
+    "path": "./packages/core/src/execution-engine/node-execution-context/base-execute-context.ts"
+   },
+   "refused": false,
+   "result_head": "1: import { sleep } from '@n8n/utils/sleep';\n2: import type { Result } from '@n8n/utils/result';\n3: import get from 'lodash/get';\n4: import type {\n5: \tWorkflow,\n6: \tINode,\n7: \tIWorkflowExecuteAdditionalData,\n8: \tWorkflowExecuteMode,\n9: \tIRunExecutionData,\n10: \tINodeExecutionData,\n11: \tITaskDataConne"
+  },
+  {
+   "step": 2,
+   "tool": "read_file",
+   "args": {
+    "path": "./packages/core/src/execution-engine/node-execution-context/base-execute-context.ts",
+    "start": 400
+   },
+   "refused": false,
+   "result_head": "400: \t\t\t\tthis.mode,"
+  },
+  {
+   "step": 3,
+   "tool": "read_file",
+   "args": {
+    "path": "./packages/core/src/execution-engine/node-execution-context/base-execute-context.ts",
+    "start": 400,
+    "end": 500
+   },
+   "refused": false,
+   "result_head": "400: \t\t\t\tthis.mode,\n401: \t\t\t\truntimeData?.subWorkflowRedaction,\n402: \t\t\t);\n403: \t\t} catch {\n404: \t\t\treturn true;\n405: \t\t}\n406: \t}\n407: \n408: \t/**\n409: \t * `args` unchanged, or just the redaction marker when console output is\n410: \t * redacted for this run. Shared by the stdout branch of `logNodeOutp"
+  },
+  {
+   "step": 4,
+   "tool": "shell",
+   "args": {
+    "cmd": "find ./packages/core -type f -name \"*.test.*\" -path \"*base-execute*\" -o -name \"*.test.*\" -path \"*execute-context*\" | head -20"
+   },
+   "refused": false,
+   "result_head": "exit 0\n./packages/core/src/execution-engine/node-execution-context/__tests__/execute-context.test.ts\n"
+  },
+  {
+   "step": 5,
+   "tool": "read_file",
+   "args": {
+    "path": "./packages/core/src/execution-engine/node-execution-context/__tests__/execute-context.test.ts"
+   },
+   "refused": false,
+   "result_head": "1: import type {\n2: \tINode,\n3: \tIWorkflowExecuteAdditionalData,\n4: \tIRunExecutionData,\n5: \tINodeExecutionData,\n6: \tITaskDataConnections,\n7: \tIExecuteData,\n8: \tWorkflow,\n9: \tWorkflowExecuteMode,\n10: \tICredentialsHelper,\n11: \tINodeType,\n12: \tINodeTypes,\n13: \tICredentialDataDecryptedObject,\n14: \tExecut"
+  },
+  {
+   "step": 6,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd packages/core && head -30 package.json | grep -E '\"test|vitest|jest\"'"
+   },
+   "refused": false,
+   "result_head": "exit 0\n    \"test\": \"vitest run\",\n    \"test:unit\": \"vitest run\",\n    \"test:changed\": \"janitor test-scoped\",\n    \"test:dev\": \"vitest --silent=false\"\n"
+  },
+  {
+   "step": 7,
+   "tool": "read_file",
+   "args": {
+    "path": "./packages/core/src/execution-engine/node-execution-context/__tests__/shared-tests.ts"
+   },
+   "refused": false,
+   "result_head": "1: import { Container } from '@n8n/di';\n2: import type {\n3: \tIRunExecutionData,\n4: \tContextType,\n5: \tIContextObject,\n6: \tINode,\n7: \tOnError,\n8: \tWorkflow,\n9: \tITaskMetadata,\n10: \tISourceData,\n11: \tIExecuteData,\n12: \tIWorkflowExecuteAdditionalData,\n13: \tExecuteWorkflowData,\n14: \tRelatedExecution,\n15:"
+  },
+  {
+   "step": 8,
+   "tool": "shell",
+   "args": {
+    "cmd": "grep -n \"sendMessageToUI\\|logNodeOutput\" ./packages/core/src/execution-engine/node-execution-context/execute-context.ts | head -20"
+   },
+   "refused": false,
+   "result_head": "exit 0\n157:\tlogNodeOutput(...args: unknown[]): void {\n162:\t\t\tthis.sendMessageToUI(...parsedLogArgs);\n"
+  },
+  {
+   "step": 9,
+   "tool": "edit_file",
+   "args": {
+    "path": "./packages/core/src/execution-engine/node-execution-context/base-execute-context.ts",
+    "old": "try {\n\t\t\tif (this.additionalData.sendDataToUI) {\n\t\t\t\targs = args.map((arg) => {\n\t\t\t\t\t// prevent invalid dates from being logged as null\n\t\t\t\t\t// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return\n\t\t\t\t\tif (arg.isLuxonDateTime && arg.invalidReason) ",
+    "new": "try {\n\t\t\tif (this.additionalData.sendDataToUI) {\n\t\t\t\targs = args.map((arg) => {\n\t\t\t\t\t// prevent invalid dates from being logged as null\n\t\t\t\t\t// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return\n\t\t\t\t\tif (arg === null || arg === undefined) return "
+   },
+   "refused": false,
+   "result_head": "edited ./packages/core/src/execution-engine/node-execution-context/base-execute-context.ts"
+  },
+  {
+   "step": 10,
+   "tool": "edit_file",
+   "args": {
+    "path": "./packages/core/src/execution-engine/node-execution-context/__tests__/shared-tests.ts",
+    "old": "describe('sendMessageToUI', () => {\n\t\tit('should send console messages to the frontend', () => {\n\t\t\tcontext.sendMessageToUI('Testing', 1, 2, {});\n\t\t\texpect(additionalData.sendDataToUI).toHaveBeenCalledWith('sendConsoleMessage', {\n\t\t\t\tsource: '[Node: \"Test Node\"]',\n\t\t\t\tmessages: ['Testing', 1, 2, {}]",
+    "new": "describe('sendMessageToUI', () => {\n\t\tit('should send console messages to the frontend', () => {\n\t\t\tcontext.sendMessageToUI('Testing', 1, 2, {});\n\t\t\texpect(additionalData.sendDataToUI).toHaveBeenCalledWith('sendConsoleMessage', {\n\t\t\t\tsource: '[Node: \"Test Node\"]',\n\t\t\t\tmessages: ['Testing', 1, 2, {}]"
+   },
+   "refused": false,
+   "result_head": "edited ./packages/core/src/execution-engine/node-execution-context/__tests__/shared-tests.ts"
+  },
+  {
+   "step": 11,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd packages/core && pnpm exec vitest run src/execution-engine/node-execution-context/__tests__/shared-tests.ts 2>&1"
+   },
+   "refused": false,
+   "result_head": "exit 1\n\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv5.0.1 \u001b[39m\u001b[90m/work/runs/n8n-41570/deepseek_deepseek-v4-flash-amd-off/packages/core\u001b[39m\n\n\u001b[31mNo test files found, exiting with code 1\n\u001b[39m\n\u001b[2mfilter: \u001b[22m\u001b[33msrc/execution-engine/node-execution-context/__tests__/shared-tests.ts\u001b[39m\n\u001b[2minclud"
+  },
+  {
+   "step": 12,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd packages/core && pnpm exec vitest run src/execution-engine/node-execution-context/__tests__/execute-context.test.ts 2>&1"
+   },
+   "refused": false,
+   "result_head": "exit 0\n\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv5.0.1 \u001b[39m\u001b[90m/work/runs/n8n-41570/deepseek_deepseek-v4-flash-amd-off/packages/core\u001b[39m\n\n \u001b[32m\u2713\u001b[39m src/execution-engine/node-execution-context/__tests__/execute-context.test.ts \u001b[2m(\u001b[22m\u001b[2m88 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 69\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m "
+  },
+  {
+   "step": 13,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd packages/core && pnpm exec vitest run src/execution-engine/node-execution-context/__tests__/execute-context.test.ts --reporter verbose 2>&1 | head -100"
+   },
+   "refused": false,
+   "result_head": "exit 0\n and rethrows\u001b[32m 1\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m\u2713\u001b[39m src/execution-engine/node-execution-context/__tests__/execute-context.test.ts\u001b[2m > \u001b[22mExecuteContext\u001b[2m > \u001b[22mexecuteWorkflow\u001b[2m > \u001b[22msub-workflow dynamic credential reporting\u001b[2m > \u001b[22mrethrows a failed sub-workflow error without usa"
+  },
+  {
+   "step": 14,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd packages/core && git diff"
+   },
+   "refused": false,
+   "result_head": "exit 0\ndiff --git a/packages/core/src/execution-engine/node-execution-context/__tests__/shared-tests.ts b/packages/core/src/execution-engine/node-execution-context/__tests__/shared-tests.ts\nindex c65c713a..10919173 100644\n--- a/packages/core/src/execution-engine/node-execution-context/__tests__/shar"
+  }
+ ],
+ "diff": "diff --git a/packages/core/src/execution-engine/node-execution-context/__tests__/shared-tests.ts b/packages/core/src/execution-engine/node-execution-context/__tests__/shared-tests.ts\nindex c65c713a..10919173 100644\n--- a/packages/core/src/execution-engine/node-execution-context/__tests__/shared-tests.ts\n+++ b/packages/core/src/execution-engine/node-execution-context/__tests__/shared-tests.ts\n@@ -257,6 +257,27 @@ export const describeCommonTests = (\n \t\t\t\tmessages: ['Testing', 1, 2, {}],\n \t\t\t});\n \t\t});\n+\n+\t\tit('should handle null and undefined arguments without throwing', () => {\n+\t\t\texpect(() => context.sendMessageToUI(null, undefined, 'x', null)).not.toThrow();\n+\t\t\texpect(additionalData.sendDataToUI).toHaveBeenCalledWith('sendConsoleMessage', {\n+\t\t\t\tsource: '[Node: \"Test Node\"]',\n+\t\t\t\tmessages: ['null', 'undefined', 'x', 'null'],\n+\t\t\t});\n+\t\t});\n+\n+\t\tit('should handle mixed null/undefined with valid date-like objects', () => {\n+\t\t\tconst luxonLike = { isLuxonDateTime: true, ts: '2024-01-15T12:00:00Z', invalidReason: false };\n+\t\t\texpect(() =>\n+\t\t\t\tcontext.sendMessageToUI(null, luxonLike, undefined),\n+\t\t\t).not.toThrow();\n+\t\t\tconst call = additionalData.sendDataToUI.mock.calls.find(\n+\t\t\t\t([event]) => event === 'sendConsoleMessage',\n+\t\t\t);\n+\t\t\texpect(call).toBeDefined();\n+\t\t\texpect(call[1].messages[0]).toBe('null');\n+\t\t\texpect(call[1].messages[2]).toBe('undefined');\n+\t\t});\n \t});\n \n \tdescribe('logAiEvent', () => {\ndiff --git a/packages/core/src/execution-engine/node-execution-context/base-execute-context.ts b/packages/core/src/execution-engine/node-execution-context/base-execute-context.ts\nindex f15a4b31..b6cdf732 100644\n--- a/packages/core/src/execution-engine/node-execution-context/base-execute-context.ts\n+++ b/packages/core/src/execution-engine/node-execution-context/base-execute-context.ts\n@@ -425,6 +425,10 @@ export class BaseExecuteContext extends NodeExecutionContext {\n \t\ttry {\n \t\t\tif (this.additionalData.sendDataToUI) {\n \t\t\t\targs = args.map((arg) => {\n+\t\t\t\t\t// prevent invalid dates from being logged as null\n+\t\t\t\t\t// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return\n+\t\t\t\t\tif (arg === null || arg === undefined) return String(arg);\n+\n \t\t\t\t\t// prevent invalid dates from being logged as null\n \t\t\t\t\t// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return\n \t\t\t\t\tif (arg.isLuxonDateTime && arg.invalidReason) return { ...arg };\n",
+ "isolation": {
+  "container": "per-run",
+  "mounts": [
+   "runs/n8n-41570/deepseek_deepseek-v4-flash-amd-off"
+  ],
+  "network": "jail (egress /llm only)",
+  "user": "1001",
+  "caps": "none",
+  "memory": "2g"
+ }
+}

@@ -1,0 +1,40 @@
+{
+ "task": "n8n-41064",
+ "model": "deepseek/deepseek-v4-flash",
+ "agents_md": "off",
+ "held_out_tests_pass": true,
+ "policy": {
+  "deny_write_hits": [],
+  "human_review_path_hits": [],
+  "gate_model": "morph/reflex",
+  "gate_p_needs_human": 0.057174750107336705,
+  "needs_human": false,
+  "refused_tool_calls": 0
+ },
+ "closeness": {
+  "agent_files": [
+   "packages/nodes-base/nodes/Webhook/Webhook.node.ts",
+   "packages/nodes-base/nodes/Webhook/test/Webhook.ignoreBots.test.ts",
+   "packages/nodes-base/nodes/Webhook/test/Webhook.test.ts"
+  ],
+  "gold_src_files": [
+   "packages/nodes-base/nodes/Webhook/Webhook.node.ts"
+  ],
+  "src_file_overlap": 1.0,
+  "extra_files": [
+   "packages/nodes-base/nodes/Webhook/test/Webhook.ignoreBots.test.ts",
+   "packages/nodes-base/nodes/Webhook/test/Webhook.test.ts"
+  ],
+  "agent_lines": 155,
+  "gold_lines": 93
+ },
+ "cost_usd": 0.0462,
+ "steps": 65,
+ "seconds": 186,
+ "finished": true,
+ "held_out": {
+  "passed": true,
+  "seconds": 3,
+  "tail": "(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:\n  - ESM syntax in a file loaded as CommonJS (vite.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest package.json\nSet `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.\n\n RUN  v5.0.1 /work/runs/n8n-41064/deepseek_deepseek-v4-flash-amd-off/packages/nodes-base\n\n \u2713 nodes/Webhook/test/ignore-bots.test.ts (4 tests) 13ms\n\n Test Files  1 passed (1)\n      Tests  4 passed (4)\n   Start at  23:52:36\n   Duration  1.81s (transform 71%, import 25%, setup 3%, tests 1%)\n\nJUNIT report written to /work/runs/n8n-41064/deepseek_deepseek-v4-flash-amd-off/packages/nodes-base/junit.xml\n"
+ }
+}

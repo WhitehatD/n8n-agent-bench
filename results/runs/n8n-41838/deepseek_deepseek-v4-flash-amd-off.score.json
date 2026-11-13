@@ -1,0 +1,55 @@
+{
+ "task": "n8n-41838",
+ "model": "deepseek/deepseek-v4-flash",
+ "agents_md": "off",
+ "held_out_tests_pass": false,
+ "policy": {
+  "deny_write_hits": [],
+  "human_review_path_hits": [
+   "packages/nodes-base/credentials/N8nApi.credentials.ts"
+  ],
+  "gate_model": "morph/reflex",
+  "gate_p_needs_human": 0.5296396599402529,
+  "needs_human": true,
+  "refused_tool_calls": 0
+ },
+ "closeness": {
+  "agent_files": [
+   "packages/nodes-base/credentials/N8nApi.credentials.ts",
+   "packages/nodes-base/nodes/N8n/AuditDescription.ts",
+   "packages/nodes-base/nodes/N8n/CredentialDescription.ts",
+   "packages/nodes-base/nodes/N8n/ExecutionDescription.ts",
+   "packages/nodes-base/nodes/N8n/N8n.node.ts",
+   "packages/nodes-base/nodes/N8n/ProjectDescription.ts",
+   "packages/nodes-base/nodes/N8n/UserDescription.ts",
+   "packages/nodes-base/nodes/N8n/WorkflowDescription.ts",
+   "packages/nodes-base/nodes/N8n/test/N8n.structure.test.ts"
+  ],
+  "gold_src_files": [
+   "packages/nodes-base/credentials/N8nApi.credentials.ts",
+   "packages/nodes-base/nodes/N8n/GenericFunctions.ts",
+   "packages/nodes-base/nodes/N8n/N8n.node.ts"
+  ],
+  "src_file_overlap": 0.6666666666666666,
+  "extra_files": [
+   "packages/nodes-base/nodes/N8n/AuditDescription.ts",
+   "packages/nodes-base/nodes/N8n/CredentialDescription.ts",
+   "packages/nodes-base/nodes/N8n/ExecutionDescription.ts",
+   "packages/nodes-base/nodes/N8n/ProjectDescription.ts",
+   "packages/nodes-base/nodes/N8n/UserDescription.ts",
+   "packages/nodes-base/nodes/N8n/WorkflowDescription.ts",
+   "packages/nodes-base/nodes/N8n/test/N8n.structure.test.ts"
+  ],
+  "agent_lines": 66,
+  "gold_lines": 222
+ },
+ "cost_usd": 0.1461,
+ "steps": 108,
+ "seconds": 645,
+ "finished": true,
+ "held_out": {
+  "passed": false,
+  "seconds": 4,
+  "tail": "rror: expected \"vi.fn()\" to be called once with arguments: [ 'n8nApi', ObjectContaining{\u2026} ]\n\nReceived:\n\n  1st vi.fn() call:\n\n  [\n    \"n8nApi\",\n-   ObjectContaining {\n+   {\n+     \"body\": {},\n+     \"json\": true,\n      \"method\": \"GET\",\n-     \"uri\": \"http://[::1]:5678/api/v1/workflows\",\n+     \"qs\": {\n+       \"cursor\": undefined,\n+       \"limit\": 100,\n+     },\n+     \"uri\": \"http://[::1]:5678//api/v1///workflows\",\n    },\n  ]\n\n\nNumber of calls: 1\n\n \u276f nodes/N8n/test/WorkflowLocator.test.ts:52:53\n     50|\n     51|   expect(context.getCredentials).toHaveBeenCalledWith('n8nApi');\n     52|   expect(context.helpers.requestWithAuthentication).toHaveBeenCalledEx\u2026\n       |                                                     ^\n     53|    'n8nApi',\n     54|    expect.objectContaining({ method: 'GET', uri: expectedUrl }),\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[7/15]\u23af\n\n FAIL  nodes/N8n/test/WorkflowLocator.test.ts > n8n workflow list search > should request workflows from https://example.com/n8n%2Ftest//api/v1/\u2026\nAssertionError: expected \"vi.fn()\" to be called once with arguments: [ 'n8nApi', ObjectContaining{\u2026} ]\n\nReceived:\n\n  1st vi.fn() call:\n\n  [\n    \"n8nApi\",\n-   ObjectContaining {\n+   {\n+     \"body\": {},\n+     \"json\": true,\n      \"method\": \"GET\",\n-     \"uri\": \"https://example.com/n8n%2Ftest/api/v1/workflows\",\n+     \"qs\": {\n+       \"cursor\": undefined,\n+       \"limit\": 100,\n+     },\n+     \"uri\": \"https://example.com/n8n%2Ftest//api/v1///workflows\",\n    },\n  ]\n\n\nNumber of calls: 1\n\n \u276f nodes/N8n/test/WorkflowLocator.test.ts:52:53\n     50|\n     51|   expect(context.getCredentials).toHaveBeenCalledWith('n8nApi');\n     52|   expect(context.helpers.requestWithAuthentication).toHaveBeenCalledEx\u2026\n       |                                                     ^\n     53|    'n8nApi',\n     54|    expect.objectContaining({ method: 'GET', uri: expectedUrl }),\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[8/15]\u23af\n\n\n Test Files  3 failed (3)\n      Tests  14 failed | 4 passed | 2 skipped (20)\n   Start at  23:36:54\n   Duration  2.08s (transform 66%, import 29%, setup 4%, tests 1%)\n\n  Transform  transforming modules took 3.10s \u00b7 66% of tracked time, re-done on every run\n             persist transforms across runs with fsModuleCache: true\n             on CI this only helps when the cache directory is persisted between runs\n             learn more: https://vitest.dev/guide/improving-performance#caching-between-reruns\n\nJUNIT report written to /work/runs/n8n-41838/deepseek_deepseek-v4-flash-amd-off/packages/nodes-base/junit.xml\n"
+ }
+}

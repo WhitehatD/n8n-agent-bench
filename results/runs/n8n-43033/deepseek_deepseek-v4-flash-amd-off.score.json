@@ -1,0 +1,36 @@
+{
+ "task": "n8n-43033",
+ "model": "deepseek/deepseek-v4-flash",
+ "agents_md": "off",
+ "held_out_tests_pass": true,
+ "policy": {
+  "deny_write_hits": [],
+  "human_review_path_hits": [],
+  "gate_model": "morph/reflex",
+  "gate_p_needs_human": 0.000310362077827335,
+  "needs_human": false,
+  "refused_tool_calls": 0
+ },
+ "closeness": {
+  "agent_files": [
+   "packages/nodes-base/nodes/RabbitMQ/GenericFunctions.ts",
+   "packages/nodes-base/nodes/RabbitMQ/test/GenericFunctions.test.ts"
+  ],
+  "gold_src_files": [
+   "packages/nodes-base/nodes/RabbitMQ/GenericFunctions.ts"
+  ],
+  "src_file_overlap": 1.0,
+  "extra_files": [],
+  "agent_lines": 39,
+  "gold_lines": 89
+ },
+ "cost_usd": 0.0031,
+ "steps": 9,
+ "seconds": 52,
+ "finished": true,
+ "held_out": {
+  "passed": true,
+  "seconds": 3,
+  "tail": "(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:\n  - ESM syntax in a file loaded as CommonJS (vite.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest package.json\nSet `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.\n\n RUN  v5.0.1 /work/runs/n8n-43033/deepseek_deepseek-v4-flash-amd-off/packages/nodes-base\n\n \u2713 nodes/RabbitMQ/test/GenericFunctions.test.ts (26 tests) 18ms\n\n Test Files  1 passed (1)\n      Tests  26 passed (26)\n   Start at  23:08:21\n   Duration  1.55s (transform 69%, import 26%, setup 3%, tests 1%)\n\nJUNIT report written to /work/runs/n8n-43033/deepseek_deepseek-v4-flash-amd-off/packages/nodes-base/junit.xml\n"
+ }
+}

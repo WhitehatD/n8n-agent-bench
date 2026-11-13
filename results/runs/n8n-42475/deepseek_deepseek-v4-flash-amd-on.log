@@ -1,0 +1,2 @@
+{"task": "n8n-42475", "held_out_tests_pass": false, "cost_usd": 0.0802, "steps": 77} {"deny_write_hits": [], "human_review_path_hits": [], "gate_model": "morph/reflex", "gate_p_needs_human": 0.9997609330851324, "needs_human": true, "refused_tool_calls": 0} {"src_file_overlap": 0.0, "agent_lines": 42, "gold_lines": 110}
+n8n-42475 deepseek_deepseek-v4-flash-amd-on: done in 282s

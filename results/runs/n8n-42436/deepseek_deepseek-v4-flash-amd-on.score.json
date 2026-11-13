@@ -1,0 +1,38 @@
+{
+ "task": "n8n-42436",
+ "model": "deepseek/deepseek-v4-flash",
+ "agents_md": "on",
+ "held_out_tests_pass": false,
+ "policy": {
+  "deny_write_hits": [],
+  "human_review_path_hits": [],
+  "gate_model": "morph/reflex",
+  "gate_p_needs_human": 0.000714480685704777,
+  "needs_human": false,
+  "refused_tool_calls": 0
+ },
+ "closeness": {
+  "agent_files": [
+   "packages/@n8n/agents/src/runtime/__tests__/observation-log-observer.test.ts",
+   "packages/@n8n/agents/src/runtime/memory/observation-log-observer.ts"
+  ],
+  "gold_src_files": [
+   "packages/@n8n/agents/src/runtime/memory/observation-log-observer.ts",
+   "packages/@n8n/agents/src/runtime/model/model-token-counter.ts",
+   "packages/@n8n/agents/src/runtime/tools/tool-result-guard.ts"
+  ],
+  "src_file_overlap": 0.3333333333333333,
+  "extra_files": [],
+  "agent_lines": 193,
+  "gold_lines": 186
+ },
+ "cost_usd": 0.0784,
+ "steps": 55,
+ "seconds": 331,
+ "finished": true,
+ "held_out": {
+  "passed": false,
+  "seconds": 48,
+  "tail": "ocument text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text. Document text.  DOCUMENT_END\",\"mediaType\":\"text/plain\"}]}</untrusted_tool_data>\n\n\n Test Files  2 failed (2)\n      Tests  4 failed | 44 passed (48)\n   Start at  22:45:13\n   Duration  46.42s (tests 96%, import 2%, transform 1%)\n\n \u276f Object.observe src/runtime/__tests__/observation-log-observer.test.ts:578:25\n    576|     tokenCounter: (text) => text.length,\n    577|     observe: async ({ transcript }) => {\n    578|      expect(transcript).toContain('\"_truncated\":true');\n       |                         ^\n    579|      expect(transcript).toContain('DOCUMENT_START');\n    580|      expect(transcript).toContain('DOCUMENT_END');\n \u276f Module.runObservationLogObserver src/runtime/memory/observation-log-observer.ts:254:35\n \u276f src/runtime/__tests__/observation-log-observer.test.ts:572:4\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[4/4]\u23af\n\nJUNIT report written to /work/runs/n8n-42436/deepseek_deepseek-v4-flash-amd-on/packages/@n8n/agents/junit.xml\n"
+ }
+}

@@ -1,0 +1,10 @@
+{
+ "task": "n8n-43252",
+ "base_fails": true,
+ "failing": [
+  "should concatenate streamed text fragments without adding newlines",
+  "should merge multi-output text arrays into a single string",
+  "should return thinking content when no text blocks exist"
+ ],
+ "tail": "ti-output text arrays into a single string\nAssertionError: expected { \u2026(2) } to deeply equal { log: '', \u2026(1) }\n\n- Expected\n+ Received\n\n  {\n    \"log\": \"\",\n    \"returnValues\": {\n-     \"output\": \"First partSecond part\",\n+     \"output\": \"First part\n+ Second part\",\n    },\n  }\n\n \u276f nodes/agents/Agent/test/ToolsAgent/commons.test.ts:1246:18\n    1244|   const result = handleAgentFinishOutput(steps);\n    1245|\n    1246|   expect(result).toEqual({\n       |                  ^\n    1247|    log: '',\n    1248|    returnValues: {\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[2/3]\u23af\n\n FAIL  nodes/agents/Agent/test/ToolsAgent/commons.test.ts > handleAgentFinishOutput > should return thinking content when no text blocks exist\nAssertionError: expected 'Only thinking content\\nMore thinking' to be 'Only thinking contentMore thinking' // Object.is equality\n\n- Expected\n+ Received\n\n- Only thinking contentMore thinking\n+ Only thinking content\n+ More thinking\n\n \u276f nodes/agents/Agent/test/ToolsAgent/commons.test.ts:1331:38\n    1329|   const result = handleAgentFinishOutput(steps) as AgentFinish;\n    1330|\n    1331|   expect(result.returnValues.output).toBe('Only thinking contentMore t\u2026\n       |                                      ^\n    1332|  });\n    1333|\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[3/3]\u23af\n\n\n Test Files  1 failed (1)\n      Tests  3 failed | 62 passed (65)\n   Start at  23:09:04\n   Duration  3.16s (import 82%, transform 13%, tests 5%)\n\nJUNIT report written to /work/runs/n8n-43252/control/packages/@n8n/nodes-langchain/junit.xml\n"
+}

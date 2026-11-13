@@ -1,0 +1,36 @@
+{
+ "task": "n8n-43286",
+ "model": "deepseek/deepseek-v4-flash",
+ "agents_md": "on",
+ "held_out_tests_pass": false,
+ "policy": {
+  "deny_write_hits": [],
+  "human_review_path_hits": [],
+  "gate_model": "morph/reflex",
+  "gate_p_needs_human": 3.00302683174236e-05,
+  "needs_human": false,
+  "refused_tool_calls": 0
+ },
+ "closeness": {
+  "agent_files": [
+   "packages/workflow/src/tool-helpers.ts",
+   "packages/workflow/test/tool-helpers.test.ts"
+  ],
+  "gold_src_files": [
+   "packages/workflow/src/tool-helpers.ts"
+  ],
+  "src_file_overlap": 1.0,
+  "extra_files": [],
+  "agent_lines": 22,
+  "gold_lines": 22
+ },
+ "cost_usd": 0.0071,
+ "steps": 8,
+ "seconds": 30,
+ "finished": true,
+ "held_out": {
+  "passed": false,
+  "seconds": 3,
+  "tail": "ame from the bug report 0ms\n       \u2713 should remove trailing underscores after truncation 0ms\n       \u2713 should remove trailing hyphens after truncation 0ms\n     \u2713 when passed a string directly (5)\n       \u2713 should replace spaces with underscores 0ms\n       \u2713 should replace dots with underscores 0ms\n       \u2713 should replace multiple special characters with underscores 0ms\n       \u2713 should handle consecutive special characters 0ms\n       \u2713 should replace various special characters with underscores 0ms\n     \u276f truncation must not produce an empty name (3)\n       \u00d7 should keep a non-empty name when truncation leaves only hyphens 7ms\n       \u00d7 should keep a non-empty name when truncation leaves only underscores 1ms\n       \u2713 should still trim trailing separators for ordinary long names 0ms\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af Failed Tests 2 \u23af\u23af\u23af\u23af\u23af\u23af\u23af\n\n FAIL   default  test/tool-helpers.test.ts > nodeNameToToolName > truncation must not produce an empty name > should keep a non-empty name when truncation leaves only hyphens\nAssertionError: expected '_' to be '-------------------------------------\u2026' // Object.is equality\n\nExpected: \"----------------------------------------------------------------\"\nReceived: \"_\"\n\n \u276f test/tool-helpers.test.ts:126:37\n    124|   it('should keep a non-empty name when truncation leaves only hyphens\u2026\n    125|    const name = '-'.repeat(64) + 'Suffix';\n    126|    expect(nodeNameToToolName(name)).toBe('-'.repeat(64));\n       |                                     ^\n    127|   });\n    128|\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[1/2]\u23af\n\n FAIL   default  test/tool-helpers.test.ts > nodeNameToToolName > truncation must not produce an empty name > should keep a non-empty name when truncation leaves only underscores\nAssertionError: expected '_' to be '_____________________________________\u2026' // Object.is equality\n\nExpected: \"________________________________________________________________\"\nReceived: \"_\"\n\n \u276f test/tool-helpers.test.ts:131:37\n    129|   it('should keep a non-empty name when truncation leaves only undersc\u2026\n    130|    const name = '_'.repeat(64) + 'Suffix';\n    131|    expect(nodeNameToToolName(name)).toBe('_'.repeat(64));\n       |                                     ^\n    132|   });\n    133|\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[2/2]\u23af\n\n\n Test Files  1 failed (1)\n      Tests  2 failed | 23 passed (25)\n   Start at  23:55:50\n   Duration  1.27s (transform 65%, setup 32%, tests 2%, worker 1%)\n\nJUNIT report written to /work/runs/n8n-43286/deepseek_deepseek-v4-flash-amd-on/packages/workflow/junit.xml\n"
+ }
+}

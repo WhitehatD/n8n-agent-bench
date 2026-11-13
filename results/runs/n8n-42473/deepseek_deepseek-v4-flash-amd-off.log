@@ -1,0 +1,2 @@
+{"task": "n8n-42473", "held_out_tests_pass": true, "cost_usd": 0.0541, "steps": 77} {"deny_write_hits": [], "human_review_path_hits": ["packages/nodes-base/credentials/NotionApi.credentials.ts", "packages/nodes-base/credentials/test/NotionApi.credentials.test.ts"], "gate_model": "morph/reflex", "gate_p_needs_human": 0.9974322130989498, "needs_human": true, "refused_tool_calls": 0} {"src_file_overlap": 1.0, "agent_lines": 107, "gold_lines": 57}
+n8n-42473 deepseek_deepseek-v4-flash-amd-off: done in 461s

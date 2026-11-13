@@ -1,0 +1,36 @@
+{
+ "task": "n8n-43518",
+ "model": "deepseek/deepseek-v4-flash",
+ "agents_md": "on",
+ "held_out_tests_pass": false,
+ "policy": {
+  "deny_write_hits": [],
+  "human_review_path_hits": [],
+  "gate_model": "morph/reflex",
+  "gate_p_needs_human": 0.032399649279795904,
+  "needs_human": false,
+  "refused_tool_calls": 0
+ },
+ "closeness": {
+  "agent_files": [
+   "packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts",
+   "packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.ts"
+  ],
+  "gold_src_files": [
+   "packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.ts"
+  ],
+  "src_file_overlap": 1.0,
+  "extra_files": [],
+  "agent_lines": 94,
+  "gold_lines": 115
+ },
+ "cost_usd": 0.043,
+ "steps": 40,
+ "seconds": 272,
+ "finished": true,
+ "held_out": {
+  "passed": false,
+  "seconds": 2,
+  "tail": "  \u00d7 should clear the store for each item in node version 1 3ms\n       \u276f beforeInsert (5)\n         \u2713 should do nothing when Clear Data is off 0ms\n         \u2713 should delete the collection when Clear Data is on 0ms\n         \u2713 should remove only the tenant when Clear Data is on and a tenant is set 0ms\n         \u00d7 should close the client after the clear step 1ms\n         \u00d7 should close the client when the clear step fails 1ms\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af Failed Tests 3 \u23af\u23af\u23af\u23af\u23af\u23af\u23af\n\n FAIL  nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts > VectorStoreWeaviate.node > populateVectorStore > should clear the store for each item in node version 1\nAssertionError: expected \"vi.fn()\" to be called with arguments: [ 'TestCollection' ]\n\nNumber of calls: 0\n\n \u276f nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts:474:29\n    472|    await insert({ clearStore: true }, 1);\n    473|\n    474|    expect(deleteCollection).toHaveBeenCalledWith('TestCollection');\n       |                             ^\n    475|   });\n    476|\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[1/3]\u23af\n\n FAIL  nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts > VectorStoreWeaviate.node > populateVectorStore > beforeInsert > should close the client after the clear step\nAssertionError: expected \"vi.fn()\" to be called 1 times, but got 0 times\n \u276f nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts:505:25\n    503|     await clear({ clearStore: true });\n    504|\n    505|     expect(closeClient).toHaveBeenCalledTimes(1);\n       |                         ^\n    506|    });\n    507|\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[2/3]\u23af\n\n FAIL  nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts > VectorStoreWeaviate.node > populateVectorStore > beforeInsert > should close the client when the clear step fails\nAssertionError: expected \"vi.fn()\" to be called 1 times, but got 0 times\n \u276f nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts:512:25\n    510|\n    511|     await expect(clear({ clearStore: true })).rejects.toThrow('clear f\u2026\n    512|     expect(closeClient).toHaveBeenCalledTimes(1);\n       |                         ^\n    513|    });\n    514|   });\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[3/3]\u23af\n\n\n Test Files  1 failed (1)\n      Tests  3 failed | 27 passed (30)\n   Start at  00:10:29\n   Duration  570ms (import 63%, transform 26%, tests 7%, setup 3%, worker 1%)\n\nJUNIT report written to /work/runs/n8n-43518/deepseek_deepseek-v4-flash-amd-on/packages/@n8n/nodes-langchain/junit.xml\n"
+ }
+}

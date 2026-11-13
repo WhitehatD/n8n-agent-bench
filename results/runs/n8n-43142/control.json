@@ -1,0 +1,17 @@
+{
+ "task": "n8n-43142",
+ "base_fails": true,
+ "failing": [
+  "should record a v2 job-finished result with its dates and waitTill",
+  "should keep the failedBeforeStart flag of a v2 job-finished result",
+  "should record the node time saved minutes of a v2 job-finished result",
+  "should record a v1 job-finished message without a result",
+  "should record a job-failed report as a handled error",
+  "should settle the wait for a job Bull reports as failed, by queue and job ID",
+  "should settle the wait for a job Bull reports as completed, by queue and job ID",
+  "should end the wait when an older worker reports the job as finished",
+  "should keep a v2 result only for an execution active in this process (active: true)",
+  "should keep a v2 result only for an execution active in this process (active: false)"
+ ],
+ "tail": " });\n    1247|\n    1248|    it('should end the wait when an older worker reports the job as fin\u2026\n       |    ^\n    1249|     // A real tracker, so the handler and the tracker are checked toge\u2026\n    1250|     const realTracker = new JobOutcomeTracker(mockLogger(), activeExec\u2026\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[8/10]\u23af\n\n FAIL  src/scaling/__tests__/scaling.service.test.ts > ScalingService > message handling > job outcome wiring on worker > should keep a v2 result only for an execution active in this process (active: true)\n FAIL  src/scaling/__tests__/scaling.service.test.ts > ScalingService > message handling > job outcome wiring on worker > should keep a v2 result only for an execution active in this process (active: false)\nError: Test timed out in 10000ms.\nIf this is a long-running test, pass a timeout value as the last argument or configure it globally with \"testTimeout\".\n \u276f src/scaling/__tests__/scaling.service.test.ts:1292:6\n    1290|     { isActive: true, expected: expect.objectContaining({ status: 'suc\u2026\n    1291|     { isActive: false, expected: undefined },\n    1292|    ])(\n       |      ^\n    1293|     'should keep a v2 result only for an execution active in this proc\u2026\n    1294|     async ({ isActive, expected }) => {\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[9/10]\u23af\n\n\n Test Files  1 failed (1)\n      Tests  10 failed | 75 passed (85)\n   Start at  00:07:23\n   Duration  43.03s (tests 73%, transform 23%, import 2%, setup 2%)\n\nJUNIT report written to /work/runs/n8n-43142/control/packages/cli/junit.xml\n"
+}

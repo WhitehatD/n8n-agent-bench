@@ -1,0 +1,45 @@
+{
+ "task": "n8n-41116",
+ "model": "deepseek/deepseek-v4-flash",
+ "agents_md": "off",
+ "held_out_tests_pass": false,
+ "policy": {
+  "deny_write_hits": [],
+  "human_review_path_hits": [],
+  "gate_model": "morph/reflex",
+  "gate_p_needs_human": 0.00015388774426316953,
+  "needs_human": false,
+  "refused_tool_calls": 0
+ },
+ "closeness": {
+  "agent_files": [
+   "packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/audio/transcribe.operation.ts",
+   "packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/text/message.operation.ts",
+   "packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/helpers/baseAnalyze.ts",
+   "packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/methods/listSearch.test.ts",
+   "packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/methods/listSearch.ts"
+  ],
+  "gold_src_files": [
+   "packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/text/message.operation.ts",
+   "packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/helpers/interfaces.ts"
+  ],
+  "src_file_overlap": 0.5,
+  "extra_files": [
+   "packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/audio/transcribe.operation.ts",
+   "packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/helpers/baseAnalyze.ts",
+   "packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/methods/listSearch.test.ts",
+   "packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/methods/listSearch.ts"
+  ],
+  "agent_lines": 37,
+  "gold_lines": 160
+ },
+ "cost_usd": 0.0687,
+ "steps": 80,
+ "seconds": 405,
+ "finished": true,
+ "held_out": {
+  "passed": false,
+  "seconds": 3,
+  "tail": "rejected \"NodeOperationError: The model \"models/gem\u2026 { \u2026(12) }\" instead of resolving\n \u276f nodes/vendors/GoogleGemini/actions/text/message.operation.test.ts:96:54\n     94|   });\n     95|\n     96|   await expect(execute.call(executeFunctionsMock, 0)).resolves.toEqual\u2026\n       |                                                      ^\n     97|    { json: response.candidates[0], pairedItem: { item: 0 } },\n     98|   ]);\n\nCaused by: NodeOperationError: The model \"models/gemma-4-26b-a4b-it\" is not supported. Gemma models cannot be used with the Google Gemini API. Please select a Gemini model.\n \u276f Proxy.execute nodes/vendors/GoogleGemini/actions/text/message.operation.ts:368:9\n \u276f nodes/vendors/GoogleGemini/actions/text/message.operation.test.ts:96:24\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\nSerialized Error: { timestamp: 1794527069365, description: undefined, context: { runIndex: undefined, itemIndex: undefined, metadata: undefined } }\nCaused by: OperationalError: The model \"models/gemma-4-26b-a4b-it\" is not supported. Gemma models cannot be used with the Google Gemini API. Please select a Gemini model.\n \u276f Proxy.execute nodes/vendors/GoogleGemini/actions/text/message.operation.ts:368:9\n \u276f nodes/vendors/GoogleGemini/actions/text/message.operation.test.ts:96:24\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\nSerialized Error: { level: 'warning', shouldReport: false, description: undefined, tags: { packageName: 'workflow' }, extra: undefined }\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[3/5]\u23af\n\n FAIL  nodes/vendors/GoogleGemini/actions/text/message.operation.test.ts > Google Gemini message model identity > should reject a different model in a tool follow-up response\nAssertionError: expected \"vi.fn()\" to be called 2 times, but got 0 times\n \u276f nodes/vendors/GoogleGemini/actions/text/message.operation.test.ts:118:70\n    116|\n    117|   await expect(execute.call(executeFunctionsMock, 0)).rejects.toThrow(\u2026\n    118|   expect(executeFunctionsMock.helpers.httpRequestWithAuthentication).t\u2026\n       |                                                                      ^\n    119|   expect(executeFunctionsMock.setMetadata).toHaveBeenCalledTimes(2);\n    120|   expect(executeFunctionsMock.setMetadata).toHaveBeenNthCalledWith(1, {\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[4/5]\u23af\n\n\n Test Files  1 failed (1)\n      Tests  5 failed | 2 passed (7)\n   Start at  23:44:27\n   Duration  1.59s (import 73%, transform 24%, tests 1%, setup 1%)\n\nJUNIT report written to /work/runs/n8n-41116/deepseek_deepseek-v4-flash-amd-off/packages/@n8n/nodes-langchain/junit.xml\n"
+ }
+}

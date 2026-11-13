@@ -1,0 +1,42 @@
+{
+ "task": "n8n-42569",
+ "model": "deepseek/deepseek-v4-flash",
+ "agents_md": "on",
+ "held_out_tests_pass": false,
+ "policy": {
+  "deny_write_hits": [],
+  "human_review_path_hits": [],
+  "gate_model": "morph/reflex",
+  "gate_p_needs_human": 0.0009628483168000293,
+  "needs_human": false,
+  "refused_tool_calls": 0
+ },
+ "closeness": {
+  "agent_files": [
+   "packages/@n8n/agents/src/runtime/__tests__/model-token-counter.test.ts",
+   "packages/@n8n/agents/src/runtime/__tests__/serialize-message-for-budget.test.ts",
+   "packages/@n8n/agents/src/runtime/memory/memory-orchestrator.ts",
+   "packages/@n8n/agents/src/runtime/model/model-token-counter.ts"
+  ],
+  "gold_src_files": [
+   "packages/@n8n/agents/src/runtime/model/model-token-counter.ts",
+   "packages/@n8n/agents/src/runtime/tools/tool-call-runner.ts"
+  ],
+  "src_file_overlap": 0.5,
+  "extra_files": [
+   "packages/@n8n/agents/src/runtime/__tests__/serialize-message-for-budget.test.ts",
+   "packages/@n8n/agents/src/runtime/memory/memory-orchestrator.ts"
+  ],
+  "agent_lines": 106,
+  "gold_lines": 228
+ },
+ "cost_usd": 0.0502,
+ "steps": 60,
+ "seconds": 378,
+ "finished": true,
+ "held_out": {
+  "passed": false,
+  "seconds": 73,
+  "tail": "onst encoder = await getEncoding(encoding);\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[2/6]\u23af\n\n FAIL  src/runtime/__tests__/model-token-counter.test.ts > createModelTokenCounter > keeps the maximum event-loop pause below 500 ms for uniform spaces\nAssertionError: expected 0.2698412698412698 to be less than 0.01\n \u276f src/runtime/__tests__/model-token-counter.test.ts:80:63\n     78|\n     79|     expect(heartbeats).toBeGreaterThan(0);\n     80|     expect(Math.abs(count - expectedTokens) / expectedTokens).toBeLess\u2026\n       |                                                               ^\n     81|     // Allow ample CI headroom above the counter's 10 ms yield interva\u2026\n     82|     expect(maxPauseMs).toBeLessThan(500);\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[3/6]\u23af\n\n FAIL  src/runtime/__tests__/tool-call-runner.test.ts > ToolCallRunner error budgeting > guards an oversized error from SDK error-text before memory-budget counting\nAssertionError: expected 0 to be greater than 0\n \u276f src/runtime/__tests__/tool-call-runner.test.ts:96:48\n     94|    expect(budgetCounter).toHaveBeenCalledTimes(1);\n     95|    const budgetText = budgetCounter.mock.calls[0][0];\n     96|    expect.soft(guardCounter.mock.calls.length).toBeGreaterThan(0);\n       |                                                ^\n     97|    expect.soft(budgetText.includes(error)).toBe(false);\n     98|    expect(budgetText.includes('\\t')).toBe(false);\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[4/6]\u23af\n\n FAIL  src/runtime/__tests__/tool-result-guard.test.ts > guardToolResultForModel > preserves a uniform-space result below the token limit with storage available: false\n FAIL  src/runtime/__tests__/tool-result-guard.test.ts > guardToolResultForModel > preserves a uniform-space result below the token limit with storage available: true\nError: Test timed out in 35000ms.\nIf this is a long-running test, pass a timeout value as the last argument or configure it globally with \"testTimeout\".\n \u276f src/runtime/__tests__/tool-result-guard.test.ts:7:24\n      5|\n      6| describe('guardToolResultForModel', () => {\n      7|  it.each([false, true])(\n       |                        ^\n      8|   'preserves a uniform-space result below the token limit with storage\u2026\n      9|   async (storageAvailable) => {\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[5/6]\u23af\n\n\n Test Files  3 failed (3)\n      Tests  6 failed | 9 passed (15)\n   Start at  22:54:03\n   Duration  70.92s (tests 97%, import 2%, transform 1%)\n\nJUNIT report written to /work/runs/n8n-42569/deepseek_deepseek-v4-flash-amd-on/packages/@n8n/agents/junit.xml\n"
+ }
+}

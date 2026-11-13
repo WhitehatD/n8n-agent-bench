@@ -1,0 +1,38 @@
+{
+ "task": "n8n-41570",
+ "model": "deepseek/deepseek-v4-flash",
+ "agents_md": "off",
+ "held_out_tests_pass": true,
+ "policy": {
+  "deny_write_hits": [],
+  "human_review_path_hits": [],
+  "gate_model": "morph/reflex",
+  "gate_p_needs_human": 3.5514118106840706e-05,
+  "needs_human": false,
+  "refused_tool_calls": 0
+ },
+ "closeness": {
+  "agent_files": [
+   "packages/core/src/execution-engine/node-execution-context/__tests__/shared-tests.ts",
+   "packages/core/src/execution-engine/node-execution-context/base-execute-context.ts"
+  ],
+  "gold_src_files": [
+   "packages/core/src/execution-engine/node-execution-context/base-execute-context.ts"
+  ],
+  "src_file_overlap": 1.0,
+  "extra_files": [
+   "packages/core/src/execution-engine/node-execution-context/__tests__/shared-tests.ts"
+  ],
+  "agent_lines": 25,
+  "gold_lines": 42
+ },
+ "cost_usd": 0.008,
+ "steps": 15,
+ "seconds": 45,
+ "finished": true,
+ "held_out": {
+  "passed": true,
+  "seconds": 4,
+  "tail": "\n RUN  v5.0.1 /work/runs/n8n-41570/deepseek_deepseek-v4-flash-amd-off/packages/core\n\n \u2713 src/execution-engine/node-execution-context/__tests__/execute-context.test.ts (92 tests) 56ms\n\n Test Files  1 passed (1)\n      Tests  92 passed (92)\n   Start at  22:42:05\n   Duration  2.26s (transform 52%, import 44%, tests 3%, setup 1%)\n\nJUNIT report written to /work/runs/n8n-41570/deepseek_deepseek-v4-flash-amd-off/packages/core/junit.xml\n"
+ }
+}

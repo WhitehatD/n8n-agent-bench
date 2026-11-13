@@ -1,0 +1,251 @@
+{
+ "task": "n8n-43517",
+ "model": "deepseek/deepseek-v4-flash",
+ "agents_md": "off",
+ "steps": 23,
+ "seconds": 84,
+ "usage": {
+  "prompt": 374427,
+  "completion": 4505,
+  "cost": 0.012169746000000002
+ },
+ "finish": {
+  "summary": "Fix: In `VectorStoreWeaviate.node.ts`, the `similaritySearchVectorWithScore` method passes the filter to `super.hybridSearch` with the key `filter` (singular), but the Weaviate client's `collection.query.hybrid` method (called internally by `WeaviateStore.hybridSearch`) expects `filters` (plural). This means the filter was silently ignored for hybrid queries.\n\nChanged line 70: `filter:` \u2192 `filters:` in the options object passed to `super.hybridSearch`.\n\nAlso updated the existing test assertion for `filter: undefined` \u2192 `filters: undefined`, and added two new tests:\n- `'should pass the node filter to hybrid search'` \u2014 verifies the default filter from the node config is passed as `filters` to hybrid search.\n- `'should pass the search filter to hybrid search over the node filter'` \u2014 verifies that a per-call filter overrides the node filter for hybrid search.",
+  "risks": "Low risk. The change is a single key rename (`filter` \u2192 `filters`) that matches the Weaviate v3 client's SDK type definition (`SearchOptions.filters`). The non-hybrid vector search path (`super.similaritySearchVectorWithScore`) already correctly uses `filter` as its second positional argument (which then maps to `filters` inside the langchain WeaviateStore), so it is unaffected.",
+  "tests_run": "Ran `pnpm exec vitest run nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts` \u2014 all 26 tests passed (including the 3 hybrid search filter tests)."
+ },
+ "trace": [
+  {
+   "step": 0,
+   "tool": "shell",
+   "args": {
+    "cmd": "find . -name \"VectorStoreWeaviate*\" -type f | head -20"
+   },
+   "refused": false,
+   "result_head": "exit 0\n./packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts\n./packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.ts\n"
+  },
+  {
+   "step": 1,
+   "tool": "read_file",
+   "args": {
+    "path": "./packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.ts"
+   },
+   "refused": false,
+   "result_head": "1: import { Document } from '@langchain/core/documents';\n2: import type { Embeddings } from '@langchain/core/embeddings';\n3: import type { WeaviateLibArgs as OriginalWeaviateLibArgs } from '@langchain/weaviate';\n4: import { WeaviateStore } from '@langchain/weaviate';\n5: import type {\n6: \tIDataObject"
+  },
+  {
+   "step": 2,
+   "tool": "read_file",
+   "args": {
+    "path": "./packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts"
+   },
+   "refused": false,
+   "result_head": "1: import type { Document } from '@langchain/core/documents';\n2: import type { Embeddings } from '@langchain/core/embeddings';\n3: import { Document as LcDocument } from '@langchain/core/documents';\n4: import { WeaviateStore } from '@langchain/weaviate';\n5: import type { IDataObject, INode, ISupplyDa"
+  },
+  {
+   "step": 3,
+   "tool": "shell",
+   "args": {
+    "cmd": "find . -path \"*/node_modules/@langchain/weaviate\" -type d | head -5"
+   },
+   "refused": false,
+   "result_head": "exit 0\n./node_modules/.pnpm/@langchain+weaviate@1.0.1_@langchain+core@1.2.8_@opentelemetry+api@1.9.1_@opentelemetry_60eafe8d258e637b0b195871f5edcf97/node_modules/@langchain/weaviate\n"
+  },
+  {
+   "step": 4,
+   "tool": "shell",
+   "args": {
+    "cmd": "grep -n \"hybridSearch\" ./node_modules/.pnpm/@langchain+weaviate@1.0.1_@langchain+core@1.2.8_@opentelemetry+api@1.9.1_@opentelemetry_60eafe8d258e637b0b195871f5edcf97/node_modules/@langchain/weaviate/index.js | head -20"
+   },
+   "refused": false,
+   "result_head": "exit 0\ngrep: ./node_modules/.pnpm/@langchain+weaviate@1.0.1_@langchain+core@1.2.8_@opentelemetry+api@1.9.1_@opentelemetry_60eafe8d258e637b0b195871f5edcf97/node_modules/@langchain/weaviate/index.js: No such file or directory\n"
+  },
+  {
+   "step": 5,
+   "tool": "read_file",
+   "args": {
+    "path": "./node_modules/.pnpm/@langchain+weaviate@1.0.1_@langchain+core@1.2.8_@opentelemetry+api@1.9.1_@opentelemetry_60eafe8d258e637b0b195871f5edcf97/node_modules/@langchain/weaviate/index.js",
+    "start": 1,
+    "end": 100
+   },
+   "refused": false,
+   "result_head": "tool error: [Errno 2] No such file or directory: './node_modules/.pnpm/@langchain+weaviate@1.0.1_@langchain+core@1.2.8_@opentelemetry+api@1.9.1_@opentelemetry_60eafe8d258e637b0b195871f5edcf97/node_modules/@langchain/weaviate/index.js'"
+  },
+  {
+   "step": 6,
+   "tool": "shell",
+   "args": {
+    "cmd": "find ./node_modules -path \"*/@langchain/weaviate/index.js\" -type f 2>/dev/null | head -5"
+   },
+   "refused": false,
+   "result_head": "exit 0\n"
+  },
+  {
+   "step": 7,
+   "tool": "shell",
+   "args": {
+    "cmd": "find ./node_modules -path \"*/@langchain/weaviate/*\" -type f 2>/dev/null | head -20"
+   },
+   "refused": false,
+   "result_head": "exit 0\n./node_modules/.pnpm/@langchain+weaviate@1.0.1_@langchain+core@1.2.8_@opentelemetry+api@1.9.1_@opentelemetry_60eafe8d258e637b0b195871f5edcf97/node_modules/@langchain/weaviate/node_modules/.bin/uuid\n./node_modules/.pnpm/@langchain+weaviate@1.0.1_@langchain+core@1.2.8_@opentelemetry+api@1.9.1_@"
+  },
+  {
+   "step": 8,
+   "tool": "shell",
+   "args": {
+    "cmd": "grep -n \"hybridSearch\\|filters\" ./node_modules/.pnpm/@langchain+weaviate@1.0.1_@langchain+core@1.2.8_@opentelemetry+api@1.9.1_@opentelemetry_60eafe8d258e637b0b195871f5edcf97/node_modules/@langchain/weaviate/dist/vectorstores.js | head -30"
+   },
+   "refused": false,
+   "result_head": "exit 0\n148:\tasync hybridSearch(query, options) {\n233:\t\t\t\tfilters: filter,\n239:\t\t\t\tfilters: filter,\n"
+  },
+  {
+   "step": 9,
+   "tool": "read_file",
+   "args": {
+    "path": "./node_modules/.pnpm/@langchain+weaviate@1.0.1_@langchain+core@1.2.8_@opentelemetry+api@1.9.1_@opentelemetry_60eafe8d258e637b0b195871f5edcf97/node_modules/@langchain/weaviate/dist/vectorstores.js",
+    "start": 140,
+    "end": 250
+   },
+   "refused": false,
+   "result_head": "140: \t}\n141: \t/**\n142: \t* Hybrid search combines the results of a vector search and a\n143: \t* keyword (BM25F) search by fusing the two result sets.\n144: \t* @param query The query to search for.\n145: \t* @param options available options for the search. Check docs for complete list\n146: \t* @returns Pro"
+  },
+  {
+   "step": 10,
+   "tool": "shell",
+   "args": {
+    "cmd": "grep -rn \"filters\" ./node_modules/.pnpm/weaviate-client@3.3.0_@opentelemetry+api@1.9.1/node_modules/weaviate-client/dist/ --include=\"*.d.ts\" 2>/dev/null | grep -i \"hybrid\" | head -20"
+   },
+   "refused": false,
+   "result_head": "exit 0\n"
+  },
+  {
+   "step": 11,
+   "tool": "shell",
+   "args": {
+    "cmd": "grep -rn \"hybrid\" ./node_modules/.pnpm/weaviate-client@3.3.0_@opentelemetry+api@1.9.1/node_modules/weaviate-client/dist/ --include=\"*.d.ts\" 2>/dev/null | head -20"
+   },
+   "refused": false,
+   "result_head": "exit 0\n"
+  },
+  {
+   "step": 12,
+   "tool": "shell",
+   "args": {
+    "cmd": "find ./node_modules/.pnpm -path \"*/weaviate-client*\" -name \"*.d.ts\" | head -10"
+   },
+   "refused": false,
+   "result_head": "exit 0\n./node_modules/.pnpm/weaviate-client@3.9.0_patch_hash=fa0a287aabbb267a9390a72cb310a641afd7fb1d96311589acd38137739f4a99_encoding@0.1.13/node_modules/weaviate-client/dist/node/cjs/proto/v1/weaviate.d.ts\n./node_modules/.pnpm/weaviate-client@3.9.0_patch_hash=fa0a287aabbb267a9390a72cb310a641afd7fb"
+  },
+  {
+   "step": 13,
+   "tool": "shell",
+   "args": {
+    "cmd": "grep -n \"filters\" ./node_modules/.pnpm/weaviate-client@3.9.0_patch_hash=fa0a287aabbb267a9390a72cb310a641afd7fb1d96311589acd38137739f4a99_encoding@0.1.13/node_modules/weaviate-client/dist/node/cjs/proto/v1/base_search.d.ts 2>/dev/null | head -10"
+   },
+   "refused": false,
+   "result_head": "exit 0\n"
+  },
+  {
+   "step": 14,
+   "tool": "shell",
+   "args": {
+    "cmd": "grep -rn \"hybrid\" ./node_modules/.pnpm/weaviate-client@3.9.0_patch_hash=fa0a287aabbb267a9390a72cb310a641afd7fb1d96311589acd38137739f4a99_encoding@0.1.13/node_modules/weaviate-client/dist/ --include=\"*.d.ts\" 2>/dev/null | head -30"
+   },
+   "refused": false,
+   "result_head": "exit 0\n./node_modules/.pnpm/weaviate-client@3.9.0_patch_hash=fa0a287aabbb267a9390a72cb310a641afd7fb1d96311589acd38137739f4a99_encoding@0.1.13/node_modules/weaviate-client/dist/node/cjs/proto/v1/weaviate.d.ts:116:                    hybridSearch?: {\n./node_modules/.pnpm/weaviate-client@3.9.0_patch_ha"
+  },
+  {
+   "step": 15,
+   "tool": "shell",
+   "args": {
+    "cmd": "cat ./node_modules/.pnpm/weaviate-client@3.9.0_patch_hash=fa0a287aabbb267a9390a72cb310a641afd7fb1d96311589acd38137739f4a99_encoding@0.1.13/node_modules/weaviate-client/dist/node/cjs/graphql/hybrid.d.ts"
+   },
+   "refused": false,
+   "result_head": "exit 0\nimport { Move } from './nearText.js';\nexport interface HybridArgs {\n    alpha?: number;\n    query: string;\n    vector?: number[];\n    properties?: string[];\n    targetVectors?: string[];\n    fusionType?: FusionType;\n    searches?: HybridSubSearch[];\n    maxVectorDistance?: number;\n}\nexport in"
+  },
+  {
+   "step": 16,
+   "tool": "shell",
+   "args": {
+    "cmd": "grep -n \"filters\" ./node_modules/.pnpm/weaviate-client@3.9.0_patch_hash=fa0a287aabbb267a9390a72cb310a641afd7fb1d96311589acd38137739f4a99_encoding@0.1.13/node_modules/weaviate-client/dist/node/cjs/collections/query/*.d.ts 2>/dev/null | head -20"
+   },
+   "refused": false,
+   "result_head": "exit 0\n./node_modules/.pnpm/weaviate-client@3.9.0_patch_hash=fa0a287aabbb267a9390a72cb310a641afd7fb1d96311589acd38137739f4a99_encoding@0.1.13/node_modules/weaviate-client/dist/node/cjs/collections/query/types.d.ts:2:import { FilterValue } from '../filters/index.js';\n./node_modules/.pnpm/weaviate-cli"
+  },
+  {
+   "step": 17,
+   "tool": "read_file",
+   "args": {
+    "path": "./node_modules/.pnpm/weaviate-client@3.9.0_patch_hash=fa0a287aabbb267a9390a72cb310a641afd7fb1d96311589acd38137739f4a99_encoding@0.1.13/node_modules/weaviate-client/dist/node/cjs/collections/query/types.d.ts",
+    "start": 1,
+    "end": 120
+   },
+   "refused": false,
+   "result_head": "1: /// <reference types=\"node\" />\n2: import { FilterValue } from '../filters/index.js';\n3: import { MultiTargetVectorJoin, ReturnVectors } from '../index.js';\n4: import { Sorting } from '../sort/classes.js';\n5: import { GroupByOptions, GroupByReturn, QueryMetadata, QueryProperty, QueryReference, Rer"
+  },
+  {
+   "step": 18,
+   "tool": "edit_file",
+   "args": {
+    "path": "./packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.ts",
+    "old": "\t\tif (args.hybridQuery) {\n\t\t\tconst options = {\n\t\t\t\tlimit: k ?? undefined,\n\t\t\t\tautoLimit: args.autoCutLimit ?? undefined,\n\t\t\t\talpha: args.alpha ?? undefined,\n\t\t\t\tvector: query,\n\t\t\t\tfilter: filter ? parseCompositeFilter(filter as WeaviateCompositeFilter) : undefined,\n\t\t\t\tqueryProperties: args.queryPro",
+    "new": "\t\tif (args.hybridQuery) {\n\t\t\tconst options = {\n\t\t\t\tlimit: k ?? undefined,\n\t\t\t\tautoLimit: args.autoCutLimit ?? undefined,\n\t\t\t\talpha: args.alpha ?? undefined,\n\t\t\t\tvector: query,\n\t\t\t\tfilters: filter ? parseCompositeFilter(filter as WeaviateCompositeFilter) : undefined,\n\t\t\t\tqueryProperties: args.queryPr"
+   },
+   "refused": false,
+   "result_head": "edited ./packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.ts"
+  },
+  {
+   "step": 19,
+   "tool": "edit_file",
+   "args": {
+    "path": "./packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts",
+    "old": "\t\tit('should send the hybrid options with the query vector', async () => {\n\t\t\tstore.hybridSearch.mockResolvedValue([]);\n\t\t\tconst vectorStore = await getStore(hybridOptions);\n\n\t\t\tawait vectorStore.similaritySearchVectorWithScore([0.1, 0.2], 3);\n\n\t\t\texpect(store.hybridSearch).toHaveBeenCalledWith('cat",
+    "new": "\t\tit('should send the hybrid options with the query vector', async () => {\n\t\t\tstore.hybridSearch.mockResolvedValue([]);\n\t\t\tconst vectorStore = await getStore(hybridOptions);\n\n\t\t\tawait vectorStore.similaritySearchVectorWithScore([0.1, 0.2], 3);\n\n\t\t\texpect(store.hybridSearch).toHaveBeenCalledWith('cat"
+   },
+   "refused": false,
+   "result_head": "edited ./packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts"
+  },
+  {
+   "step": 20,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd packages/@n8n/nodes-langchain && pnpm exec vitest run nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts 2>&1"
+   },
+   "refused": false,
+   "result_head": "exit 0\n\u001b[33m(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:\n  - ESM syntax in a file loaded as CommonJS (vite.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest"
+  },
+  {
+   "step": 21,
+   "tool": "read_file",
+   "args": {
+    "path": "./packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.ts",
+    "start": 60,
+    "end": 98
+   },
+   "refused": false,
+   "result_head": "60: \tasync similaritySearchVectorWithScore(query: number[], k: number, filter?: IDataObject) {\n61: \t\tfilter = filter ?? this.defaultFilter;\n62: \t\tconst args = this.args;\n63: \n64: \t\tif (args.hybridQuery) {\n65: \t\t\tconst options = {\n66: \t\t\t\tlimit: k ?? undefined,\n67: \t\t\t\tautoLimit: args.autoCutLimit ??"
+  },
+  {
+   "step": 22,
+   "tool": "read_file",
+   "args": {
+    "path": "./packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts",
+    "start": 334,
+    "end": 405
+   },
+   "refused": false,
+   "result_head": "334: \t\tit('should send the hybrid options with the query vector', async () => {\n335: \t\t\tstore.hybridSearch.mockResolvedValue([]);\n336: \t\t\tconst vectorStore = await getStore(hybridOptions);\n337: \n338: \t\t\tawait vectorStore.similaritySearchVectorWithScore([0.1, 0.2], 3);\n339: \n340: \t\t\texpect(store.hybr"
+  }
+ ],
+ "diff": "diff --git a/packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts b/packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts\nindex 46914fb4..49dfbe03 100644\n--- a/packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts\n+++ b/packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts\n@@ -342,7 +342,7 @@ describe('VectorStoreWeaviate.node', () => {\n \t\t\t\tautoLimit: 2,\n \t\t\t\talpha: 0.3,\n \t\t\t\tvector: [0.1, 0.2],\n-\t\t\t\tfilter: undefined,\n+\t\t\t\tfilters: undefined,\n \t\t\t\tqueryProperties: ['title', 'body'],\n \t\t\t\tmaxVectorDistance: 0.4,\n \t\t\t\tfusionType: 'Ranked',\n@@ -350,6 +350,35 @@ describe('VectorStoreWeaviate.node', () => {\n \t\t\t});\n \t\t});\n \n+\t\tit('should pass the node filter to hybrid search', async () => {\n+\t\t\tstore.hybridSearch.mockResolvedValue([]);\n+\t\t\tconst vectorStore = await getStore(hybridOptions, authorFilter);\n+\n+\t\t\tawait vectorStore.similaritySearchVectorWithScore([0.1, 0.2], 3);\n+\n+\t\t\texpect(store.hybridSearch).toHaveBeenCalledWith(\n+\t\t\t\t'cats',\n+\t\t\t\texpect.objectContaining({\n+\t\t\t\t\tfilters: parseCompositeFilter(authorFilter),\n+\t\t\t\t}),\n+\t\t\t);\n+\t\t});\n+\n+\t\tit('should pass the search filter to hybrid search over the node filter', async () => {\n+\t\t\tstore.hybridSearch.mockResolvedValue([]);\n+\t\t\tconst searchFilter = { AND: [{ path: ['year'], operator: 'LessThan', valueNumber: 2000 }] };\n+\t\t\tconst vectorStore = await getStore(hybridOptions, authorFilter);\n+\n+\t\t\tawait vectorStore.similaritySearchVectorWithScore([0.1, 0.2], 3, searchFilter);\n+\n+\t\t\texpect(store.hybridSearch).toHaveBeenCalledWith(\n+\t\t\t\t'cats',\n+\t\t\t\texpect.objectContaining({\n+\t\t\t\t\tfilters: parseCompositeFilter(searchFilter),\n+\t\t\t\t}),\n+\t\t\t);\n+\t\t});\n+\n \t\tit('should not ask for the score explanation when it is turned off', async () => {\n \t\t\tstore.hybridSearch.mockResolvedValue([]);\n \t\t\tconst vectorStore = await getStore({ hybridQuery: 'cats' });\ndiff --git a/packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.ts b/packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.ts\nindex 45550026..9ed15980 100644\n--- a/packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.ts\n+++ b/packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.ts\n@@ -67,7 +67,7 @@ class ExtendedWeaviateVectorStore extends WeaviateStore {\n \t\t\t\tautoLimit: args.autoCutLimit ?? undefined,\n \t\t\t\talpha: args.alpha ?? undefined,\n \t\t\t\tvector: query,\n-\t\t\t\tfilter: filter ? parseCompositeFilter(filter as WeaviateCompositeFilter) : undefined,\n+\t\t\t\tfilters: filter ? parseCompositeFilter(filter as WeaviateCompositeFilter) : undefined,\n \t\t\t\tqueryProperties: args.queryProperties\n \t\t\t\t\t? args.queryProperties.split(',').map((prop) => prop.trim())\n \t\t\t\t\t: undefined,\n",
+ "isolation": {
+  "container": "per-run",
+  "mounts": [
+   "runs/n8n-43517/deepseek_deepseek-v4-flash-amd-off"
+  ],
+  "network": "jail (egress /llm only)",
+  "user": "1001",
+  "caps": "none",
+  "memory": "2g"
+ }
+}

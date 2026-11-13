@@ -1,0 +1,17 @@
+{
+ "task": "n8n-41838",
+ "base_fails": true,
+ "failing": [
+  "should resolve the schema URL for http://localhost:5678//api/v1",
+  "should resolve the schema URL for http://localhost:5678/api/v1/",
+  "should resolve the schema URL for http://localhost:5678/api/v1///",
+  "should resolve the schema URL for http://localhost:5678//api//v1///",
+  "should resolve the schema URL for https://example.com/n8n//api/v1///",
+  "should resolve the schema URL for http://[::1]:5678//api/v1///",
+  "should resolve the schema URL for https://example.com/n8n%2Ftest//api/v1/\u2026",
+  "should request workflows from http://localhost:5678//api/v1",
+  "should request workflows from http://localhost:5678/api/v1///",
+  "should request workflows from http://localhost:5678//api//v1///"
+ ],
+ "tail": "m/n8n%2Ftest//api/v1/\u2026\nAssertionError: expected \"vi.fn()\" to be called once with arguments: [ 'n8nApi', ObjectContaining{\u2026} ]\n\nReceived:\n\n  1st vi.fn() call:\n\n  [\n    \"n8nApi\",\n-   ObjectContaining {\n+   {\n+     \"body\": {},\n+     \"json\": true,\n      \"method\": \"GET\",\n-     \"uri\": \"https://example.com/n8n%2Ftest/api/v1/workflows\",\n+     \"qs\": {\n+       \"cursor\": undefined,\n+       \"limit\": 100,\n+     },\n+     \"uri\": \"https://example.com/n8n%2Ftest//api/v1///workflows\",\n    },\n  ]\n\n\nNumber of calls: 1\n\n \u276f nodes/N8n/test/WorkflowLocator.test.ts:52:53\n     50|\n     51|   expect(context.getCredentials).toHaveBeenCalledWith('n8nApi');\n     52|   expect(context.helpers.requestWithAuthentication).toHaveBeenCalledEx\u2026\n       |                                                     ^\n     53|    'n8nApi',\n     54|    expect.objectContaining({ method: 'GET', uri: expectedUrl }),\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[14/14]\u23af\n\n\n Test Files  3 failed (3)\n      Tests  13 failed | 5 passed | 2 skipped (20)\n   Start at  23:24:46\n   Duration  4.81s (transform 60%, import 37%, setup 2%, tests 1%)\n\n  Transform  transforming modules took 5.99s \u00b7 60% of tracked time, re-done on every run\n             persist transforms across runs with fsModuleCache: true\n             on CI this only helps when the cache directory is persisted between runs\n             learn more: https://vitest.dev/guide/improving-performance#caching-between-reruns\n\nJUNIT report written to /work/runs/n8n-41838/control/packages/nodes-base/junit.xml\n"
+}

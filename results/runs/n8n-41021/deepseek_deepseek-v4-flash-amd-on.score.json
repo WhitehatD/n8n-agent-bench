@@ -1,0 +1,38 @@
+{
+ "task": "n8n-41021",
+ "model": "deepseek/deepseek-v4-flash",
+ "agents_md": "on",
+ "held_out_tests_pass": true,
+ "policy": {
+  "deny_write_hits": [],
+  "human_review_path_hits": [],
+  "gate_model": "morph/reflex",
+  "gate_p_needs_human": 0.0006472271617402937,
+  "needs_human": false,
+  "refused_tool_calls": 0
+ },
+ "closeness": {
+  "agent_files": [
+   "packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/text/message.operation.test.ts",
+   "packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/text/message.operation.ts"
+  ],
+  "gold_src_files": [
+   "packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/text/message.operation.ts"
+  ],
+  "src_file_overlap": 1.0,
+  "extra_files": [
+   "packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/text/message.operation.test.ts"
+  ],
+  "agent_lines": 38,
+  "gold_lines": 82
+ },
+ "cost_usd": 0.0265,
+ "steps": 31,
+ "seconds": 150,
+ "finished": true,
+ "held_out": {
+  "passed": true,
+  "seconds": 7,
+  "tail": "(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:\n  - ESM syntax in a file loaded as CommonJS (vite.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest package.json\nSet `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.\n\n RUN  v5.0.1 /work/runs/n8n-41021/deepseek_deepseek-v4-flash-amd-on/packages/@n8n/nodes-langchain\n\n \u2713 nodes/vendors/GoogleGemini/GoogleGemini.node.test.ts (43 tests) 76ms\n\n Test Files  1 passed (1)\n      Tests  43 passed (43)\n   Start at  23:59:37\n   Duration  4.63s (import 82%, transform 16%, tests 2%)\n\nJUNIT report written to /work/runs/n8n-41021/deepseek_deepseek-v4-flash-amd-on/packages/@n8n/nodes-langchain/junit.xml\n"
+ }
+}

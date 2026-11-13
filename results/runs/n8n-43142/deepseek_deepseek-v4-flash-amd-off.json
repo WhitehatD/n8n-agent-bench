@@ -1,0 +1,331 @@
+{
+ "task": "n8n-43142",
+ "model": "deepseek/deepseek-v4-flash",
+ "agents_md": "off",
+ "steps": 31,
+ "seconds": 242,
+ "usage": {
+  "prompt": 668455,
+  "completion": 8173,
+  "cost": 0.021083248
+ },
+ "finish": {
+  "summary": "**Root cause:** `ScalingService.registerWorkerListeners()` only handled `abort-job` progress messages and queue errors. It did not handle `job-finished` / `job-failed` progress messages (notifying `JobOutcomeTracker.recordFinished`/`recordFailed`), nor did it register Bull `global:completed` / `global:failed` fallback listeners. When a worker enqueued a child job (e.g. from a native Agent workflow tool), the completion event was sent via Bull pubsub to all processes, but the calling worker ignored it \u2014 so `waitFor()` stayed pending until the 60-second DB recheck interval resolved it.\n\n**Fix:** Added the same `job-finished`, `job-failed`, `global:completed`, and `global:failed` handlers to `registerWorkerListeners()` that already existed in `registerMainOrWebhookListeners()`. Workers can enqueue and await child jobs too, so they need to consume these events promptly. The handler mirrors the main listener pattern, preserving v2 result details (success, status, waitTill, metadata, etc.), logging, and early completion/failure buffering. Abort handling and queue error behaviour remain unchanged.\n\n**Tests added:** 6 new tests in `scaling.service.test.ts`:\n- job-finished progress message calls `jobOutcomeTracker.recordFinished`\n- job-failed progress message calls `jobOutcomeTracker.recordFailed`\n- global:completed calls `jobOutcomeTracker.settleByJobKey`\n- global:failed calls `jobOutcomeTracker.settleByJobKey` with an `OperationalError`\n- abort-job still calls `jobProcessor.stopJob`\n- Unrelated progress message kinds (send-chunk, respond-to-webhook, mcp-response) are ignored on workers",
+  "risks": "Low risk. The change adds event handlers to the worker listener that were already present in the main/webhook listener, using the same code paths (`JobOutcomeTracker` methods and `OperationalError` construction). The abort-job behaviour is unchanged. The only new behaviour on workers is consuming job completion/failure events, which was missing and is the expected behaviour.",
+  "tests_run": "`cd packages/cli && NODE_OPTIONS=\"--max-old-space-size=2048\" pnpm exec vitest run src/scaling/__tests__/scaling.service.test.ts src/scaling/__tests__/job-outcome-tracker.test.ts` \u2014 103 tests passed (78 scaling service tests including 6 new, 25 job outcome tracker tests)"
+ },
+ "trace": [
+  {
+   "step": 0,
+   "tool": "shell",
+   "args": {
+    "cmd": "find . -type f -name \"scaling.service.ts\" | head -5"
+   },
+   "refused": false,
+   "result_head": "exit 0\n./packages/cli/src/scaling/scaling.service.ts\n"
+  },
+  {
+   "step": 0,
+   "tool": "shell",
+   "args": {
+    "cmd": "find . -type f -name \"job-outcome-tracker.ts\" | head -5"
+   },
+   "refused": false,
+   "result_head": "exit 0\n./packages/cli/src/scaling/job-outcome-tracker.ts\n"
+  },
+  {
+   "step": 0,
+   "tool": "shell",
+   "args": {
+    "cmd": "find . -type f -name \"constants.ts\" -path \"*/scaling/*\" | head -5"
+   },
+   "refused": false,
+   "result_head": "exit 0\n./packages/cli/src/scaling/constants.ts\n"
+  },
+  {
+   "step": 1,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/cli/src/scaling/scaling.service.ts",
+    "start": 540,
+    "end": 620
+   },
+   "refused": false,
+   "result_head": "540: \t// #region Listeners\n541: \n542: \tprivate registerListenersForQueue(queue: JobQueue) {\n543: \t\tconst { instanceType } = this.instanceSettings;\n544: \t\tif (instanceType === 'main' || instanceType === 'webhook') {\n545: \t\t\tthis.registerMainOrWebhookListeners(queue);\n546: \t\t} else if (instanceType =="
+  },
+  {
+   "step": 1,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/cli/src/scaling/job-outcome-tracker.ts"
+   },
+   "refused": false,
+   "result_head": "1: import { Logger } from '@n8n/backend-common';\n2: import { EventService } from '@n8n/backend-services';\n3: import { ExecutionRepository } from '@n8n/db';\n4: import { Service } from '@n8n/di';\n5: import type { ExecutionStatus, IExecuteResponsePromiseData } from 'n8n-workflow';\n6: \n7: import { Activ"
+  },
+  {
+   "step": 1,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/cli/src/scaling/constants.ts"
+   },
+   "refused": false,
+   "result_head": "1: import { Time } from '@n8n/constants';\n2: \n3: export const JOB_TYPE_NAME = 'job';\n4: \n5: /** How often a main rechecks the DB for a queued job whose completion event it may have missed. */\n6: export const JOB_WAIT_RECHECK_INTERVAL_MS = 60 * Time.seconds.toMilliseconds;"
+  },
+  {
+   "step": 2,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/cli/src/scaling/scaling.service.ts",
+    "start": 580,
+    "end": 700
+   },
+   "refused": false,
+   "result_head": "580: \t/**\n581: \t * Register listeners on a `main` or `webhook` process for Bull queue events.\n582: \t */\n583: \tprivate registerMainOrWebhookListeners(queue: JobQueue) {\n584: \t\tqueue.on('error', (error: Error) => {\n585: \t\t\tif ('code' in error && error.code === 'ECONNREFUSED') return; // handled by Red"
+  },
+  {
+   "step": 2,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/cli/src/scaling/scaling.service.ts",
+    "start": 700,
+    "end": 780
+   },
+   "refused": false,
+   "result_head": "700: \t\t\tthis.jobOutcomeTracker.settleByJobKey(queue.name, jobId, new OperationalError(failedReason));\n701: \t\t});\n702: \t\tqueue.on('global:completed', (jobId: JobId) => {\n703: \t\t\tthis.jobOutcomeTracker.settleByJobKey(queue.name, jobId);\n704: \t\t});\n705: \n706: \t\tif (this.isQueueMetricsEnabled) {\n707: \t\t"
+  },
+  {
+   "step": 3,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/cli/src/scaling/scaling.service.ts",
+    "start": 1,
+    "end": 60
+   },
+   "refused": false,
+   "result_head": "1: import { isObjectLiteral, Logger } from '@n8n/backend-common';\n2: import { EventService } from '@n8n/backend-services';\n3: import { GlobalConfig } from '@n8n/config';\n4: import { Time } from '@n8n/constants';\n5: import { ExecutionRepository } from '@n8n/db';\n6: import {\n7: \tHIGHEST_SHUTDOWN_PRIOR"
+  },
+  {
+   "step": 4,
+   "tool": "shell",
+   "args": {
+    "cmd": "find . -type f -name \"*.test.ts\" -path \"*/scaling/*\" | head -10"
+   },
+   "refused": false,
+   "result_head": "exit 0\n./packages/cli/src/scaling/pubsub/__tests__/pubsub.registry.test.ts\n./packages/cli/src/scaling/__tests__/bull-idle-claim.integration.test.ts\n./packages/cli/src/scaling/__tests__/worker-status.service.test.ts\n./packages/cli/src/scaling/__tests__/webhook-response-relay.test.ts\n./packages/cli/sr"
+  },
+  {
+   "step": 4,
+   "tool": "shell",
+   "args": {
+    "cmd": "find . -type f -name \"*.test.ts\" | xargs grep -l \"registerWorkerListeners\\|registerMainOrWebhookListeners\" 2>/dev/null | head -5"
+   },
+   "refused": false,
+   "result_head": "exit 0\n./packages/cli/src/scaling/__tests__/scaling.service.test.ts\n"
+  },
+  {
+   "step": 5,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/cli/src/scaling/__tests__/scaling.service.test.ts"
+   },
+   "refused": false,
+   "result_head": "1: import type { Logger } from '@n8n/backend-common';\n2: import { mockLogger, mockInstance } from '@n8n/backend-test-utils';\n3: import { GlobalConfig, WorkerPoolConfig } from '@n8n/config';\n4: import type { ExecutionRepository } from '@n8n/db';\n5: import { Container } from '@n8n/di';\n6: import * as "
+  },
+  {
+   "step": 6,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/cli/src/scaling/scaling.types.ts"
+   },
+   "refused": false,
+   "result_head": "1: import type { RunningJobSummary } from '@n8n/api-types';\n2: import type Bull from 'bull';\n3: import type {\n4: \tExecutionError,\n5: \tExecutionStatus,\n6: \tIDataObject,\n7: \tIExecuteResponsePromiseData,\n8: \tIRun,\n9: \tStructuredChunk,\n10: } from 'n8n-workflow';\n11: import type PCancelable from 'p-cance"
+  },
+  {
+   "step": 7,
+   "tool": "shell",
+   "args": {
+    "cmd": "find . -type f -name \"job-outcome-tracker.test.ts\" | head -5"
+   },
+   "refused": false,
+   "result_head": "exit 0\n./packages/cli/src/scaling/__tests__/job-outcome-tracker.test.ts\n"
+  },
+  {
+   "step": 8,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/cli/src/scaling/__tests__/job-outcome-tracker.test.ts"
+   },
+   "refused": false,
+   "result_head": "1: import { mockLogger } from '@n8n/backend-test-utils';\n2: import type { EventService } from '@n8n/backend-services';\n3: import type { ExecutionRepository } from '@n8n/db';\n4: import type { ExecutionStatus } from 'n8n-workflow';\n5: import { mock } from 'vitest-mock-extended';\n6: \n7: import type { A"
+  },
+  {
+   "step": 9,
+   "tool": "edit_file",
+   "args": {
+    "path": "packages/cli/src/scaling/scaling.service.ts",
+    "old": "\t/**\n\t * Register listeners on a `worker` process for Bull queue events.\n\t */\n\tprivate registerWorkerListeners(queue: JobQueue) {\n\t\tqueue.on('global:progress', (jobId: JobId, msg: unknown) => {\n\t\t\tif (!this.isJobMessage(msg)) return;\n\n\t\t\tif (msg.kind === 'abort-job') this.jobProcessor.stopJob(jobId)",
+    "new": "\t/**\n\t * Register listeners on a `worker` process for Bull queue events.\n\t *\n\t * Workers can enqueue and await child workflow jobs (e.g. from a native Agent\n\t * workflow tool). These listeners handle child job completion/failure events\n\t * so the caller worker does not have to wait for the periodic "
+   },
+   "refused": false,
+   "result_head": "edited packages/cli/src/scaling/scaling.service.ts"
+  },
+  {
+   "step": 10,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/cli/src/scaling/scaling.service.ts",
+    "start": 551,
+    "end": 660
+   },
+   "refused": false,
+   "result_head": "551: \t/**\n552: \t * Register listeners on a `worker` process for Bull queue events.\n553: \t *\n554: \t * Workers can enqueue and await child workflow jobs (e.g. from a native Agent\n555: \t * workflow tool). These listeners handle child job completion/failure events\n556: \t * so the caller worker does not "
+  },
+  {
+   "step": 11,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/cli/src/scaling/__tests__/scaling.service.test.ts",
+    "start": 393,
+    "end": 500
+   },
+   "refused": false,
+   "result_head": "393: \t\tit('should process a job that reaches the worker before shutdown without warning', async () => {\n394: \t\t\t// @ts-expect-error readonly property\n395: \t\t\tinstanceSettings.instanceType = 'worker';\n396: \t\t\tawait scalingService.setupQueue();\n397: \t\t\tscalingService.setupWorker(5);\n398: \t\t\tconst proc"
+  },
+  {
+   "step": 12,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/cli/src/scaling/__tests__/scaling.service.test.ts",
+    "start": 500,
+    "end": 550
+   },
+   "refused": false,
+   "result_head": "500: \t\t\t\t// @ts-expect-error readonly property\n501: \t\t\t\tinstanceSettings.instanceType = 'worker';\n502: \t\t\t\tawait scalingService.setupQueue();\n503: \t\t\t\tjobProcessor.getTrackedJobIds.mockReturnValueOnce(['1']).mockReturnValue([]);\n504: \t\t\t\tjobProcessor.getJobsInPreflight.mockReturnValue([{ jobId: '1',"
+  },
+  {
+   "step": 13,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd packages/cli && pnpm exec vitest run src/scaling/__tests__/scaling.service.test.ts --no-color 2>&1 | tail -40"
+   },
+   "refused": false,
+   "result_head": "exit 0\n(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:\n  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest pa"
+  },
+  {
+   "step": 14,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd packages/cli && NODE_OPTIONS=\"--max-old-space-size=2048\" pnpm exec vitest run src/scaling/__tests__/scaling.service.test.ts --no-color 2>&1 | tail -30"
+   },
+   "refused": false,
+   "result_head": "exit 0\n(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:\n  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest pa"
+  },
+  {
+   "step": 15,
+   "tool": "edit_file",
+   "args": {
+    "path": "packages/cli/src/scaling/__tests__/scaling.service.test.ts",
+    "old": "\tdescribe('stop', () => {",
+    "new": "\tdescribe('registerWorkerListeners', () => {\n\t\tconst msg = <T>(overrides: T & { kind: string }) =>\n\t\t\t({ kind: '', workerId: 'worker-1', ...overrides }) as unknown as Parameters<\n\t\t\t\tJobQueue['emit']\n\t\t\t>[1];\n\n\t\tbeforeEach(() => {\n\t\t\t// @ts-expect-error readonly property\n\t\t\tinstanceSettings.instance"
+   },
+   "refused": false,
+   "result_head": "edited packages/cli/src/scaling/__tests__/scaling.service.test.ts"
+  },
+  {
+   "step": 16,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd packages/cli && NODE_OPTIONS=\"--max-old-space-size=2048\" pnpm exec vitest run src/scaling/__tests__/scaling.service.test.ts --no-color 2>&1 | tail -30"
+   },
+   "refused": false,
+   "result_head": "exit 0\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[4/5]\u23af\n\n FAIL  src/scaling/__tests__/scaling.service.test.ts > ScalingService > registerWorkerListeners > should still handle abort-job messages\nAssertionError: expected \"vi.fn()\" to be called with arguments: [ '42' ]\u001b[90m\n\nNumber of calls: \u001b[1m0\u001b[22m\n\u001b[39m\n \u276f src/sca"
+  },
+  {
+   "step": 17,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd packages/cli && grep -n \"queue.on\\|queue.emit\" src/scaling/__tests__/scaling.service.test.ts"
+   },
+   "refused": false,
+   "result_head": "exit 0\n422:\t\t\tqueue.emit(\n449:\t\t\tqueue.emit(\n466:\t\t\tqueue.emit('global:completed', '42');\n474:\t\t\tqueue.emit('global:failed', '42', 'something went wrong');\n486:\t\t\tqueue.emit('global:progress', '42', msg({ kind: 'abort-job' }));\n494:\t\t\tqueue.emit('global:progress', '1', msg({ kind: 'send-chunk', exec"
+  },
+  {
+   "step": 18,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/cli/src/scaling/__tests__/scaling.service.test.ts",
+    "start": 1100,
+    "end": 1180
+   },
+   "refused": false,
+   "result_head": "1100: \t\t\tconst activeExecutions = mock<ActiveExecutions>();\n1101: \t\t\tscalingService = new ScalingService(\n1102: \t\t\t\tmockLogger(),\n1103: \t\t\t\tmock(),\n1104: \t\t\t\tactiveExecutions,\n1105: \t\t\t\tjobProcessor,\n1106: \t\t\t\tglobalConfig,\n1107: \t\t\t\tmock(),\n1108: \t\t\t\tmock(),\n1109: \t\t\t\tinstanceSettings,\n1110: \t\t\t\tmo"
+  },
+  {
+   "step": 19,
+   "tool": "edit_file",
+   "args": {
+    "path": "packages/cli/src/scaling/__tests__/scaling.service.test.ts",
+    "old": "\tdescribe('registerWorkerListeners', () => {\n\t\tconst msg = <T>(overrides: T & { kind: string }) =>\n\t\t\t({ kind: '', workerId: 'worker-1', ...overrides }) as unknown as Parameters<\n\t\t\t\tJobQueue['emit']\n\t\t\t>[1];\n\n\t\tbeforeEach(() => {\n\t\t\t// @ts-expect-error readonly property\n\t\t\tinstanceSettings.instance",
+    "new": "\tdescribe('registerWorkerListeners', () => {\n\t\tbeforeEach(() => {\n\t\t\t// @ts-expect-error readonly property\n\t\t\tinstanceSettings.instanceType = 'worker';\n\t\t\tvi.clearAllMocks();\n\t\t});\n\n\t\tconst findHandler = (event: string) =>\n\t\t\tqueue.on.mock.calls.find(([name]) => (name as string) === event)?.[1] as\n\t"
+   },
+   "refused": false,
+   "result_head": "edited packages/cli/src/scaling/__tests__/scaling.service.test.ts"
+  },
+  {
+   "step": 20,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd packages/cli && NODE_OPTIONS=\"--max-old-space-size=2048\" pnpm exec vitest run src/scaling/__tests__/scaling.service.test.ts --no-color 2>&1 | tail -30"
+   },
+   "refused": false,
+   "result_head": "exit 0\n(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:\n  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest pa"
+  },
+  {
+   "step": 21,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd packages/cli && NODE_OPTIONS=\"--max-old-space-size=2048\" pnpm exec vitest run src/scaling/__tests__/job-outcome-tracker.test.ts --no-color 2>&1 | tail -15"
+   },
+   "refused": false,
+   "result_head": "exit 0\n RUN  v5.0.1 /work/runs/n8n-43142/deepseek_deepseek-v4-flash-amd-off/packages/cli\n\n \u2713 src/scaling/__tests__/job-outcome-tracker.test.ts (25 tests) 18ms\n\n Test Files  1 passed (1)\n      Tests  25 passed (25)\n   Start at  00:14:44\n   Duration  7.54s (transform 82%, setup 9%, import 9%)\n\n  Trans"
+  },
+  {
+   "step": 22,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd packages/cli && git diff src/scaling/scaling.service.ts"
+   },
+   "refused": false,
+   "result_head": "exit 0\ndiff --git a/packages/cli/src/scaling/scaling.service.ts b/packages/cli/src/scaling/scaling.service.ts\nindex 3d66d87f..765ff2f8 100644\n--- a/packages/cli/src/scaling/scaling.service.ts\n+++ b/packages/cli/src/scaling/scaling.service.ts\n@@ -550,12 +550,90 @@ export class ScalingService {\n \n \t/*"
+  },
+  {
+   "step": 23,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd packages/cli && git diff src/scaling/__tests__/scaling.service.test.ts"
+   },
+   "refused": false,
+   "result_head": "exit 0\ndiff --git a/packages/cli/src/scaling/__tests__/scaling.service.test.ts b/packages/cli/src/scaling/__tests__/scaling.service.test.ts\nindex ef478d70..5ef3fca6 100644\n--- a/packages/cli/src/scaling/__tests__/scaling.service.test.ts\n+++ b/packages/cli/src/scaling/__tests__/scaling.service.test.t"
+  },
+  {
+   "step": 24,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd packages/cli && NODE_OPTIONS=\"--max-old-space-size=2048\" pnpm exec vitest run src/scaling/__tests__/scaling.service.test.ts src/scaling/__tests__/job-outcome-tracker.test.ts --no-color 2>&1 | tail -20"
+   },
+   "refused": false,
+   "result_head": "exit 0\nSet `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.\n\n RUN  v5.0.1 /work/runs/n8n-43142/deepseek_deepseek-v4-flash-amd-off/packages/cli\n\n \u2713 src/scaling/__tests__/job-outcome-tracker.test.ts (25 tests) 22ms\n(node:491) MaxListenersExceededWarning: Possible EventEmitter memory "
+  }
+ ],
+ "diff": "diff --git a/packages/cli/src/scaling/__tests__/scaling.service.test.ts b/packages/cli/src/scaling/__tests__/scaling.service.test.ts\nindex ef478d70..5ef3fca6 100644\n--- a/packages/cli/src/scaling/__tests__/scaling.service.test.ts\n+++ b/packages/cli/src/scaling/__tests__/scaling.service.test.ts\n@@ -405,6 +405,127 @@ describe('ScalingService', () => {\n \t\t});\n \t});\n \n+\tdescribe('registerWorkerListeners', () => {\n+\t\tbeforeEach(() => {\n+\t\t\t// @ts-expect-error readonly property\n+\t\t\tinstanceSettings.instanceType = 'worker';\n+\t\t\tvi.clearAllMocks();\n+\t\t});\n+\n+\t\tconst findHandler = (event: string) =>\n+\t\t\tqueue.on.mock.calls.find(([name]) => (name as string) === event)?.[1] as\n+\t\t\t\t| ((...args: unknown[]) => void)\n+\t\t\t\t| undefined;\n+\n+\t\tit('should call jobOutcomeTracker.recordFinished on job-finished progress message', async () => {\n+\t\t\tawait scalingService.setupQueue();\n+\n+\t\t\tconst handler = findHandler('global:progress');\n+\t\t\texpect(handler).toBeDefined();\n+\n+\t\t\thandler('42', {\n+\t\t\t\tkind: 'job-finished',\n+\t\t\t\tversion: 2,\n+\t\t\t\texecutionId: 'exec-1',\n+\t\t\t\tworkerId: 'worker-1',\n+\t\t\t\tsuccess: true,\n+\t\t\t\tstatus: 'success',\n+\t\t\t\tstartedAt: '2026-11-09T00:00:00.000Z',\n+\t\t\t\tstoppedAt: '2026-11-09T00:00:00.020Z',\n+\t\t\t\twaitTill: null,\n+\t\t\t\tlastNodeExecuted: 'Return result',\n+\t\t\t});\n+\n+\t\t\texpect(jobOutcomeTracker.recordFinished).toHaveBeenCalledWith(\n+\t\t\t\t'jobs',\n+\t\t\t\t'42',\n+\t\t\t\t'exec-1',\n+\t\t\t\texpect.objectContaining({ success: true, status: 'success' }),\n+\t\t\t);\n+\t\t});\n+\n+\t\tit('should call jobOutcomeTracker.recordFailed on job-failed progress message', async () => {\n+\t\t\tawait scalingService.setupQueue();\n+\n+\t\t\tconst handler = findHandler('global:progress');\n+\t\t\texpect(handler).toBeDefined();\n+\n+\t\t\thandler('42', {\n+\t\t\t\tkind: 'job-failed',\n+\t\t\t\texecutionId: 'exec-1',\n+\t\t\t\tworkerId: 'worker-1',\n+\t\t\t\terrorMsg: 'child failed',\n+\t\t\t\terrorStack: '',\n+\t\t\t});\n+\n+\t\t\texpect(jobOutcomeTracker.recordFailed).toHaveBeenCalledWith(\n+\t\t\t\t'jobs',\n+\t\t\t\t'42',\n+\t\t\t\t'exec-1',\n+\t\t\t\texpect.any(OperationalError),\n+\t\t\t);\n+\t\t});\n+\n+\t\tit('should call jobOutcomeTracker.settleByJobKey on global:completed', async () => {\n+\t\t\tawait scalingService.setupQueue();\n+\n+\t\t\tconst handler = findHandler('global:completed');\n+\t\t\texpect(handler).toBeDefined();\n+\n+\t\t\thandler('42');\n+\n+\t\t\texpect(jobOutcomeTracker.settleByJobKey).toHaveBeenCalledWith('jobs', '42');\n+\t\t});\n+\n+\t\tit('should call jobOutcomeTracker.settleByJobKey on global:failed', async () => {\n+\t\t\tawait scalingService.setupQueue();\n+\n+\t\t\tconst handler = findHandler('global:failed');\n+\t\t\texpect(handler).toBeDefined();\n+\n+\t\t\thandler('42', 'something went wrong');\n+\n+\t\t\texpect(jobOutcomeTracker.settleByJobKey).toHaveBeenCalledWith(\n+\t\t\t\t'jobs',\n+\t\t\t\t'42',\n+\t\t\t\texpect.any(OperationalError),\n+\t\t\t);\n+\t\t});\n+\n+\t\tit('should still handle abort-job messages', async () => {\n+\t\t\tawait scalingService.setupQueue();\n+\n+\t\t\tconst handler = findHandler('global:progress');\n+\t\t\texpect(handler).toBeDefined();\n+\n+\t\t\thandler('42', { kind: 'abort-job' });\n+\n+\t\t\texpect(jobProcessor.stopJob).toHaveBeenCalledWith('42');\n+\t\t});\n+\n+\t\tit('should ignore unrelated progress message kinds (send-chunk, respond-to-webhook, mcp-response)', async () => {\n+\t\t\tawait scalingService.setupQueue();\n+\n+\t\t\tconst handler = findHandler('global:progress');\n+\t\t\texpect(handler).toBeDefined();\n+\n+\t\t\thandler('1', { kind: 'send-chunk', executionId: 'e1', chunkText: {}, workerId: 'w1' });\n+\t\t\thandler('2', { kind: 'respond-to-webhook', executionId: 'e2', response: {}, workerId: 'w1' });\n+\t\t\thandler('3', {\n+\t\t\t\tkind: 'mcp-response',\n+\t\t\t\texecutionId: 'e3',\n+\t\t\t\tmcpType: 'service',\n+\t\t\t\tsessionId: 's1',\n+\t\t\t\tmessageId: 'm1',\n+\t\t\t\tresponse: {},\n+\t\t\t\tworkerId: 'w1',\n+\t\t\t});\n+\n+\t\t\texpect(jobOutcomeTracker.recordFinished).not.toHaveBeenCalled();\n+\t\t\texpect(jobOutcomeTracker.recordFailed).not.toHaveBeenCalled();\n+\t\t});\n+\t});\n+\n \tdescribe('stop', () => {\n \t\tdescribe('if main', () => {\n \t\t\tit('should pause queue, stop queue recovery and queue metrics', async () => {\ndiff --git a/packages/cli/src/scaling/scaling.service.ts b/packages/cli/src/scaling/scaling.service.ts\nindex 3d66d87f..765ff2f8 100644\n--- a/packages/cli/src/scaling/scaling.service.ts\n+++ b/packages/cli/src/scaling/scaling.service.ts\n@@ -550,12 +550,90 @@ export class ScalingService {\n \n \t/**\n \t * Register listeners on a `worker` process for Bull queue events.\n+\t *\n+\t * Workers can enqueue and await child workflow jobs (e.g. from a native Agent\n+\t * workflow tool). These listeners handle child job completion/failure events\n+\t * so the caller worker does not have to wait for the periodic DB recheck.\n \t */\n \tprivate registerWorkerListeners(queue: JobQueue) {\n \t\tqueue.on('global:progress', (jobId: JobId, msg: unknown) => {\n \t\t\tif (!this.isJobMessage(msg)) return;\n \n-\t\t\tif (msg.kind === 'abort-job') this.jobProcessor.stopJob(jobId);\n+\t\t\tswitch (msg.kind) {\n+\t\t\t\tcase 'abort-job':\n+\t\t\t\t\tthis.jobProcessor.stopJob(jobId);\n+\t\t\t\t\tbreak;\n+\t\t\t\tcase 'job-finished':\n+\t\t\t\t\t/**\n+\t\t\t\t\t * We track the result received via `job-finished` message,\n+\t\t\t\t\t * because `removeOnComplete: true` prevents `job.finished()`\n+\t\t\t\t\t * from returning a value that is no longer in Redis.\n+\t\t\t\t\t *\n+\t\t\t\t\t * A v1 message from an older worker carries no result, but it\n+\t\t\t\t\t * still ends the wait for the job.\n+\t\t\t\t\t */\n+\t\t\t\t\tthis.jobOutcomeTracker.recordFinished(\n+\t\t\t\t\t\tqueue.name,\n+\t\t\t\t\t\tjobId,\n+\t\t\t\t\t\tmsg.executionId,\n+\t\t\t\t\t\tmsg.version === 2\n+\t\t\t\t\t\t\t? {\n+\t\t\t\t\t\t\t\t\tsuccess: msg.success,\n+\t\t\t\t\t\t\t\t\terror: msg.error,\n+\t\t\t\t\t\t\t\t\tstatus: msg.status,\n+\t\t\t\t\t\t\t\t\tlastNodeExecuted: msg.lastNodeExecuted,\n+\t\t\t\t\t\t\t\t\tusedDynamicCredentials: msg.usedDynamicCredentials,\n+\t\t\t\t\t\t\t\t\tmetadata: msg.metadata,\n+\t\t\t\t\t\t\t\t\t...(msg.failedBeforeStart && { failedBeforeStart: true }),\n+\t\t\t\t\t\t\t\t\tstartedAt: new Date(msg.startedAt),\n+\t\t\t\t\t\t\t\t\tstoppedAt: new Date(msg.stoppedAt),\n+\t\t\t\t\t\t\t\t\t// Dropping `waitTill` here makes the caller mistake a waiting execution\n+\t\t\t\t\t\t\t\t\t// for a finished one and delete it when the workflow does not\n+\t\t\t\t\t\t\t\t\t// save successful executions\n+\t\t\t\t\t\t\t\t\twaitTill: msg.waitTill ? new Date(msg.waitTill) : null,\n+\t\t\t\t\t\t\t\t\tnodeTimeSavedMinutes: msg.nodeTimeSavedMinutes,\n+\t\t\t\t\t\t\t\t}\n+\t\t\t\t\t\t\t: undefined,\n+\t\t\t\t\t);\n+\n+\t\t\t\t\tthis.logger.info(`Execution ${msg.executionId} (job ${jobId}) finished`, {\n+\t\t\t\t\t\tworkerId: msg.workerId,\n+\t\t\t\t\t\texecutionId: msg.executionId,\n+\t\t\t\t\t\tjobId,\n+\t\t\t\t\t\tsuccess: msg.success,\n+\t\t\t\t\t});\n+\t\t\t\t\tbreak;\n+\t\t\t\tcase 'job-failed':\n+\t\t\t\t\tthis.logger.error(\n+\t\t\t\t\t\t[\n+\t\t\t\t\t\t\t`Execution ${msg.executionId} (job ${jobId}) failed`,\n+\t\t\t\t\t\t\tmsg.errorStack ? `\\n${msg.errorStack}\\n` : '',\n+\t\t\t\t\t\t].join(''),\n+\t\t\t\t\t\t{\n+\t\t\t\t\t\t\tworkerId: msg.workerId,\n+\t\t\t\t\t\t\terrorMsg: msg.errorMsg,\n+\t\t\t\t\t\t\texecutionId: msg.executionId,\n+\t\t\t\t\t\t\tjobId,\n+\t\t\t\t\t\t},\n+\t\t\t\t\t);\n+\n+\t\t\t\t\t// The worker already reported the underlying error, so this copy is only a handled signal\n+\t\t\t\t\tthis.jobOutcomeTracker.recordFailed(\n+\t\t\t\t\t\tqueue.name,\n+\t\t\t\t\t\tjobId,\n+\t\t\t\t\t\tmsg.executionId,\n+\t\t\t\t\t\tnew OperationalError(msg.errorMsg),\n+\t\t\t\t\t);\n+\t\t\t\t\tbreak;\n+\t\t\t}\n+\t\t});\n+\n+\t\t// Failures such as a stall are reported only by Bull, not by the worker\n+\t\tqueue.on('global:failed', (jobId: JobId, failedReason: string) => {\n+\t\t\tthis.jobOutcomeTracker.settleByJobKey(queue.name, jobId, new OperationalError(failedReason));\n+\t\t});\n+\t\tqueue.on('global:completed', (jobId: JobId) => {\n+\t\t\tthis.jobOutcomeTracker.settleByJobKey(queue.name, jobId);\n \t\t});\n \n \t\tqueue.on('error', (error: Error) => {\n",
+ "isolation": {
+  "container": "per-run",
+  "mounts": [
+   "runs/n8n-43142/deepseek_deepseek-v4-flash-amd-off"
+  ],
+  "network": "jail (egress /llm only)",
+  "user": "1001",
+  "caps": "none",
+  "memory": "2g"
+ }
+}

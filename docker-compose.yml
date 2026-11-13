@@ -1,0 +1,39 @@
+networks:
+  jail:
+    internal: true   # no route to the internet; the only way out is the egress proxy
+  out: {}
+
+services:
+  egress:
+    build: egress
+    env_file: ${OPENROUTER_ENV}
+    networks: [jail, out]
+    volumes:
+      - ./results/logs:/logs
+
+  # Installs dependencies. May reach the package registries through egress, nothing else.
+  # Never runs the agent.
+  installer:
+    build: sandbox
+    networks: [jail]
+    depends_on: [egress]
+    volumes:
+      - pnpm-store:/pnpm-store
+      - work:/work
+    mem_limit: 5g
+    command: ["sleep", "infinity"]
+
+  # Runs the agent and the tests. No internet at all: egress refuses every CONNECT from here.
+  # Its only outbound call is POST /llm, where egress adds the key.
+  sandbox:
+    build: sandbox
+    networks: [jail]
+    depends_on: [egress]
+    volumes:
+      - work:/work
+    mem_limit: 5g
+    command: ["sleep", "infinity"]
+
+volumes:
+  pnpm-store: {}
+  work: {}

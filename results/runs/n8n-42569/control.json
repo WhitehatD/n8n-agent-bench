@@ -1,0 +1,14 @@
+{
+ "task": "n8n-42569",
+ "base_fails": true,
+ "failing": [
+  "guards an oversized error from SDK error-text before memory-budget counting",
+  "counts uniform spaces accurately for o200k_base",
+  "counts uniform spaces accurately for cl100k_base",
+  "keeps the maximum event-loop pause below 500 ms for alternating spaces and tabs",
+  "keeps the maximum event-loop pause below 500 ms for uniform spaces",
+  "preserves a uniform-space result below the token limit with storage available: false",
+  "preserves a uniform-space result below the token limit with storage available: true"
+ ],
+ "tail": "rue to be false // Object.is equality\n\n- Expected\n+ Received\n\n- false\n+ true\n\n \u276f src/runtime/__tests__/tool-call-runner.test.ts:98:38\n     96|    expect.soft(guardCounter.mock.calls.length).toBeGreaterThan(0);\n     97|    expect.soft(budgetText.includes(error)).toBe(false);\n     98|    expect(budgetText.includes('\\t')).toBe(false);\n       |                                      ^\n     99|   },\n    100|  );\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[6/9]\u23af\n\n FAIL  src/runtime/__tests__/tool-result-guard.test.ts > guardToolResultForModel > preserves a uniform-space result below the token limit with storage available: false\n FAIL  src/runtime/__tests__/tool-result-guard.test.ts > guardToolResultForModel > preserves a uniform-space result below the token limit with storage available: true\nError: Test timed out in 35000ms.\nIf this is a long-running test, pass a timeout value as the last argument or configure it globally with \"testTimeout\".\n \u276f src/runtime/__tests__/tool-result-guard.test.ts:7:24\n      5|\n      6| describe('guardToolResultForModel', () => {\n      7|  it.each([false, true])(\n       |                        ^\n      8|   'preserves a uniform-space result below the token limit with storage\u2026\n      9|   async (storageAvailable) => {\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[7/9]\u23af\n\n\n Test Files  3 failed (3)\n      Tests  7 failed | 8 passed (15)\n   Start at  22:32:36\n   Duration  82.48s (tests 93%, import 6%, transform 1%)\n\nJUNIT report written to /work/runs/n8n-42569/control/packages/@n8n/agents/junit.xml\n"
+}

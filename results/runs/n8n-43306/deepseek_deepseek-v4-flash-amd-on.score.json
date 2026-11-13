@@ -1,0 +1,42 @@
+{
+ "task": "n8n-43306",
+ "model": "deepseek/deepseek-v4-flash",
+ "agents_md": "on",
+ "held_out_tests_pass": false,
+ "policy": {
+  "deny_write_hits": [],
+  "human_review_path_hits": [],
+  "gate_model": "morph/reflex",
+  "gate_p_needs_human": 0.0025276642686729604,
+  "needs_human": false,
+  "refused_tool_calls": 0
+ },
+ "closeness": {
+  "agent_files": [
+   "packages/@n8n/agents/src/runtime/__tests__/observation-log-observer.test.ts",
+   "packages/@n8n/agents/src/runtime/memory/memory-orchestrator.ts",
+   "packages/@n8n/agents/src/runtime/memory/observation-log-observer.ts"
+  ],
+  "gold_src_files": [
+   "packages/@n8n/agents/src/runtime/memory/tool-result-memory.ts",
+   "packages/@n8n/agents/src/runtime/tools/tool-result-guard.ts"
+  ],
+  "src_file_overlap": 0.0,
+  "extra_files": [
+   "packages/@n8n/agents/src/runtime/__tests__/observation-log-observer.test.ts",
+   "packages/@n8n/agents/src/runtime/memory/memory-orchestrator.ts",
+   "packages/@n8n/agents/src/runtime/memory/observation-log-observer.ts"
+  ],
+  "agent_lines": 236,
+  "gold_lines": 117
+ },
+ "cost_usd": 0.0579,
+ "steps": 43,
+ "seconds": 180,
+ "finished": true,
+ "held_out": {
+  "passed": false,
+  "seconds": 4,
+  "tail": "ToMemory\nAssertionError: expected [ { type: 'tool-call', \u2026(5) }, \u2026(3) ] to deeply equal [ ObjectContaining{\u2026}, \u2026(3) ]\n\n- Expected\n+ Received\n\n  [\n    {\n+     \"input\": {},\n      \"output\": {\n-       \"estimatedTokenCount\": 60000,\n-       \"originalCharCount\": 100000,\n+       \"_offloaded\": true,\n+       \"expired\": true,\n+       \"message\": \"The stored tool result expired with its originating run.\",\n      },\n      \"state\": \"resolved\",\n+     \"toolCallId\": \"result-call\",\n+     \"toolName\": \"result-tool\",\n+     \"type\": \"tool-call\",\n    },\n    {\n+     \"input\": {},\n      \"output\": {\n        \"type\": \"content\",\n        \"value\": [\n          {\n-           \"text\": \"{\\\"originalCharCount\\\":100000,\\\"estimatedTokenCount\\\":60000}\",\n+           \"text\": \"{\\\"_offloaded\\\":true,\\\"expired\\\":true,\\\"message\\\":\\\"The stored tool result expired with its originating run.\\\"}\",\n            \"type\": \"text\",\n          },\n          {\n            \"data\": \"base64-pdf\",\n            \"mediaType\": \"application/pdf\",\n            \"type\": \"file-data\",\n          },\n        ],\n      },\n      \"state\": \"resolved\",\n+     \"toolCallId\": \"content-result-call\",\n+     \"toolName\": \"content-result-tool\",\n+     \"type\": \"tool-call\",\n    },\n    {\n-     \"error\": \"{\\\"originalCharCount\\\":100000,\\\"estimatedTokenCount\\\":60000}\",\n+     \"error\": \"{\\\"_offloaded\\\":true,\\\"expired\\\":true,\\\"message\\\":\\\"The stored tool result expired with its originating run.\\\"}\",\n+     \"input\": {},\n      \"state\": \"rejected\",\n+     \"toolCallId\": \"error-call\",\n+     \"toolName\": \"error-tool\",\n+     \"type\": \"tool-call\",\n    },\n    {\n-     \"text\": \"{\\\"originalCharCount\\\":100000,\\\"estimatedTokenCount\\\":60000}\",\n+     \"text\": \"{\\\"_offloaded\\\":true,\\\"expired\\\":true,\\\"message\\\":\\\"The stored tool result expired with its originating run.\\\"}\",\n      \"type\": \"text\",\n    },\n  ]\n\n \u276f src/runtime/__tests__/memory-orchestrator-persist-input.test.ts:364:30\n    362|    const [persisted] = await store.getMessages(THREAD_ID, { resourceId\u2026\n    363|    if (!persisted || !('content' in persisted)) throw new Error('Expec\u2026\n    364|    expect(persisted.content).toEqual([\n       |                              ^\n    365|     expect.objectContaining({\n    366|      state: 'resolved',\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[2/3]\u23af\n\n\n Test Files  2 failed (2)\n      Tests  3 failed | 53 passed (56)\n   Start at  23:27:49\n   Duration  2.22s (import 51%, transform 34%, tests 15%, setup 1%)\n\nJUNIT report written to /work/runs/n8n-43306/deepseek_deepseek-v4-flash-amd-on/packages/@n8n/agents/junit.xml\n"
+ }
+}

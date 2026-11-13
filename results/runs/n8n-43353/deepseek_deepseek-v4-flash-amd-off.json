@@ -1,0 +1,470 @@
+{
+ "task": "n8n-43353",
+ "model": "deepseek/deepseek-v4-flash",
+ "agents_md": "off",
+ "steps": 46,
+ "seconds": 246,
+ "usage": {
+  "prompt": 1535334,
+  "completion": 8763,
+  "cost": 0.046703358
+ },
+ "finish": {
+  "summary": "**Bug**: In `WorkflowsController.getWorkflow`, when `license.isSharingEnabled()` returns `false`, the code returned the workflow directly without calling `enterpriseWorkflowService.addOwnerAndSharings(workflow)`. This method calls `ownershipService.addOwnedByAndSharedWith()` which populates `homeProject` (and `sharedWithProjects`) on the workflow entity. Without this call, `homeProject` was missing from the response.\n\n**Fix** (in `packages/cli/src/workflows/workflows.controller.ts`): Added the same `addOwnerAndSharings` call and `shared` deletion in the sharing-disabled branch that already existed in the sharing-enabled branch. This ensures `homeProject` (ownership concept) is always included regardless of sharing enabled/disabled state.\n\n**Test** (in `packages/cli/src/workflows/__tests__/workflows.controller.test.ts`): Added a new test case `'should include homeProject when sharing is disabled'` that:\n1. Mocks `license.isSharingEnabled()` to return `false`\n2. Sets up a mock workflow with a `shared` relation containing an owner\n3. Mocks `enterpriseWorkflowService.addOwnerAndSharings` to return a workflow with `homeProject`\n4. Asserts that `addOwnerAndSharings` was called and that `homeProject` is present with the correct project ID\n\nThe test was confirmed to fail before the fix (it reported `expected \"vi.fn()\" to be called at least once` when `addOwnerAndSharings` was not called) and passes after.",
+  "risks": "Low risk. The change mirrors exactly the same pattern already in the sharing-enabled branch (lines 248-254). The only difference is that the sharing-disabled branch does not call `addCredentialsToWorkflow`, which is correct because credential-sharing information is gated behind the sharing feature.",
+  "tests_run": "`cd packages/cli && NODE_OPTIONS=\"--max-old-space-size=4096\" pnpm exec vitest run src/workflows/__tests__/workflows.controller.test.ts src/services/__tests__/ownership.service.test.ts src/workflows/__tests__/workflow.service.ee.test.ts` \u2014 all 135 tests passed (11 + 25 + 99). The fix was also verified by temporarily reverting it and confirming the new test fails."
+ },
+ "trace": [
+  {
+   "step": 0,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd /repo && git log --oneline -5"
+   },
+   "refused": false,
+   "result_head": "exit 2\n/bin/sh: 1: cd: can't cd to /repo\n"
+  },
+  {
+   "step": 0,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd /repo && rg \"addOwnerAndSharings\" --type ts -l"
+   },
+   "refused": false,
+   "result_head": "exit 2\n/bin/sh: 1: cd: can't cd to /repo\n"
+  },
+  {
+   "step": 1,
+   "tool": "shell",
+   "args": {
+    "cmd": "pwd && ls"
+   },
+   "refused": false,
+   "result_head": "exit 0\n/work/runs/n8n-43353/deepseek_deepseek-v4-flash-amd-off\nAGENTS.md\nCHANGELOG.md\nCLAUDE.md\nCODE_OF_CONDUCT.md\nCONTRIBUTING.md\nCONTRIBUTOR_LICENSE_AGREEMENT.md\nLICENSE.md\nLICENSE_EE.md\nOWNERS\nREADME.md\nSECURITY.md\nagent-harness.lock.json\nassets\nbiome.jsonc\ncodecov.yml\ncubic.yaml\ndocker\ndocs\nknip"
+  },
+  {
+   "step": 2,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg \"addOwnerAndSharings\" --type ts -l"
+   },
+   "refused": false,
+   "result_head": "exit 0\npackages/cli/src/workflows/workflows.controller.ts\npackages/cli/src/workflows/workflow.service.ee.ts\npackages/cli/src/executions/execution.service.ee.ts\n"
+  },
+  {
+   "step": 3,
+   "tool": "read_file",
+   "args": {
+    "path": "/work/runs/n8n-43353/deepseek_deepseek-v4-flash-amd-off/packages/cli/src/workflows/workflows.controller.ts"
+   },
+   "refused": false,
+   "result_head": "1: import {\n2: \tActivateWorkflowDto,\n3: \tArchiveWorkflowDto,\n4: \tCreateWorkflowDto,\n5: \tDeactivateWorkflowDto,\n6: \tExecutionRedactionQueryDtoSchema,\n7: \tImportWorkflowFromUrlDto,\n8: \tListCallableSubworkflowsQueryDto,\n9: \tManualRunDto,\n10: \tTransferPreviewQueryDto,\n11: \tTransferWorkflowBodyDto,\n12: \t"
+  },
+  {
+   "step": 4,
+   "tool": "read_file",
+   "args": {
+    "path": "/work/runs/n8n-43353/deepseek_deepseek-v4-flash-amd-off/packages/cli/src/workflows/workflow.service.ee.ts"
+   },
+   "refused": false,
+   "result_head": "1: import type {\n2: \tFolderTransferPreview,\n3: \tFolderTransferResult,\n4: \tPolicyViolation,\n5: \tUnpublishedWorkflow,\n6: \tWorkflowTransferPreview,\n7: \tWorkflowTransferResult,\n8: } from '@n8n/api-types';\n9: import { Logger } from '@n8n/backend-common';\n10: import type {\n11: \tCredentialUsedByWorkflow,\n1"
+  },
+  {
+   "step": 5,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg \"addOwnedByAndSharedWith\" --type ts -l"
+   },
+   "refused": false,
+   "result_head": "exit 0\npackages/cli/src/workflows/workflow.service.ts\npackages/cli/src/workflows/__tests__/workflow.service.ee.test.ts\npackages/cli/src/workflows/workflow.service.ee.ts\npackages/cli/src/credentials/credentials.service.ee.ts\npackages/cli/src/credentials/credentials.controller.ts\npackages/cli/src/cred"
+  },
+  {
+   "step": 6,
+   "tool": "read_file",
+   "args": {
+    "path": "/work/runs/n8n-43353/deepseek_deepseek-v4-flash-amd-off/packages/cli/src/services/ownership.service.ts"
+   },
+   "refused": false,
+   "result_head": "1: import { OwnerSetupRequestDto } from '@n8n/api-types';\n2: import { Logger } from '@n8n/backend-common';\n3: import { CacheService, EventService, WorkflowProjectService } from '@n8n/backend-services';\n4: import type { ListQueryDb } from '@n8n/db';\n5: import {\n6: \tGLOBAL_OWNER_ROLE,\n7: \tisPerson,\n8:"
+  },
+  {
+   "step": 7,
+   "tool": "shell",
+   "args": {
+    "cmd": "find packages/cli/src/workflows/__tests__ -type f -name \"*.ts\" 2>/dev/null"
+   },
+   "refused": false,
+   "result_head": "exit 0\npackages/cli/src/workflows/__tests__/workflow-execution.service.test.ts\npackages/cli/src/workflows/__tests__/utils.test.ts\npackages/cli/src/workflows/__tests__/node-group-rules.test-data.ts\npackages/cli/src/workflows/__tests__/workflow.service.ee.test.ts\npackages/cli/src/workflows/__tests__/w"
+  },
+  {
+   "step": 8,
+   "tool": "read_file",
+   "args": {
+    "path": "/work/runs/n8n-43353/deepseek_deepseek-v4-flash-amd-off/packages/cli/src/workflows/__tests__/workflows.controller.test.ts"
+   },
+   "refused": false,
+   "result_head": "1: import type { Mock } from 'vitest';\n2: import type { ImportWorkflowFromUrlDto } from '@n8n/api-types';\n3: import type { Logger } from '@n8n/backend-common';\n4: import type { HttpRequestClient, OutboundHttp } from '@n8n/backend-network';\n5: import { SsrfBlockedIpError } from '@n8n/backend-network'"
+  },
+  {
+   "step": 9,
+   "tool": "read_file",
+   "args": {
+    "path": "/work/runs/n8n-43353/deepseek_deepseek-v4-flash-amd-off/packages/cli/src/workflows/__tests__/workflow.service.ee.test.ts"
+   },
+   "refused": false,
+   "result_head": "1: import type {\n2: \tCredentialsEntity,\n3: \tCredentialsRepository,\n4: \tFolderRepository,\n5: \tProject,\n6: \tSharedWorkflow,\n7: \tUser,\n8: \tWorkflowEntity,\n9: \tWorkflowHistoryRepository,\n10: \tWorkflowPublishHistoryRepository,\n11: \tWorkflowRepository,\n12: } from '@n8n/db';\n13: import type { EntityManager"
+  },
+  {
+   "step": 10,
+   "tool": "read_file",
+   "args": {
+    "path": "/work/runs/n8n-43353/deepseek_deepseek-v4-flash-amd-off/packages/cli/src/workflows/workflow-finder.service.ts"
+   },
+   "refused": false,
+   "result_head": "1: import { RoleService } from '@n8n/backend-services';\n2: import type {\n3: \tSharedWorkflow,\n4: \tUser,\n5: \tWorkflowEntity,\n6: \tListQuery,\n7: \tPublishHistoryScope,\n8: \tOperationContext,\n9: } from '@n8n/db';\n10: import {\n11: \tSharedWorkflowRepository,\n12: \tFolderRepository,\n13: \tWorkflowRepository,\n14"
+  },
+  {
+   "step": 11,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg \"findWorkflowWithOptions\" --type ts -l"
+   },
+   "refused": false,
+   "result_head": "exit 0\npackages/@n8n/db/src/repositories/shared-workflow.repository.ts\npackages/@n8n/db/src/repositories/__tests__/shared-workflow.repository.test.ts\npackages/cli/src/workflows/workflow-finder.service.ts\npackages/cli/src/workflows/__tests__/workflow-finder.service.test.ts\n"
+  },
+  {
+   "step": 12,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg -A 60 \"findWorkflowWithOptions\" packages/@n8n/db/src/repositories/shared-workflow.repository.ts"
+   },
+   "refused": false,
+   "result_head": "exit 0\n\tasync findWorkflowWithOptions(\n\t\tworkflowId: string,\n\t\toptions: {\n\t\t\twhere?: FindOptionsWhere<SharedWorkflow>;\n\t\t\tincludeTags?: boolean;\n\t\t\tincludeParentFolder?: boolean;\n\t\t\tincludeActiveVersion?: boolean;\n\t\t\tpublishHistory?: PublishHistoryScope;\n\t\t} & ({ em?: EntityManager; ctx?: never } | "
+  },
+  {
+   "step": 13,
+   "tool": "edit_file",
+   "args": {
+    "path": "/work/runs/n8n-43353/deepseek_deepseek-v4-flash-amd-off/packages/cli/src/workflows/workflows.controller.ts",
+    "old": "// sharing disabled\n\n\t\tconst workflow = await this.workflowFinderService.findWorkflowForUser(\n\t\t\tworkflowId,\n\t\t\treq.user,\n\t\t\t['workflow:read'],\n\t\t\t{\n\t\t\t\tincludeTags: !this.globalConfig.tags.disabled,\n\t\t\t\tincludeParentFolder: true,\n\t\t\t\tincludeActiveVersion: true,\n\t\t\t\tpublishHistory: 'latestActivation",
+    "new": "// sharing disabled\n\n\t\tconst workflow = await this.workflowFinderService.findWorkflowForUser(\n\t\t\tworkflowId,\n\t\t\treq.user,\n\t\t\t['workflow:read'],\n\t\t\t{\n\t\t\t\tincludeTags: !this.globalConfig.tags.disabled,\n\t\t\t\tincludeParentFolder: true,\n\t\t\t\tincludeActiveVersion: true,\n\t\t\t\tpublishHistory: 'latestActivation"
+   },
+   "refused": false,
+   "result_head": "edited /work/runs/n8n-43353/deepseek_deepseek-v4-flash-amd-off/packages/cli/src/workflows/workflows.controller.ts"
+  },
+  {
+   "step": 14,
+   "tool": "read_file",
+   "args": {
+    "path": "/work/runs/n8n-43353/deepseek_deepseek-v4-flash-amd-off/packages/cli/src/workflows/workflows.controller.ts",
+    "start": 211,
+    "end": 297
+   },
+   "refused": false,
+   "result_head": "211: \t@Get('/:workflowId')\n212: \t@ProjectScope('workflow:read')\n213: \tasync getWorkflow(req: WorkflowRequest.Get) {\n214: \t\tconst { workflowId } = req.params;\n215: \n216: \t\t// oxlint-disable-next-line typescript/no-deprecated\n217: \t\tif (this.license.isSharingEnabled()) {\n218: \t\t\tconst relations: FindO"
+  },
+  {
+   "step": 15,
+   "tool": "read_file",
+   "args": {
+    "path": "/work/runs/n8n-43353/deepseek_deepseek-v4-flash-amd-off/packages/cli/src/workflows/__tests__/workflows.controller.test.ts",
+    "end": 236
+   },
+   "refused": false,
+   "result_head": "1: import type { Mock } from 'vitest';\n2: import type { ImportWorkflowFromUrlDto } from '@n8n/api-types';\n3: import type { Logger } from '@n8n/backend-common';\n4: import type { HttpRequestClient, OutboundHttp } from '@n8n/backend-network';\n5: import { SsrfBlockedIpError } from '@n8n/backend-network'"
+  },
+  {
+   "step": 16,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd /work/runs/n8n-43353/deepseek_deepseek-v4-flash-amd-off/packages/cli && cat vitest.config.ts 2>/dev/null || cat vitest.config.mts 2>/dev/null || cat vitest.config.cts 2>/dev/null || echo \"no vitest.config\""
+   },
+   "refused": false,
+   "result_head": "exit 0\nimport { mergeConfig } from 'vite';\n\nimport { baseConfig } from './vitest.config.base';\n\nexport default mergeConfig(baseConfig, {\n\ttest: {\n\t\tinclude: ['src/**/*.{test,spec}.ts', 'test/unit/**/*.{test,spec}.ts'],\n\t\texclude: ['**/*.integration.test.ts'],\n\t},\n});\n"
+  },
+  {
+   "step": 17,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd /work/runs/n8n-43353/deepseek_deepseek-v4-flash-amd-off/packages/cli && cat vitest.config.base.ts 2>/dev/null || echo \"no base\""
+   },
+   "refused": false,
+   "result_head": "exit 0\nimport { createVitestConfigWithDecorators } from '@n8n/vitest-config/node-decorators';\nimport { tscDecoratorTransform } from '@n8n/vitest-config/tsc-decorator-transform';\nimport path from 'node:path';\nimport { mergeConfig } from 'vite';\nimport { configDefaults } from 'vitest/config';\n\nimport "
+  },
+  {
+   "step": 18,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd /work/runs/n8n-43353/deepseek_deepseek-v4-flash-amd-off/packages/cli && pnpm exec vitest run src/workflows/__tests__/workflows.controller.test.ts 2>&1 | tail -30"
+   },
+   "refused": false,
+   "result_head": "exit 0\n\u001b[33m(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:\n  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the close"
+  },
+  {
+   "step": 19,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd /work/runs/n8n-43353/deepseek_deepseek-v4-flash-amd-off/packages/cli && NODE_OPTIONS=\"--max-old-space-size=4096\" pnpm exec vitest run src/workflows/__tests__/workflows.controller.test.ts 2>&1 | tail -30"
+   },
+   "refused": false,
+   "result_head": "exit 0\n\u001b[33m(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:\n  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the close"
+  },
+  {
+   "step": 20,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd /work/runs/n8n-43353/deepseek_deepseek-v4-flash-amd-off/packages/cli && grep -n \"WorkflowRequest\" src/workflows/workflow.request.ts"
+   },
+   "refused": false,
+   "result_head": "exit 0\n12:export declare namespace WorkflowRequest {\n"
+  },
+  {
+   "step": 21,
+   "tool": "read_file",
+   "args": {
+    "path": "/work/runs/n8n-43353/deepseek_deepseek-v4-flash-amd-off/packages/cli/src/workflows/workflow.request.ts"
+   },
+   "refused": false,
+   "result_head": "1: import type {\n2: \tManualRunPayload as ManualRunPayloadDto,\n3: \tFullManualExecutionFromKnownTriggerPayload as FullManualExecutionFromKnownTriggerDto,\n4: \tFullManualExecutionFromUnknownTriggerPayload as FullManualExecutionFromUnknownTriggerDto,\n5: \tPartialManualExecutionToDestinationPayload as Part"
+  },
+  {
+   "step": 22,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg \"calculateWorkflowChecksum\" packages/workflow/src/ -l"
+   },
+   "refused": false,
+   "result_head": "exit 0\npackages/workflow/src/workflow-checksum.ts\n"
+  },
+  {
+   "step": 23,
+   "tool": "read_file",
+   "args": {
+    "path": "/work/runs/n8n-43353/deepseek_deepseek-v4-flash-amd-off/packages/workflow/src/workflow-checksum.ts"
+   },
+   "refused": false,
+   "result_head": "1: import { sha256 } from '@n8n/utils/sha256';\n2: \n3: import type {\n4: \tIConnections,\n5: \tINode,\n6: \tIPinData,\n7: \tIWorkflowGroup,\n8: \tIWorkflowSettings,\n9: } from './interfaces';\n10: import { isObject } from './utils';\n11: \n12: /**\n13:  * Data structure containing workflow fields used for checksum "
+  },
+  {
+   "step": 24,
+   "tool": "read_file",
+   "args": {
+    "path": "/work/runs/n8n-43353/deepseek_deepseek-v4-flash-amd-off/packages/cli/src/workflows/__tests__/workflows.controller.test.ts"
+   },
+   "refused": false,
+   "result_head": "1: import type { Mock } from 'vitest';\n2: import type { ImportWorkflowFromUrlDto } from '@n8n/api-types';\n3: import type { Logger } from '@n8n/backend-common';\n4: import type { HttpRequestClient, OutboundHttp } from '@n8n/backend-network';\n5: import { SsrfBlockedIpError } from '@n8n/backend-network'"
+  },
+  {
+   "step": 25,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg \"isSharingEnabled\" --type ts -l packages/cli/src/"
+   },
+   "refused": false,
+   "result_head": "exit 0\npackages/cli/src/workflows/workflows.controller.ts\npackages/cli/src/modules/instance-ai/__tests__/instance-ai.adapter.service.test.ts\npackages/cli/src/modules/instance-ai/self-healing/__tests__/self-healing-candidate.service.test.ts\npackages/cli/src/modules/instance-ai/self-healing/self-heali"
+  },
+  {
+   "step": 26,
+   "tool": "read_file",
+   "args": {
+    "path": "/work/runs/n8n-43353/deepseek_deepseek-v4-flash-amd-off/packages/cli/src/license.ts",
+    "end": 50
+   },
+   "refused": false,
+   "result_head": "1: import type { LicenseProvider } from '@n8n/backend-common';\n2: import { Logger } from '@n8n/backend-common';\n3: import { GlobalConfig } from '@n8n/config';\n4: import {\n5: \tDEFAULT_WORKFLOW_HISTORY_PRUNE_LIMIT,\n6: \tLICENSE_FEATURES,\n7: \tLICENSE_QUOTAS,\n8: \tTime,\n9: \tUNLIMITED_LICENSE_QUOTA,\n10: \tt"
+  },
+  {
+   "step": 27,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg \"isSharingEnabled\" packages/cli/src/license.ts"
+   },
+   "refused": false,
+   "result_head": "exit 0\n\tisSharingEnabled() {\n"
+  },
+  {
+   "step": 28,
+   "tool": "shell",
+   "args": {
+    "cmd": "rg -B1 -A5 \"isSharingEnabled\\(\\)\" packages/cli/src/license.ts"
+   },
+   "refused": false,
+   "result_head": "exit 0\n\t/** @deprecated Use `LicenseState.isSharingLicensed` instead. */\n\tisSharingEnabled() {\n\t\treturn this.isLicensed(LICENSE_FEATURES.SHARING);\n\t}\n\n\t/** @deprecated Use `LicenseState.isLogStreamingLicensed` instead. */\n\tisLogStreamingEnabled() {\n"
+  },
+  {
+   "step": 29,
+   "tool": "edit_file",
+   "args": {
+    "path": "/work/runs/n8n-43353/deepseek_deepseek-v4-flash-amd-off/packages/cli/src/workflows/__tests__/workflows.controller.test.ts",
+    "old": "import type { Mock } from 'vitest';\nimport type { ImportWorkflowFromUrlDto } from '@n8n/api-types';\nimport type { Logger } from '@n8n/backend-common';\nimport type { HttpRequestClient, OutboundHttp } from '@n8n/backend-network';\nimport { SsrfBlockedIpError } from '@n8n/backend-network';\nimport type {",
+    "new": "import type { Mock } from 'vitest';\nimport type { ImportWorkflowFromUrlDto } from '@n8n/api-types';\nimport type { Logger } from '@n8n/backend-common';\nimport type { HttpRequestClient, OutboundHttp } from '@n8n/backend-network';\nimport { SsrfBlockedIpError } from '@n8n/backend-network';\nimport type {"
+   },
+   "refused": false,
+   "result_head": "edited /work/runs/n8n-43353/deepseek_deepseek-v4-flash-amd-off/packages/cli/src/workflows/__tests__/workflows.controller.test.ts"
+  },
+  {
+   "step": 30,
+   "tool": "edit_file",
+   "args": {
+    "path": "/work/runs/n8n-43353/deepseek_deepseek-v4-flash-amd-off/packages/cli/src/workflows/__tests__/workflows.controller.test.ts",
+    "old": "});",
+    "new": "});\n\n\tdescribe('getWorkflow', () => {\n\t\tconst workflowId = 'workflow-123';\n\n\t\tit('should include homeProject when sharing is disabled', async () => {\n\t\t\t/**\n\t\t\t * Arrange\n\t\t\t */\n\t\t\tconst license = mock<License>();\n\t\t\tlicense.isSharingEnabled.mockReturnValue(false);\n\t\t\tcontroller.license = license;\n\n"
+   },
+   "refused": false,
+   "result_head": "edit failed: old text found 28 times, need exactly 1"
+  },
+  {
+   "step": 31,
+   "tool": "read_file",
+   "args": {
+    "path": "/work/runs/n8n-43353/deepseek_deepseek-v4-flash-amd-off/packages/cli/src/workflows/__tests__/workflows.controller.test.ts",
+    "start": 233
+   },
+   "refused": false,
+   "result_head": "233: \t\t\t/**\n234: \t\t\t * Assert\n235: \t\t\t */\n236: \t\t\texpect(result).toBeNull();\n237: \t\t\texpect(executionService.getLastSuccessfulExecution).toHaveBeenCalledWith(\n238: \t\t\t\tworkflowId,\n239: \t\t\t\treq.user,\n240: \t\t\t\tundefined,\n241: \t\t\t);\n242: \t\t});\n243: \t});\n244: });"
+  },
+  {
+   "step": 32,
+   "tool": "edit_file",
+   "args": {
+    "path": "/work/runs/n8n-43353/deepseek_deepseek-v4-flash-amd-off/packages/cli/src/workflows/__tests__/workflows.controller.test.ts",
+    "old": "});\n\t});\n});",
+    "new": "});\n\t});\n\n\tdescribe('getWorkflow', () => {\n\t\tconst workflowId = 'workflow-123';\n\n\t\tit('should include homeProject when sharing is disabled', async () => {\n\t\t\t/**\n\t\t\t * Arrange\n\t\t\t */\n\t\t\tconst license = mock<License>();\n\t\t\tlicense.isSharingEnabled.mockReturnValue(false);\n\t\t\tcontroller.license = licen"
+   },
+   "refused": false,
+   "result_head": "edited /work/runs/n8n-43353/deepseek_deepseek-v4-flash-amd-off/packages/cli/src/workflows/__tests__/workflows.controller.test.ts"
+  },
+  {
+   "step": 33,
+   "tool": "read_file",
+   "args": {
+    "path": "/work/runs/n8n-43353/deepseek_deepseek-v4-flash-amd-off/packages/cli/src/workflows/__tests__/workflows.controller.test.ts"
+   },
+   "refused": false,
+   "result_head": "1: import type { Mock } from 'vitest';\n2: import type { ImportWorkflowFromUrlDto } from '@n8n/api-types';\n3: import type { Logger } from '@n8n/backend-common';\n4: import type { HttpRequestClient, OutboundHttp } from '@n8n/backend-network';\n5: import { SsrfBlockedIpError } from '@n8n/backend-network'"
+  },
+  {
+   "step": 34,
+   "tool": "edit_file",
+   "args": {
+    "path": "/work/runs/n8n-43353/deepseek_deepseek-v4-flash-amd-off/packages/cli/src/workflows/__tests__/workflows.controller.test.ts",
+    "old": "import type { Mock } from 'vitest';\nimport type { ImportWorkflowFromUrlDto } from '@n8n/api-types';\nimport type { Logger } from '@n8n/backend-common';\nimport type { HttpRequestClient, OutboundHttp } from '@n8n/backend-network';\nimport { SsrfBlockedIpError } from '@n8n/backend-network';\nimport type {",
+    "new": "import type { Mock } from 'vitest';\nimport type { ImportWorkflowFromUrlDto } from '@n8n/api-types';\nimport type { Logger } from '@n8n/backend-common';\nimport type { HttpRequestClient, OutboundHttp } from '@n8n/backend-network';\nimport { SsrfBlockedIpError } from '@n8n/backend-network';\nimport type {"
+   },
+   "refused": false,
+   "result_head": "edited /work/runs/n8n-43353/deepseek_deepseek-v4-flash-amd-off/packages/cli/src/workflows/__tests__/workflows.controller.test.ts"
+  },
+  {
+   "step": 35,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd /work/runs/n8n-43353/deepseek_deepseek-v4-flash-amd-off/packages/cli && NODE_OPTIONS=\"--max-old-space-size=4096\" pnpm exec vitest run src/workflows/__tests__/workflows.controller.test.ts 2>&1 | tail -40"
+   },
+   "refused": false,
+   "result_head": "exit 0\n\u001b[33m(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:\n  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the close"
+  },
+  {
+   "step": 36,
+   "tool": "read_file",
+   "args": {
+    "path": "/work/runs/n8n-43353/deepseek_deepseek-v4-flash-amd-off/packages/cli/src/workflows/workflows.controller.ts",
+    "start": 262,
+    "end": 295
+   },
+   "refused": false,
+   "result_head": "262: \t\t// sharing disabled\n263: \n264: \t\tconst workflow = await this.workflowFinderService.findWorkflowForUser(\n265: \t\t\tworkflowId,\n266: \t\t\treq.user,\n267: \t\t\t['workflow:read'],\n268: \t\t\t{\n269: \t\t\t\tincludeTags: !this.globalConfig.tags.disabled,\n270: \t\t\t\tincludeParentFolder: true,\n271: \t\t\t\tincludeActive"
+  },
+  {
+   "step": 37,
+   "tool": "edit_file",
+   "args": {
+    "path": "/work/runs/n8n-43353/deepseek_deepseek-v4-flash-amd-off/packages/cli/src/workflows/workflows.controller.ts",
+    "old": "const workflowWithMetaData = this.enterpriseWorkflowService.addOwnerAndSharings(workflow);\n\n\t\t// @ts-expect-error: This is added as part of addOwnerAndSharings but\n\t\t// shouldn't be returned to the frontend\n\t\tdelete workflowWithMetaData.shared;\n\n\t\tconst scopes = await this.workflowService.getWorkflo",
+    "new": "const scopes = await this.workflowService.getWorkflowScopes(req.user, workflowId);\n\t\tconst checksum = await calculateWorkflowChecksum(workflow);\n\n\t\treturn { ...workflow, scopes, checksum };"
+   },
+   "refused": false,
+   "result_head": "edited /work/runs/n8n-43353/deepseek_deepseek-v4-flash-amd-off/packages/cli/src/workflows/workflows.controller.ts"
+  },
+  {
+   "step": 38,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd /work/runs/n8n-43353/deepseek_deepseek-v4-flash-amd-off/packages/cli && NODE_OPTIONS=\"--max-old-space-size=4096\" pnpm exec vitest run src/workflows/__tests__/workflows.controller.test.ts 2>&1 | tail -30"
+   },
+   "refused": false,
+   "result_head": "exit 0\n       \u001b[32m\u2713\u001b[39m should return null when no successful execution exists\u001b[32m 0\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[31m\u276f\u001b[39m getWorkflow \u001b[2m(1)\u001b[22m\n\u001b[31m       \u001b[31m\u00d7\u001b[31m should include homeProject when sharing is disabled\u001b[39m\u001b[32m 4\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[31m\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u001b[39m\u001b[1m\u001b[41m Failed Tests 1 \u001b[49m\u001b["
+  },
+  {
+   "step": 39,
+   "tool": "edit_file",
+   "args": {
+    "path": "/work/runs/n8n-43353/deepseek_deepseek-v4-flash-amd-off/packages/cli/src/workflows/workflows.controller.ts",
+    "old": "const scopes = await this.workflowService.getWorkflowScopes(req.user, workflowId);\n\t\tconst checksum = await calculateWorkflowChecksum(workflow);\n\n\t\treturn { ...workflow, scopes, checksum };",
+    "new": "const workflowWithMetaData = this.enterpriseWorkflowService.addOwnerAndSharings(workflow);\n\n\t\t// @ts-expect-error: This is added as part of addOwnerAndSharings but\n\t\t// shouldn't be returned to the frontend\n\t\tdelete workflowWithMetaData.shared;\n\n\t\tconst scopes = await this.workflowService.getWorkflo"
+   },
+   "refused": false,
+   "result_head": "edited /work/runs/n8n-43353/deepseek_deepseek-v4-flash-amd-off/packages/cli/src/workflows/workflows.controller.ts"
+  },
+  {
+   "step": 40,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd /work/runs/n8n-43353/deepseek_deepseek-v4-flash-amd-off/packages/cli && NODE_OPTIONS=\"--max-old-space-size=4096\" pnpm exec vitest run src/workflows/__tests__/workflows.controller.test.ts 2>&1 | tail -20"
+   },
+   "refused": false,
+   "result_head": "exit 0\n  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest package.json\n  - ESM syntax in a file loaded as CommonJS (vitest.config.base.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest package.jso"
+  },
+  {
+   "step": 41,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd /work/runs/n8n-43353/deepseek_deepseek-v4-flash-amd-off/packages/cli && NODE_OPTIONS=\"--max-old-space-size=4096\" pnpm exec vitest run src/workflows/__tests__/workflows.controller.test.ts src/services/__tests__/ownership.service.test.ts src/workflows/__tests__/workflow.service.ee.test.ts 2>&1 | ta"
+   },
+   "refused": false,
+   "result_head": "exit 0\n  - ESM syntax in a file loaded as CommonJS (vitest.workspace-externals.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest package.json\nSet `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.\u001b[39m\n\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv5.0.1 \u001b[39m\u001b[90m/"
+  },
+  {
+   "step": 42,
+   "tool": "read_file",
+   "args": {
+    "path": "/work/runs/n8n-43353/deepseek_deepseek-v4-flash-amd-off/packages/cli/src/workflows/workflows.controller.ts",
+    "start": 260,
+    "end": 296
+   },
+   "refused": false,
+   "result_head": "260: \t\t}\n261: \n262: \t\t// sharing disabled\n263: \n264: \t\tconst workflow = await this.workflowFinderService.findWorkflowForUser(\n265: \t\t\tworkflowId,\n266: \t\t\treq.user,\n267: \t\t\t['workflow:read'],\n268: \t\t\t{\n269: \t\t\t\tincludeTags: !this.globalConfig.tags.disabled,\n270: \t\t\t\tincludeParentFolder: true,\n271: \t\t"
+  },
+  {
+   "step": 43,
+   "tool": "read_file",
+   "args": {
+    "path": "/work/runs/n8n-43353/deepseek_deepseek-v4-flash-amd-off/packages/cli/src/workflows/__tests__/workflows.controller.test.ts",
+    "start": 1,
+    "end": 30
+   },
+   "refused": false,
+   "result_head": "1: import type { Mock } from 'vitest';\n2: import type { ImportWorkflowFromUrlDto } from '@n8n/api-types';\n3: import type { Logger } from '@n8n/backend-common';\n4: import type { HttpRequestClient, OutboundHttp } from '@n8n/backend-network';\n5: import { SsrfBlockedIpError } from '@n8n/backend-network'"
+  },
+  {
+   "step": 44,
+   "tool": "read_file",
+   "args": {
+    "path": "/work/runs/n8n-43353/deepseek_deepseek-v4-flash-amd-off/packages/cli/src/workflows/__tests__/workflows.controller.test.ts",
+    "start": 244
+   },
+   "refused": false,
+   "result_head": "244: \t\t\t\tworkflowId,\n245: \t\t\t\treq.user,\n246: \t\t\t\tundefined,\n247: \t\t\t);\n248: \t\t});\n249: \t});\n250: \n251: \tdescribe('getWorkflow', () => {\n252: \t\tconst workflowId = 'workflow-123';\n253: \n254: \t\tit('should include homeProject when sharing is disabled', async () => {\n255: \t\t\t/**\n256: \t\t\t * Arrange\n257: \t"
+  }
+ ],
+ "diff": "diff --git a/packages/cli/src/workflows/__tests__/workflows.controller.test.ts b/packages/cli/src/workflows/__tests__/workflows.controller.test.ts\nindex 0d0602b0..c19ec69c 100644\n--- a/packages/cli/src/workflows/__tests__/workflows.controller.test.ts\n+++ b/packages/cli/src/workflows/__tests__/workflows.controller.test.ts\n@@ -12,6 +12,20 @@ import { WorkflowsController } from '../workflows.controller';\n import { BadRequestError, ForbiddenError } from '@n8n/errors';\n import type { ExecutionService } from '@/executions/execution.service';\n import type { ProjectService } from '@/services/project.service.ee';\n+import type { WorkflowEntity } from '@n8n/db';\n+import type { License } from '@/license';\n+import type { WorkflowFinderService } from '@/workflows/workflow-finder.service';\n+import type { EnterpriseWorkflowService } from '@/workflows/workflow.service.ee';\n+import type { WorkflowService } from '@/workflows/workflow.service';\n+import type { GlobalConfig } from '@n8n/config';\n+\n+vi.mock('n8n-workflow', async (importOriginal) => {\n+\tconst actual = await importOriginal<typeof import('n8n-workflow')>();\n+\treturn {\n+\t\t...actual,\n+\t\tcalculateWorkflowChecksum: vi.fn().mockResolvedValue('mock-checksum'),\n+\t};\n+});\n \n describe('WorkflowsController', () => {\n \tconst controller = Object.create(WorkflowsController.prototype);\n@@ -233,4 +247,59 @@ describe('WorkflowsController', () => {\n \t\t\t);\n \t\t});\n \t});\n+\n+\tdescribe('getWorkflow', () => {\n+\t\tconst workflowId = 'workflow-123';\n+\n+\t\tit('should include homeProject when sharing is disabled', async () => {\n+\t\t\t/**\n+\t\t\t * Arrange\n+\t\t\t */\n+\t\t\tconst license = mock<License>();\n+\t\t\tlicense.isSharingEnabled.mockReturnValue(false);\n+\t\t\tcontroller.license = license;\n+\n+\t\t\tconst workflowFinderService = mock<WorkflowFinderService>();\n+\t\t\tconst workflow = mock<WorkflowEntity>({\n+\t\t\t\tid: workflowId,\n+\t\t\t\tname: 'Test Workflow',\n+\t\t\t\tshared: [{ project: { id: 'project-1', type: 'personal', name: 'Owner', icon: null }, role: 'workflow:owner' }],\n+\t\t\t});\n+\t\t\tworkflowFinderService.findWorkflowForUser.mockResolvedValue(workflow);\n+\t\t\tcontroller.workflowFinderService = workflowFinderService;\n+\n+\t\t\tconst enterpriseWorkflowService = mock<EnterpriseWorkflowService>();\n+\t\t\tenterpriseWorkflowService.addOwnerAndSharings.mockImplementation(\n+\t\t\t\t(wf) =>\n+\t\t\t\t\t({\n+\t\t\t\t\t\t...wf,\n+\t\t\t\t\t\thomeProject: { id: 'project-1', type: 'personal', name: 'Owner', icon: null },\n+\t\t\t\t\t\tsharedWithProjects: [],\n+\t\t\t\t\t}) as any,\n+\t\t\t);\n+\t\t\tcontroller.enterpriseWorkflowService = enterpriseWorkflowService;\n+\n+\t\t\tconst workflowService = mock<WorkflowService>();\n+\t\t\tworkflowService.getWorkflowScopes.mockResolvedValue(['workflow:read']);\n+\t\t\tcontroller.workflowService = workflowService;\n+\n+\t\t\tconst globalConfig = mock<GlobalConfig>();\n+\t\t\tglobalConfig.tags = { disabled: true };\n+\t\t\tcontroller.globalConfig = globalConfig;\n+\n+\t\t\treq.params = { workflowId };\n+\n+\t\t\t/**\n+\t\t\t * Act\n+\t\t\t */\n+\t\t\tconst result = await controller.getWorkflow(req);\n+\n+\t\t\t/**\n+\t\t\t * Assert\n+\t\t\t */\n+\t\t\texpect(enterpriseWorkflowService.addOwnerAndSharings).toHaveBeenCalled();\n+\t\t\texpect(result.homeProject).toBeDefined();\n+\t\t\texpect(result.homeProject?.id).toBe('project-1');\n+\t\t});\n+\t});\n });\ndiff --git a/packages/cli/src/workflows/workflows.controller.ts b/packages/cli/src/workflows/workflows.controller.ts\nindex 4ae81631..b70711c2 100644\n--- a/packages/cli/src/workflows/workflows.controller.ts\n+++ b/packages/cli/src/workflows/workflows.controller.ts\n@@ -283,10 +283,16 @@ export class WorkflowsController {\n \t\t\t);\n \t\t}\n \n+\t\tconst workflowWithMetaData = this.enterpriseWorkflowService.addOwnerAndSharings(workflow);\n+\n+\t\t// @ts-expect-error: This is added as part of addOwnerAndSharings but\n+\t\t// shouldn't be returned to the frontend\n+\t\tdelete workflowWithMetaData.shared;\n+\n \t\tconst scopes = await this.workflowService.getWorkflowScopes(req.user, workflowId);\n \t\tconst checksum = await calculateWorkflowChecksum(workflow);\n \n-\t\treturn { ...workflow, scopes, checksum };\n+\t\treturn { ...workflowWithMetaData, scopes, checksum };\n \t}\n \n \t/**\n",
+ "isolation": {
+  "container": "per-run",
+  "mounts": [
+   "runs/n8n-43353/deepseek_deepseek-v4-flash-amd-off"
+  ],
+  "network": "jail (egress /llm only)",
+  "user": "1001",
+  "caps": "none",
+  "memory": "2g"
+ }
+}

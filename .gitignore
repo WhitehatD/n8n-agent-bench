@@ -1,0 +1,8 @@
+cache/
+work/
+results/logs/
+results/archive/
+results/runs/*/prepare.log
+.env
+*.env
+__pycache__/

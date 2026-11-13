@@ -1,0 +1,33 @@
+{
+ "task": "n8n-43252",
+ "model": "deepseek/deepseek-v4-flash",
+ "agents_md": "on",
+ "held_out_tests_pass": false,
+ "policy": {
+  "deny_write_hits": [],
+  "human_review_path_hits": [],
+  "gate_model": "morph/reflex",
+  "gate_p_needs_human": 0.1777117327841871,
+  "needs_human": false,
+  "refused_tool_calls": 0
+ },
+ "closeness": {
+  "agent_files": [],
+  "gold_src_files": [
+   "packages/@n8n/nodes-langchain/nodes/agents/Agent/agents/ToolsAgent/common.ts"
+  ],
+  "src_file_overlap": 0.0,
+  "extra_files": [],
+  "agent_lines": 0,
+  "gold_lines": 30
+ },
+ "cost_usd": 0.2031,
+ "steps": 92,
+ "seconds": 2898,
+ "finished": false,
+ "held_out": {
+  "passed": false,
+  "seconds": 5,
+  "tail": " no text blocks exist 1ms\n     \u2713 should return empty string when no text or thinking blocks exist 0ms\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af Failed Tests 3 \u23af\u23af\u23af\u23af\u23af\u23af\u23af\n\n FAIL  nodes/agents/Agent/test/ToolsAgent/commons.test.ts > handleAgentFinishOutput > should concatenate streamed text fragments without adding newlines\nAssertionError: expected 'Here\\n\u2019s what\\n\u2019s in your dataset\\n:\\\u2026' to be 'Here\u2019s what\u2019s in your dataset:\\n\\n## \u2026' // Object.is equality\n\n- Expected\n+ Received\n\n- Here\u2019s what\u2019s in your dataset:\n+ Here\n+ \u2019s what\n+ \u2019s in your dataset\n+ :\n\n  ## Overview\n\n \u276f nodes/agents/Agent/test/ToolsAgent/commons.test.ts:1230:38\n    1228|   const result = handleAgentFinishOutput(steps) as AgentFinish;\n    1229|\n    1230|   expect(result.returnValues.output).toBe('Here\u2019s what\u2019s in your datas\u2026\n       |                                      ^\n    1231|  });\n    1232|\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[1/3]\u23af\n\n FAIL  nodes/agents/Agent/test/ToolsAgent/commons.test.ts > handleAgentFinishOutput > should merge multi-output text arrays into a single string\nAssertionError: expected { \u2026(2) } to deeply equal { log: '', \u2026(1) }\n\n- Expected\n+ Received\n\n  {\n    \"log\": \"\",\n    \"returnValues\": {\n-     \"output\": \"First partSecond part\",\n+     \"output\": \"First part\n+ Second part\",\n    },\n  }\n\n \u276f nodes/agents/Agent/test/ToolsAgent/commons.test.ts:1246:18\n    1244|   const result = handleAgentFinishOutput(steps);\n    1245|\n    1246|   expect(result).toEqual({\n       |                  ^\n    1247|    log: '',\n    1248|    returnValues: {\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[2/3]\u23af\n\n FAIL  nodes/agents/Agent/test/ToolsAgent/commons.test.ts > handleAgentFinishOutput > should return thinking content when no text blocks exist\nAssertionError: expected 'Only thinking content\\nMore thinking' to be 'Only thinking contentMore thinking' // Object.is equality\n\n- Expected\n+ Received\n\n- Only thinking contentMore thinking\n+ Only thinking content\n+ More thinking\n\n \u276f nodes/agents/Agent/test/ToolsAgent/commons.test.ts:1331:38\n    1329|   const result = handleAgentFinishOutput(steps) as AgentFinish;\n    1330|\n    1331|   expect(result.returnValues.output).toBe('Only thinking contentMore t\u2026\n       |                                      ^\n    1332|  });\n    1333|\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[3/3]\u23af\n\n\n Test Files  1 failed (1)\n      Tests  3 failed | 62 passed (65)\n   Start at  23:58:15\n   Duration  3.19s (import 85%, transform 12%, tests 3%)\n\nJUNIT report written to /work/runs/n8n-43252/deepseek_deepseek-v4-flash-amd-on/packages/@n8n/nodes-langchain/junit.xml\n"
+ }
+}

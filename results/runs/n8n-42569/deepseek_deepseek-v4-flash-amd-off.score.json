@@ -1,0 +1,34 @@
+{
+ "task": "n8n-42569",
+ "model": "deepseek/deepseek-v4-flash",
+ "agents_md": "off",
+ "held_out_tests_pass": false,
+ "timed_out": true,
+ "policy": {
+  "deny_write_hits": [],
+  "human_review_path_hits": [],
+  "gate_model": null,
+  "gate_p_needs_human": null,
+  "needs_human": false,
+  "refused_tool_calls": 0
+ },
+ "closeness": {
+  "agent_files": [],
+  "gold_src_files": [
+   "packages/@n8n/agents/src/runtime/model/model-token-counter.ts",
+   "packages/@n8n/agents/src/runtime/tools/tool-call-runner.ts"
+  ],
+  "src_file_overlap": 0,
+  "extra_files": [],
+  "agent_lines": 0,
+  "gold_lines": 228
+ },
+ "cost_usd": 0.0,
+ "steps": 0,
+ "seconds": 3000,
+ "finished": false,
+ "held_out": {
+  "passed": false,
+  "tail": "agent container killed at the 3000 s run timeout"
+ }
+}

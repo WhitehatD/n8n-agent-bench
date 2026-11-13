@@ -1,0 +1,505 @@
+{
+ "task": "n8n-43518",
+ "model": "deepseek/deepseek-v4-flash",
+ "agents_md": "off",
+ "steps": 48,
+ "seconds": 102,
+ "usage": {
+  "prompt": 1424130,
+  "completion": 9213,
+  "cost": 0.045562138
+ },
+ "finish": {
+  "summary": "The bug in the Weaviate Vector Store node was that `populateVectorStore` deleted the collection/tenant **every time** it was called. Since node version 1.1, the insert operation (`handleInsertOperation` in `insertOperation.ts`) calls `populateVectorStore` in a loop for each batch of documents (default batch size 200). This meant the store was cleared before every batch, so only the last batch survived.\n\n**Fix:** Moved the clear-store logic from `populateVectorStore` to the `beforeInsert` hook on the node configuration. The `beforeInsert` hook is designed exactly for one-time setup before batch inserts \u2014 it is called only once before all batches (when node version >= 1.1 and there is at least one document to insert). \n\n**Changes to `VectorStoreWeaviate.node.ts`:**\n- Removed the `if (options.clearStore) { ... }` block from `populateVectorStore`\n- Added a new `beforeInsert` callback that contains the same clear-store logic (deleting the collection or removing the tenant)\n\n**Changes to `VectorStoreWeaviate.node.test.ts`:**\n- Updated the `createVectorStoreNode` mock to also capture the `beforeInsert` property\n- Updated the `TestNode` type to include the optional `beforeInsert` method\n- Added three new tests under `describe('beforeInsert')`:\n  - \"should delete the collection when clearStore is true and no tenant\"\n  - \"should delete the tenant when clearStore is true and tenant is set\"  \n  - \"should not clear anything when clearStore is false\"\n- Updated the two `populateVectorStore` tests that previously tested clear-store behavior to now verify that `populateVectorStore` does NOT call delete/remove (negative tests confirming the delegation)",
+  "risks": "- The fix assumes the `beforeInsert` hook is only called for node version >= 1.1 with batch processing (which is correct per the `insertOperation.ts` code). For node version 1, `populateVectorStore` is called per-item without `beforeInsert`, but version 1 didn't have batch processing and the Clear Data feature was introduced in version 1.1, so this is not a concern.\n- The test mock for `createVectorStoreNode` does not pass `meta`, `sharedFields`, etc., but that's fine since this test only inspects the individual callbacks that are set on the returned class.\n- No risk of breaking other vector store nodes since this change is specific to Weaviate.",
+  "tests_run": "All 28 tests in `packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts` pass. Also verified all 10 tests in `packages/@n8n/ai-utilities/src/utils/vector-store/createVectorStoreNode/operations/__tests__/insertOperation.test.ts` pass (confirming the `beforeInsert` hook integration works correctly)."
+ },
+ "trace": [
+  {
+   "step": 0,
+   "tool": "shell",
+   "args": {
+    "cmd": "find / -type f -name \"VectorStoreWeaviate.node.ts\" 2>/dev/null"
+   },
+   "refused": false,
+   "result_head": "exit 1\n/work/runs/n8n-43518/deepseek_deepseek-v4-flash-amd-off/packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.ts\n"
+  },
+  {
+   "step": 1,
+   "tool": "read_file",
+   "args": {
+    "path": "/work/runs/n8n-43518/deepseek_deepseek-v4-flash-amd-off/packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.ts"
+   },
+   "refused": false,
+   "result_head": "1: import { Document } from '@langchain/core/documents';\n2: import type { Embeddings } from '@langchain/core/embeddings';\n3: import type { WeaviateLibArgs as OriginalWeaviateLibArgs } from '@langchain/weaviate';\n4: import { WeaviateStore } from '@langchain/weaviate';\n5: import type {\n6: \tIDataObject"
+  },
+  {
+   "step": 2,
+   "tool": "read_file",
+   "args": {
+    "path": "/work/runs/n8n-43518/deepseek_deepseek-v4-flash-amd-off/packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.ts",
+    "start": 400
+   },
+   "refused": false,
+   "result_head": "400: \t\tif (options.clearStore) {"
+  },
+  {
+   "step": 3,
+   "tool": "read_file",
+   "args": {
+    "path": "/work/runs/n8n-43518/deepseek_deepseek-v4-flash-amd-off/packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.ts",
+    "start": 395
+   },
+   "refused": false,
+   "result_head": "395: \t\t\ttenant: options.tenant ?? undefined,\n396: \t\t\ttextKey: options.textKey ? options.textKey : 'text',\n397: \t\t\tmetadataKeys: metadataKeys as string[] | undefined,\n398: \t\t};\n399: \n400: \t\tif (options.clearStore) {"
+  },
+  {
+   "step": 4,
+   "tool": "read_file",
+   "args": {
+    "path": "/work/runs/n8n-43518/deepseek_deepseek-v4-flash-amd-off/packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.ts",
+    "start": 395,
+    "end": 450
+   },
+   "refused": false,
+   "result_head": "395: \t\t\ttenant: options.tenant ?? undefined,\n396: \t\t\ttextKey: options.textKey ? options.textKey : 'text',\n397: \t\t\tmetadataKeys: metadataKeys as string[] | undefined,\n398: \t\t};\n399: \n400: \t\tif (options.clearStore) {\n401: \t\t\tif (!options.tenant) {\n402: \t\t\t\tawait client.collections.delete(collectionNam"
+  },
+  {
+   "step": 5,
+   "tool": "shell",
+   "args": {
+    "cmd": "find / -type f -name \"createVectorStoreNode*\" 2>/dev/null | grep -v node_modules"
+   },
+   "refused": false,
+   "result_head": "exit 0\n/work/runs/n8n-43518/deepseek_deepseek-v4-flash-amd-off/packages/@n8n/ai-utilities/src/utils/vector-store/createVectorStoreNode/createVectorStoreNode.ts\n/work/runs/n8n-43518/deepseek_deepseek-v4-flash-amd-off/packages/@n8n/ai-utilities/src/utils/vector-store/createVectorStoreNode/createVector"
+  },
+  {
+   "step": 6,
+   "tool": "read_file",
+   "args": {
+    "path": "/work/runs/n8n-43518/deepseek_deepseek-v4-flash-amd-off/packages/@n8n/ai-utilities/src/utils/vector-store/createVectorStoreNode/createVectorStoreNode.ts"
+   },
+   "refused": false,
+   "result_head": "1: import type { Embeddings } from '@langchain/core/embeddings';\n2: import type { VectorStore } from '@langchain/core/vectorstores';\n3: import { NodeConnectionTypes, NodeOperationError } from 'n8n-workflow';\n4: import type {\n5: \tIExecuteFunctions,\n6: \tINodeExecutionData,\n7: \tINodeTypeDescription,\n8:"
+  },
+  {
+   "step": 7,
+   "tool": "shell",
+   "args": {
+    "cmd": "find / -type f -name \"operations.ts\" -path \"*/createVectorStoreNode/*\" 2>/dev/null | grep -v node_modules"
+   },
+   "refused": false,
+   "result_head": "exit 1\n"
+  },
+  {
+   "step": 8,
+   "tool": "shell",
+   "args": {
+    "cmd": "find / -type f -name \"operations*\" -path \"*/createVectorStoreNode/*\" 2>/dev/null | grep -v node_modules"
+   },
+   "refused": false,
+   "result_head": "exit 1\n"
+  },
+  {
+   "step": 9,
+   "tool": "shell",
+   "args": {
+    "cmd": "find / -type f -name \"handleInsert*\" 2>/dev/null | grep -v node_modules"
+   },
+   "refused": false,
+   "result_head": "exit 1\n"
+  },
+  {
+   "step": 10,
+   "tool": "shell",
+   "args": {
+    "cmd": "find / -type f -name \"*.ts\" -path \"*/vector-store*\" -not -path \"*/node_modules/*\" 2>/dev/null"
+   },
+   "refused": false,
+   "result_head": "exit 1\ntests__/factory.test.ts\n/work/runs/n8n-43518/deepseek_deepseek-v4-flash-amd-off/packages/cli/src/modules/knowledge/vector-stores/__tests__/embedding-credential.test.ts\n/work/runs/n8n-43518/deepseek_deepseek-v4-flash-amd-off/packages/quality/testing/playwright/tests/e2e/node-creator/vector-sto"
+  },
+  {
+   "step": 11,
+   "tool": "read_file",
+   "args": {
+    "path": "/work/runs/n8n-43518/deepseek_deepseek-v4-flash-amd-off/packages/@n8n/ai-utilities/src/utils/vector-store/createVectorStoreNode/operations/insertOperation.ts"
+   },
+   "refused": false,
+   "result_head": "1: import type { Document } from '@langchain/core/documents';\n2: import type { Embeddings } from '@langchain/core/embeddings';\n3: import type { VectorStore } from '@langchain/core/vectorstores';\n4: import { NodeConnectionTypes } from 'n8n-workflow';\n5: import type { IExecuteFunctions, INodeExecution"
+  },
+  {
+   "step": 12,
+   "tool": "read_file",
+   "args": {
+    "path": "/work/runs/n8n-43518/deepseek_deepseek-v4-flash-amd-off/packages/@n8n/ai-utilities/src/utils/vector-store/createVectorStoreNode/types.ts"
+   },
+   "refused": false,
+   "result_head": "1: import type { Document } from '@langchain/core/documents';\n2: import type { Embeddings } from '@langchain/core/embeddings';\n3: import type { VectorStore } from '@langchain/core/vectorstores';\n4: import type {\n5: \tIExecuteFunctions,\n6: \tINodeCredentialDescription,\n7: \tINodeProperties,\n8: \tINodeTyp"
+  },
+  {
+   "step": 13,
+   "tool": "read_file",
+   "args": {
+    "path": "/work/runs/n8n-43518/deepseek_deepseek-v4-flash-amd-off/packages/@n8n/ai-utilities/src/utils/vector-store/createVectorStoreNode/operations/__tests__/insertOperation.test.ts"
+   },
+   "refused": false,
+   "result_head": "1: /* eslint-disable @typescript-eslint/no-unsafe-return */\n2: import type { Document } from '@langchain/core/documents';\n3: import type { Embeddings } from '@langchain/core/embeddings';\n4: import type { VectorStore } from '@langchain/core/vectorstores';\n5: import type { IExecuteFunctions, INodeExec"
+  },
+  {
+   "step": 14,
+   "tool": "read_file",
+   "args": {
+    "path": "/work/runs/n8n-43518/deepseek_deepseek-v4-flash-amd-off/packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts"
+   },
+   "refused": false,
+   "result_head": "1: import type { Document } from '@langchain/core/documents';\n2: import type { Embeddings } from '@langchain/core/embeddings';\n3: import { Document as LcDocument } from '@langchain/core/documents';\n4: import { WeaviateStore } from '@langchain/weaviate';\n5: import type { IDataObject, INode, ISupplyDa"
+  },
+  {
+   "step": 15,
+   "tool": "read_file",
+   "args": {
+    "path": "/work/runs/n8n-43518/deepseek_deepseek-v4-flash-amd-off/packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts",
+    "start": 400
+   },
+   "refused": false,
+   "result_head": "400: \t});"
+  },
+  {
+   "step": 16,
+   "tool": "edit_file",
+   "args": {
+    "path": "/work/runs/n8n-43518/deepseek_deepseek-v4-flash-amd-off/packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.ts",
+    "old": "async populateVectorStore(context, embeddings, documents, itemIndex) {\n\t\tconst collectionName = context.getNodeParameter('weaviateCollection', itemIndex, '', {\n\t\t\textractValue: true,\n\t\t}) as string;\n\n\t\tconst options = context.getNodeParameter('options', itemIndex, {}) as {\n\t\t\ttenant?: string;\n\t\t\ttex",
+    "new": "beforeInsert: async (context, embeddings, itemIndex) => {\n\t\tconst collectionName = context.getNodeParameter('weaviateCollection', itemIndex, '', {\n\t\t\textractValue: true,\n\t\t}) as string;\n\n\t\tconst options = context.getNodeParameter('options', itemIndex, {}) as {\n\t\t\ttenant?: string;\n\t\t\tclearStore?: boo"
+   },
+   "refused": false,
+   "result_head": "edited /work/runs/n8n-43518/deepseek_deepseek-v4-flash-amd-off/packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.ts"
+  },
+  {
+   "step": 17,
+   "tool": "edit_file",
+   "args": {
+    "path": "/work/runs/n8n-43518/deepseek_deepseek-v4-flash-amd-off/packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts",
+    "old": "vi.mock('@n8n/ai-utilities', () => ({\n\tcreateVectorStoreNode: (config: {\n\t\tgetVectorStoreClient: (...args: unknown[]) => unknown;\n\t\tpopulateVectorStore: (...args: unknown[]) => unknown;\n\t}) =>\n\t\tclass BaseNode {\n\t\t\tgetVectorStoreClient = config.getVectorStoreClient;\n\t\t\tpopulateVectorStore = config.p",
+    "new": "vi.mock('@n8n/ai-utilities', () => ({\n\tcreateVectorStoreNode: (config: {\n\t\tgetVectorStoreClient: (...args: unknown[]) => unknown;\n\t\tpopulateVectorStore: (...args: unknown[]) => unknown;\n\t\tbeforeInsert?: (...args: unknown[]) => Promise<void>;\n\t}) =>\n\t\tclass BaseNode {\n\t\t\tgetVectorStoreClient = config"
+   },
+   "refused": false,
+   "result_head": "edited /work/runs/n8n-43518/deepseek_deepseek-v4-flash-amd-off/packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts"
+  },
+  {
+   "step": 18,
+   "tool": "edit_file",
+   "args": {
+    "path": "/work/runs/n8n-43518/deepseek_deepseek-v4-flash-amd-off/packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts",
+    "old": "type TestNode = {\n\tgetVectorStoreClient: (\n\t\tcontext: ISupplyDataFunctions,\n\t\tfilter: IDataObject | undefined,\n\t\tembeddings: Embeddings,\n\t\titemIndex: number,\n\t) => Promise<unknown>;\n\tpopulateVectorStore: (\n\t\tcontext: ISupplyDataFunctions,\n\t\tembeddings: Embeddings,\n\t\tdocuments: Document[],\n\t\titemInde",
+    "new": "type TestNode = {\n\tgetVectorStoreClient: (\n\t\tcontext: ISupplyDataFunctions,\n\t\tfilter: IDataObject | undefined,\n\t\tembeddings: Embeddings,\n\t\titemIndex: number,\n\t) => Promise<unknown>;\n\tpopulateVectorStore: (\n\t\tcontext: ISupplyDataFunctions,\n\t\tembeddings: Embeddings,\n\t\tdocuments: Document[],\n\t\titemInde"
+   },
+   "refused": false,
+   "result_head": "edited /work/runs/n8n-43518/deepseek_deepseek-v4-flash-amd-off/packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts"
+  },
+  {
+   "step": 19,
+   "tool": "read_file",
+   "args": {
+    "path": "/work/runs/n8n-43518/deepseek_deepseek-v4-flash-amd-off/packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts",
+    "start": 169,
+    "end": 182
+   },
+   "refused": false,
+   "result_head": "169: \tit('should reject a gRPC proxy that is not an http:// URL', async () => {\n170: \t\tawait expect(\n171: \t\t\tgetClient({}, { custom_connection_grpc_proxy: 'https://credential-proxy.test:3128' }),\n172: \t\t).rejects.toThrow(UserError);\n173: \t\texpect(connectSpy).not.toHaveBeenCalled();\n174: \t});\n175: \n1"
+  },
+  {
+   "step": 20,
+   "tool": "read_file",
+   "args": {
+    "path": "/work/runs/n8n-43518/deepseek_deepseek-v4-flash-amd-off/packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts",
+    "start": 81,
+    "end": 92
+   },
+   "refused": false,
+   "result_head": "81: \tcustom_connection_http_port: 1,\n82: \tcustom_connection_http_secure: false,\n83: \tcustom_connection_grpc_host: '127.0.0.1',\n84: \tcustom_connection_grpc_port: 2,\n85: \tcustom_connection_grpc_secure: false,\n86: };\n87: \n88: function createContext(\n89: \toptions: Record<string, unknown>,\n90: \tcredentia"
+  },
+  {
+   "step": 21,
+   "tool": "read_file",
+   "args": {
+    "path": "/work/runs/n8n-43518/deepseek_deepseek-v4-flash-amd-off/packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts",
+    "start": 81,
+    "end": 100
+   },
+   "refused": false,
+   "result_head": "81: \tcustom_connection_http_port: 1,\n82: \tcustom_connection_http_secure: false,\n83: \tcustom_connection_grpc_host: '127.0.0.1',\n84: \tcustom_connection_grpc_port: 2,\n85: \tcustom_connection_grpc_secure: false,\n86: };\n87: \n88: function createContext(\n89: \toptions: Record<string, unknown>,\n90: \tcredentia"
+  },
+  {
+   "step": 22,
+   "tool": "read_file",
+   "args": {
+    "path": "/work/runs/n8n-43518/deepseek_deepseek-v4-flash-amd-off/packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts",
+    "start": 169,
+    "end": 182
+   },
+   "refused": false,
+   "result_head": "169: \tit('should reject a gRPC proxy that is not an http:// URL', async () => {\n170: \t\tawait expect(\n171: \t\t\tgetClient({}, { custom_connection_grpc_proxy: 'https://credential-proxy.test:3128' }),\n172: \t\t).rejects.toThrow(UserError);\n173: \t\texpect(connectSpy).not.toHaveBeenCalled();\n174: \t});\n175: \n1"
+  },
+  {
+   "step": 23,
+   "tool": "read_file",
+   "args": {
+    "path": "/work/runs/n8n-43518/deepseek_deepseek-v4-flash-amd-off/packages/@n8n/nodes-langchain/nodes/vector_store/Weaviate.utils.ts"
+   },
+   "refused": false,
+   "result_head": "tool error: [Errno 2] No such file or directory: '/work/runs/n8n-43518/deepseek_deepseek-v4-flash-amd-off/packages/@n8n/nodes-langchain/nodes/vector_store/Weaviate.utils.ts'"
+  },
+  {
+   "step": 24,
+   "tool": "shell",
+   "args": {
+    "cmd": "find / -type f -name \"Weaviate.utils.ts\" 2>/dev/null | grep -v node_modules | grep -v dist"
+   },
+   "refused": false,
+   "result_head": "exit 0\n/work/runs/n8n-43518/deepseek_deepseek-v4-flash-amd-off/packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/Weaviate.utils.ts\n"
+  },
+  {
+   "step": 25,
+   "tool": "read_file",
+   "args": {
+    "path": "/work/runs/n8n-43518/deepseek_deepseek-v4-flash-amd-off/packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/Weaviate.utils.ts"
+   },
+   "refused": false,
+   "result_head": "1: import { OperationalError, UserError } from '@n8n/errors';\n2: import type { FilterValue, GeoRangeFilter, TimeoutParams, WeaviateClient } from 'weaviate-client';\n3: import weaviate, { Filters } from 'weaviate-client';\n4: \n5: export type WeaviateCredential = {\n6: \tweaviate_cloud_endpoint: string;\n7"
+  },
+  {
+   "step": 26,
+   "tool": "read_file",
+   "args": {
+    "path": "/work/runs/n8n-43518/deepseek_deepseek-v4-flash-amd-off/packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts",
+    "start": 176,
+    "end": 200
+   },
+   "refused": false,
+   "result_head": "176: \tit('should use the credential gRPC proxy when it inserts documents', async () => {\n177: \t\t// Insert mode always runs the init checks, which need a live server\n178: \t\tconnectSpy.mockResolvedValue(mock());\n179: \n180: \t\tawait node.populateVectorStore(\n181: \t\t\tcreateContext({}, { custom_connection"
+  },
+  {
+   "step": 27,
+   "tool": "read_file",
+   "args": {
+    "path": "/work/runs/n8n-43518/deepseek_deepseek-v4-flash-amd-off/packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts",
+    "start": 199,
+    "end": 216
+   },
+   "refused": false,
+   "result_head": "199: \t});\n200: \n201: \ttype SearchableStore = {\n202: \t\tsimilaritySearchVectorWithScore: (\n203: \t\t\tquery: number[],\n204: \t\t\tk: number,\n205: \t\t\tfilter?: IDataObject,\n206: \t\t) => Promise<Array<[LcDocument, number]>>;\n207: \t};\n208: \n209: \tconst getStore = async (options: Record<string, unknown>, filter?:"
+  },
+  {
+   "step": 28,
+   "tool": "edit_file",
+   "args": {
+    "path": "/work/runs/n8n-43518/deepseek_deepseek-v4-flash-amd-off/packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts",
+    "old": "});\n\n\ttype SearchableStore = {",
+    "new": "});\n\n\tdescribe('beforeInsert', () => {\n\t\tit('should delete the collection when clearStore is true and no tenant', async () => {\n\t\t\tconst collectionsDelete = vi.fn();\n\t\t\tconst collectionsGet = vi.fn();\n\t\t\tconst tenantsRemove = vi.fn();\n\t\t\tconst mockClient = {\n\t\t\t\tcollections: { delete: collectionsDel"
+   },
+   "refused": false,
+   "result_head": "edited /work/runs/n8n-43518/deepseek_deepseek-v4-flash-amd-off/packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts"
+  },
+  {
+   "step": 29,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd /work/runs/n8n-43518/deepseek_deepseek-v4-flash-amd-off/packages/@n8n/nodes-langchain && pnpm exec vitest run nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts 2>&1"
+   },
+   "refused": false,
+   "result_head": "exit 1\n\u001b[33m(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:\n  - ESM syntax in a file loaded as CommonJS (vite.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest"
+  },
+  {
+   "step": 30,
+   "tool": "read_file",
+   "args": {
+    "path": "/work/runs/n8n-43518/deepseek_deepseek-v4-flash-amd-off/packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts",
+    "start": 470
+   },
+   "refused": false,
+   "result_head": ""
+  },
+  {
+   "step": 31,
+   "tool": "read_file",
+   "args": {
+    "path": "/work/runs/n8n-43518/deepseek_deepseek-v4-flash-amd-off/packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts",
+    "start": 450
+   },
+   "refused": false,
+   "result_head": ""
+  },
+  {
+   "step": 32,
+   "tool": "read_file",
+   "args": {
+    "path": "/work/runs/n8n-43518/deepseek_deepseek-v4-flash-amd-off/packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts",
+    "start": 440
+   },
+   "refused": false,
+   "result_head": ""
+  },
+  {
+   "step": 33,
+   "tool": "read_file",
+   "args": {
+    "path": "/work/runs/n8n-43518/deepseek_deepseek-v4-flash-amd-off/packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts",
+    "start": 400
+   },
+   "refused": false,
+   "result_head": "400: \t\t\tstore.hybridSearch.mockResolvedValue([]);"
+  },
+  {
+   "step": 34,
+   "tool": "read_file",
+   "args": {
+    "path": "/work/runs/n8n-43518/deepseek_deepseek-v4-flash-amd-off/packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts",
+    "start": 400,
+    "end": 550
+   },
+   "refused": false,
+   "result_head": "400: \t\t\tstore.hybridSearch.mockResolvedValue([]);\n401: \t\t\tconst vectorStore = await getStore(hybridOptions);\n402: \n403: \t\t\tawait vectorStore.similaritySearchVectorWithScore([0.1, 0.2], 3);\n404: \n405: \t\t\texpect(store.hybridSearch).toHaveBeenCalledWith('cats', {\n406: \t\t\t\tlimit: 3,\n407: \t\t\t\tautoLimit: "
+  },
+  {
+   "step": 35,
+   "tool": "edit_file",
+   "args": {
+    "path": "/work/runs/n8n-43518/deepseek_deepseek-v4-flash-amd-off/packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts",
+    "old": "it('should delete the collection before the insert when Clear Data is on', async () => {\n\t\t\tawait insert({ clearStore: true });\n\n\t\t\texpect(deleteCollection).toHaveBeenCalledWith('TestCollection');\n\t\t\texpect(removeTenants).not.toHaveBeenCalled();\n\t\t});\n\n\t\tit('should remove only the tenant when Clear ",
+    "new": "it('should not delete the collection when Clear Data is on (now delegated to beforeInsert)', async () => {\n\t\t\tawait insert({ clearStore: true });\n\n\t\t\texpect(deleteCollection).not.toHaveBeenCalled();\n\t\t\texpect(removeTenants).not.toHaveBeenCalled();\n\t\t});\n\n\t\tit('should not remove the tenant when Clear"
+   },
+   "refused": false,
+   "result_head": "edited /work/runs/n8n-43518/deepseek_deepseek-v4-flash-amd-off/packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts"
+  },
+  {
+   "step": 36,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd /work/runs/n8n-43518/deepseek_deepseek-v4-flash-amd-off/packages/@n8n/nodes-langchain && pnpm exec vitest run nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts 2>&1"
+   },
+   "refused": false,
+   "result_head": "exit 0\n\u001b[33m(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:\n  - ESM syntax in a file loaded as CommonJS (vite.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest"
+  },
+  {
+   "step": 37,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd /work/runs/n8n-43518/deepseek_deepseek-v4-flash-amd-off/packages/@n8n/ai-utilities && pnpm exec vitest run src/utils/vector-store/createVectorStoreNode/operations/__tests__/insertOperation.test.ts 2>&1"
+   },
+   "refused": false,
+   "result_head": "exit 0\n\u001b[33m(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:\n  - ESM syntax in a file loaded as CommonJS (vite.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest"
+  },
+  {
+   "step": 38,
+   "tool": "read_file",
+   "args": {
+    "path": "/work/runs/n8n-43518/deepseek_deepseek-v4-flash-amd-off/packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.ts",
+    "start": 374,
+    "end": 415
+   },
+   "refused": false,
+   "result_head": "374: \tbeforeInsert: async (context, embeddings, itemIndex) => {\n375: \t\tconst collectionName = context.getNodeParameter('weaviateCollection', itemIndex, '', {\n376: \t\t\textractValue: true,\n377: \t\t}) as string;\n378: \n379: \t\tconst options = context.getNodeParameter('options', itemIndex, {}) as {\n380: \t\t\t"
+  },
+  {
+   "step": 39,
+   "tool": "read_file",
+   "args": {
+    "path": "/work/runs/n8n-43518/deepseek_deepseek-v4-flash-amd-off/packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.ts",
+    "start": 415,
+    "end": 430
+   },
+   "refused": false,
+   "result_head": "415: \t\t\tclient,\n416: \t\t\tindexName: collectionName,\n417: \t\t\ttenant: options.tenant ?? undefined,\n418: \t\t\ttextKey: options.textKey ? options.textKey : 'text',\n419: \t\t\tmetadataKeys: metadataKeys as string[] | undefined,\n420: \t\t};\n421: \n422: \t\tawait WeaviateStore.fromDocuments(documents, embeddings, con"
+  },
+  {
+   "step": 40,
+   "tool": "read_file",
+   "args": {
+    "path": "/work/runs/n8n-43518/deepseek_deepseek-v4-flash-amd-off/packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts"
+   },
+   "refused": false,
+   "result_head": "1: import type { Document } from '@langchain/core/documents';\n2: import type { Embeddings } from '@langchain/core/embeddings';\n3: import { Document as LcDocument } from '@langchain/core/documents';\n4: import { WeaviateStore } from '@langchain/weaviate';\n5: import type { IDataObject, INode, ISupplyDa"
+  },
+  {
+   "step": 41,
+   "tool": "read_file",
+   "args": {
+    "path": "/work/runs/n8n-43518/deepseek_deepseek-v4-flash-amd-off/packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts",
+    "start": 460
+   },
+   "refused": false,
+   "result_head": ""
+  },
+  {
+   "step": 42,
+   "tool": "read_file",
+   "args": {
+    "path": "/work/runs/n8n-43518/deepseek_deepseek-v4-flash-amd-off/packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts",
+    "start": 458
+   },
+   "refused": false,
+   "result_head": ""
+  },
+  {
+   "step": 43,
+   "tool": "read_file",
+   "args": {
+    "path": "/work/runs/n8n-43518/deepseek_deepseek-v4-flash-amd-off/packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts",
+    "start": 455
+   },
+   "refused": false,
+   "result_head": ""
+  },
+  {
+   "step": 44,
+   "tool": "shell",
+   "args": {
+    "cmd": "wc -l /work/runs/n8n-43518/deepseek_deepseek-v4-flash-amd-off/packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts"
+   },
+   "refused": false,
+   "result_head": "exit 0\n526 /work/runs/n8n-43518/deepseek_deepseek-v4-flash-amd-off/packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts\n"
+  },
+  {
+   "step": 45,
+   "tool": "read_file",
+   "args": {
+    "path": "/work/runs/n8n-43518/deepseek_deepseek-v4-flash-amd-off/packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts",
+    "start": 465
+   },
+   "refused": false,
+   "result_head": ""
+  },
+  {
+   "step": 46,
+   "tool": "read_file",
+   "args": {
+    "path": "/work/runs/n8n-43518/deepseek_deepseek-v4-flash-amd-off/packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts",
+    "start": 460,
+    "end": 526
+   },
+   "refused": false,
+   "result_head": "460: \n461: \t\t\tawait expect(vectorStore.similaritySearchVectorWithScore([0.1], 3)).rejects.toThrow(\n462: \t\t\t\t'Unexpected score type: string',\n463: \t\t\t);\n464: \t\t});\n465: \t});\n466: \n467: \tdescribe('populateVectorStore', () => {\n468: \t\tconst deleteCollection = vi.fn();\n469: \t\tconst removeTenants = vi.fn"
+  },
+  {
+   "step": 47,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd /work/runs/n8n-43518/deepseek_deepseek-v4-flash-amd-off/packages/@n8n/nodes-langchain && pnpm exec vitest run nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts 2>&1"
+   },
+   "refused": false,
+   "result_head": "exit 0\n\u001b[33m(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:\n  - ESM syntax in a file loaded as CommonJS (vite.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest"
+  }
+ ],
+ "diff": "diff --git a/packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts b/packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts\nindex 760dfd4d..88937086 100644\n--- a/packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts\n+++ b/packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.test.ts\n@@ -37,10 +37,12 @@ vi.mock('@n8n/ai-utilities', () => ({\n \tcreateVectorStoreNode: (config: {\n \t\tgetVectorStoreClient: (...args: unknown[]) => unknown;\n \t\tpopulateVectorStore: (...args: unknown[]) => unknown;\n+\t\tbeforeInsert?: (...args: unknown[]) => Promise<void>;\n \t}) =>\n \t\tclass BaseNode {\n \t\t\tgetVectorStoreClient = config.getVectorStoreClient;\n \t\t\tpopulateVectorStore = config.populateVectorStore;\n+\t\t\tbeforeInsert = config.beforeInsert;\n \t\t},\n }));\n \n@@ -63,6 +65,11 @@ type TestNode = {\n \t\tdocuments: Document[],\n \t\titemIndex: number,\n \t) => Promise<void>;\n+\tbeforeInsert?: (\n+\t\tcontext: ISupplyDataFunctions,\n+\t\tembeddings: Embeddings,\n+\t\titemIndex: number,\n+\t) => Promise<void>;\n };\n \n const CREDENTIAL_PROXY = 'http://credential-proxy.test:3128';\n@@ -191,6 +198,64 @@ describe('VectorStoreWeaviate.node', () => {\n \t\texpect(process.env.grpc_proxy).toBeUndefined();\n \t});\n \n+\tdescribe('beforeInsert', () => {\n+\t\tit('should delete the collection when clearStore is true and no tenant', async () => {\n+\t\t\tconst collectionsDelete = vi.fn();\n+\t\t\tconst collectionsGet = vi.fn();\n+\t\t\tconst tenantsRemove = vi.fn();\n+\t\t\tconst mockClient = {\n+\t\t\t\tcollections: { delete: collectionsDelete, get: collectionsGet },\n+\t\t\t};\n+\t\t\tconnectSpy.mockResolvedValue(mockClient as unknown as WeaviateClient);\n+\n+\t\t\tawait (node as TestNode).beforeInsert!(\n+\t\t\t\tcreateContext({ clearStore: true }),\n+\t\t\t\tmock<Embeddings>(),\n+\t\t\t\t0,\n+\t\t\t);\n+\n+\t\t\texpect(collectionsDelete).toHaveBeenCalledWith('TestCollection');\n+\t\t\texpect(tenantsRemove).not.toHaveBeenCalled();\n+\t\t});\n+\n+\t\tit('should delete the tenant when clearStore is true and tenant is set', async () => {\n+\t\t\tconst collectionsDelete = vi.fn();\n+\t\t\tconst tenantsRemove = vi.fn();\n+\t\t\tconst mockClient = {\n+\t\t\t\tcollections: {\n+\t\t\t\t\tdelete: collectionsDelete,\n+\t\t\t\t\tget: vi.fn(() => ({ tenants: { remove: tenantsRemove } })),\n+\t\t\t\t},\n+\t\t\t};\n+\t\t\tconnectSpy.mockResolvedValue(mockClient as unknown as WeaviateClient);\n+\n+\t\t\tawait (node as TestNode).beforeInsert!(\n+\t\t\t\tcreateContext({ clearStore: true, tenant: 'myTenant' }),\n+\t\t\t\tmock<Embeddings>(),\n+\t\t\t\t0,\n+\t\t\t);\n+\n+\t\t\texpect(collectionsDelete).not.toHaveBeenCalled();\n+\t\t\texpect(tenantsRemove).toHaveBeenCalledWith([{ name: 'myTenant' }]);\n+\t\t});\n+\n+\t\tit('should not clear anything when clearStore is false', async () => {\n+\t\t\tconst collectionsDelete = vi.fn();\n+\t\t\tconst mockClient = {\n+\t\t\t\tcollections: { delete: collectionsDelete, get: vi.fn() },\n+\t\t\t};\n+\t\t\tconnectSpy.mockResolvedValue(mockClient as unknown as WeaviateClient);\n+\n+\t\t\tawait (node as TestNode).beforeInsert!(\n+\t\t\t\tcreateContext({ clearStore: false }),\n+\t\t\t\tmock<Embeddings>(),\n+\t\t\t\t0,\n+\t\t\t);\n+\n+\t\t\texpect(collectionsDelete).not.toHaveBeenCalled();\n+\t\t});\n+\t});\n+\n \ttype SearchableStore = {\n \t\tsimilaritySearchVectorWithScore: (\n \t\t\tquery: number[],\n@@ -444,18 +509,18 @@ describe('VectorStoreWeaviate.node', () => {\n \t\t\t);\n \t\t});\n \n-\t\tit('should delete the collection before the insert when Clear Data is on', async () => {\n+\t\tit('should not delete the collection when Clear Data is on (now delegated to beforeInsert)', async () => {\n \t\t\tawait insert({ clearStore: true });\n \n-\t\t\texpect(deleteCollection).toHaveBeenCalledWith('TestCollection');\n+\t\t\texpect(deleteCollection).not.toHaveBeenCalled();\n \t\t\texpect(removeTenants).not.toHaveBeenCalled();\n \t\t});\n \n-\t\tit('should remove only the tenant when Clear Data is on and a tenant is set', async () => {\n+\t\tit('should not remove the tenant when Clear Data is on and a tenant is set (now delegated to beforeInsert)', async () => {\n \t\t\tawait insert({ clearStore: true, tenant: 'tenantA' });\n \n-\t\t\texpect(removeTenants).toHaveBeenCalledWith([{ name: 'tenantA' }]);\n \t\t\texpect(deleteCollection).not.toHaveBeenCalled();\n+\t\t\texpect(removeTenants).not.toHaveBeenCalled();\n \t\t});\n \t});\n });\ndiff --git a/packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.ts b/packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.ts\nindex ab6b1265..ff8c9fbd 100644\n--- a/packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.ts\n+++ b/packages/@n8n/nodes-langchain/nodes/vector_store/VectorStoreWeaviate/VectorStoreWeaviate.node.ts\n@@ -371,6 +371,29 @@ export class VectorStoreWeaviate extends createVectorStoreNode<ExtendedWeaviateV\n \t\t\tvalidFilter,\n \t\t);\n \t},\n+\tbeforeInsert: async (context, embeddings, itemIndex) => {\n+\t\tconst collectionName = context.getNodeParameter('weaviateCollection', itemIndex, '', {\n+\t\t\textractValue: true,\n+\t\t}) as string;\n+\n+\t\tconst options = context.getNodeParameter('options', itemIndex, {}) as {\n+\t\t\ttenant?: string;\n+\t\t\tclearStore?: boolean;\n+\t\t};\n+\n+\t\tif (!options.clearStore) return;\n+\n+\t\tconst credentials = await context.getCredentials('weaviateApi');\n+\n+\t\tconst client = await createWeaviateClient(credentials as WeaviateCredential);\n+\n+\t\tif (!options.tenant) {\n+\t\t\tawait client.collections.delete(collectionName);\n+\t\t} else {\n+\t\t\tconst collection = client.collections.get(collectionName);\n+\t\t\tawait collection.tenants.remove([{ name: options.tenant }]);\n+\t\t}\n+\t},\n \tasync populateVectorStore(context, embeddings, documents, itemIndex) {\n \t\tconst collectionName = context.getNodeParameter('weaviateCollection', itemIndex, '', {\n \t\t\textractValue: true,\n@@ -379,7 +402,6 @@ export class VectorStoreWeaviate extends createVectorStoreNode<ExtendedWeaviateV\n \t\tconst options = context.getNodeParameter('options', itemIndex, {}) as {\n \t\t\ttenant?: string;\n \t\t\ttextKey?: string;\n-\t\t\tclearStore?: boolean;\n \t\t\tmetadataKeys?: string;\n \t\t};\n \n@@ -397,15 +419,6 @@ export class VectorStoreWeaviate extends createVectorStoreNode<ExtendedWeaviateV\n \t\t\tmetadataKeys: metadataKeys as string[] | undefined,\n \t\t};\n \n-\t\tif (options.clearStore) {\n-\t\t\tif (!options.tenant) {\n-\t\t\t\tawait client.collections.delete(collectionName);\n-\t\t\t} else {\n-\t\t\t\tconst collection = client.collections.get(collectionName);\n-\t\t\t\tawait collection.tenants.remove([{ name: options.tenant }]);\n-\t\t\t}\n-\t\t}\n-\n \t\tawait WeaviateStore.fromDocuments(documents, embeddings, config);\n \t},\n }) {}\n",
+ "isolation": {
+  "container": "per-run",
+  "mounts": [
+   "runs/n8n-43518/deepseek_deepseek-v4-flash-amd-off"
+  ],
+  "network": "jail (egress /llm only)",
+  "user": "1001",
+  "caps": "none",
+  "memory": "2g"
+ }
+}

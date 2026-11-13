@@ -1,0 +1,41 @@
+{
+ "task": "n8n-42475",
+ "model": "deepseek/deepseek-v4-flash",
+ "agents_md": "on",
+ "held_out_tests_pass": false,
+ "policy": {
+  "deny_write_hits": [],
+  "human_review_path_hits": [],
+  "gate_model": "morph/reflex",
+  "gate_p_needs_human": 0.9997609330851324,
+  "needs_human": true,
+  "refused_tool_calls": 0
+ },
+ "closeness": {
+  "agent_files": [
+   "packages/nodes-base/nodes/Google/Sheet/test/v2/methods/credentialTest.test.ts",
+   "packages/nodes-base/nodes/Google/Sheet/v1/GoogleSheetsV1.node.ts",
+   "packages/nodes-base/nodes/Google/Sheet/v2/methods/credentialTest.ts"
+  ],
+  "gold_src_files": [
+   "packages/nodes-base/nodes/Google/GenericFunctions.ts"
+  ],
+  "src_file_overlap": 0.0,
+  "extra_files": [
+   "packages/nodes-base/nodes/Google/Sheet/test/v2/methods/credentialTest.test.ts",
+   "packages/nodes-base/nodes/Google/Sheet/v1/GoogleSheetsV1.node.ts",
+   "packages/nodes-base/nodes/Google/Sheet/v2/methods/credentialTest.ts"
+  ],
+  "agent_lines": 42,
+  "gold_lines": 110
+ },
+ "cost_usd": 0.0802,
+ "steps": 77,
+ "seconds": 255,
+ "finished": true,
+ "held_out": {
+  "passed": false,
+  "seconds": 5,
+  "tail": "l.labels\",\n+   \"https://www.googleapis.com/auth/gmail.addons.current.action.compose\",\n+   \"https://www.googleapis.com/auth/gmail.addons.current.message.action\",\n    \"https://mail.google.com/\",\n+   \"https://www.googleapis.com/auth/gmail.modify\",\n+   \"https://www.googleapis.com/auth/gmail.compose\",\n  ]\n\n \u276f Proxy.<anonymous> nodes/Google/test/GenericFunctions.domainWideDelegation.test.ts:90:28\n \u276f Proxy.getGoogleAccessToken nodes/Google/GenericFunctions.ts:126:28\n \u276f nodes/Google/test/GenericFunctions.domainWideDelegation.test.ts:95:37\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[1/3]\u23af\n\n FAIL  nodes/Google/test/GenericFunctions.domainWideDelegation.test.ts > getGoogleAccessToken with domain-wide delegation > obtains a token when only the selected mail scope is authori\u2026\n FAIL  nodes/Google/test/GenericFunctions.domainWideDelegation.test.ts > getGoogleAccessToken with domain-wide delegation > obtains a token when only the mail scope is authorized and n\u2026\nAssertionError: promise rejected \"Error: 401 unauthorized_client { \u2026(2) }\" instead of resolving\n \u276f nodes/Google/test/GenericFunctions.domainWideDelegation.test.ts:95:73\n     93|   });\n     94|\n     95|   await expect(getGoogleAccessToken.call(context, credentials, 'gmail'\u2026\n       |                                                                         ^\n     96|    tokenResponse,\n     97|   );\n\nCaused by: Error: 401 unauthorized_client\n \u276f Proxy.<anonymous> nodes/Google/test/GenericFunctions.domainWideDelegation.test.ts:80:25\n \u276f Proxy.getGoogleAccessToken nodes/Google/GenericFunctions.ts:126:28\n \u276f nodes/Google/test/GenericFunctions.domainWideDelegation.test.ts:95:37\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\nSerialized Error: { statusCode: 401, error: { error: 'unauthorized_client', error_description: 'Client is unauthorized to retrieve access tokens using this method, or client not authorized for any of the scopes requested.' } }\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[2/3]\u23af\n\n\n Test Files  1 failed (1)\n      Tests  3 failed (3)\n   Start at  23:50:23\n   Duration  3.75s (transform 58%, import 38%, setup 2%, tests 2%)\n\n  Transform  transforming modules took 2.06s \u00b7 58% of tracked time, re-done on every run\n             persist transforms across runs with fsModuleCache: true\n             on CI this only helps when the cache directory is persisted between runs\n             learn more: https://vitest.dev/guide/improving-performance#caching-between-reruns\n\nJUNIT report written to /work/runs/n8n-42475/deepseek_deepseek-v4-flash-amd-on/packages/nodes-base/junit.xml\n"
+ }
+}

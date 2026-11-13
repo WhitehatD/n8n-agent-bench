@@ -1,0 +1,135 @@
+{
+ "task": "n8n-43061",
+ "model": "deepseek/deepseek-v4-flash",
+ "agents_md": "on",
+ "steps": 11,
+ "seconds": 28,
+ "usage": {
+  "prompt": 98566,
+  "completion": 2089,
+  "cost": 0.0039040760000000002
+ },
+ "finish": {
+  "summary": "Fixed `redactedHeaders()` in `packages/workflow/src/auth-redaction.ts` to compare recorded header names case-insensitively against the request headers. HTTP header names are case-insensitive (RFC 7230 \u00a73.2), and Node's `IncomingHttpHeaders` lower-cases keys, but `recordConsumedAuth()` stores names verbatim as passed \u2014 so a caller passing `'Authorization'` would never match the lower-cased `authorization` key, leaving the secret unredacted.\n\n**Change:** Replace the case-sensitive `name in headers` check with a lookup that lower-cases both the recorded name and the header keys before matching. The returned object preserves the original casing of the header keys.\n\n**Tests added:** Three new test cases:\n1. `'Authorization'` (PascalCase) recorded against `authorization` header \u2192 redacted\n2. `'AUTHORIZATION'` (uppercase) recorded against `authorization` header \u2192 redacted\n3. Multiple recorded names with mixed casing (`'Authorization', 'X-API-Key'`) \u2192 both redacted",
+  "risks": "Minimal risk. The new logic still iterates the recorded names and mutates entries by index, preserving the original return type and key casing. Edge case: if a header key appears multiple times (duplicate header entries), `Object.entries` will only see the last one from the spread copy \u2014 but this matches the existing behavior since `{ ...req.headers }` already deduplicates.",
+  "tests_run": "`cd packages/workflow && pnpm exec vitest run test/auth-redaction.test.ts` \u2014 all 10 tests pass (7 existing + 3 new)."
+ },
+ "trace": [
+  {
+   "step": 0,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/workflow/src/auth-redaction.ts"
+   },
+   "refused": false,
+   "result_head": "1: import type { IncomingHttpHeaders } from 'http';\n2: \n3: type RequestWithHeaders = { headers: IncomingHttpHeaders };\n4: \n5: export const REDACTED = '**hidden**';\n6: const CONSUMED_AUTH = Symbol.for('n8n.consumedAuth');\n7: \n8: function readRecord(req: RequestWithHeaders): string[] {\n9: \tconst recor"
+  },
+  {
+   "step": 0,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/workflow/test/auth-redaction.test.ts"
+   },
+   "refused": false,
+   "result_head": "1: import { recordConsumedAuth, redactedHeaders, REDACTED } from '../src/auth-redaction';\n2: \n3: const request = (headers: Record<string, string>) => ({ headers });\n4: \n5: describe('recordConsumedAuth / redactedHeaders', () => {\n6: \tit('should leave the request untouched', () => {\n7: \t\tconst req = r"
+  },
+  {
+   "step": 1,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd packages/workflow && head -5 package.json | grep -E '\"scripts\"|\"test\"' || true; cat package.json | grep -A5 '\"scripts\"' | head -10"
+   },
+   "refused": false,
+   "result_head": "exit 0\n  \"scripts\": {\n    \"clean\": \"rimraf dist .turbo\",\n    \"dev\": \"pnpm watch\",\n    \"typecheck\": \"tsc --noEmit\",\n    \"build:vite\": \"vite build\",\n    \"build\": \"tsc --build tsconfig.build.esm.json tsconfig.build.cjs.json\",\n"
+  },
+  {
+   "step": 2,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd packages/workflow && cat package.json | grep -E '\"test\"' "
+   },
+   "refused": false,
+   "result_head": "exit 0\n    \"test\": \"vitest run\",\n"
+  },
+  {
+   "step": 3,
+   "tool": "edit_file",
+   "args": {
+    "path": "packages/workflow/src/auth-redaction.ts",
+    "old": "export function redactedHeaders(req: RequestWithHeaders): IncomingHttpHeaders {\n\tconst headers = { ...req.headers };\n\n\tfor (const name of readRecord(req)) {\n\t\tif (name in headers) headers[name] = REDACTED;\n\t}\n\n\treturn headers;\n}",
+    "new": "export function redactedHeaders(req: RequestWithHeaders): IncomingHttpHeaders {\n\tconst headers = { ...req.headers };\n\n\tconst headerKeys = Object.keys(headers).map((k) => k.toLowerCase());\n\tconst headerEntries = Object.entries(headers);\n\n\tfor (const name of readRecord(req)) {\n\t\tconst lowerName = name"
+   },
+   "refused": false,
+   "result_head": "edited packages/workflow/src/auth-redaction.ts"
+  },
+  {
+   "step": 4,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd packages/workflow && pnpm exec vitest run test/auth-redaction.test.ts"
+   },
+   "refused": false,
+   "result_head": "exit 0\n\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv5.0.1 \u001b[39m\u001b[90m/work/runs/n8n-43061/deepseek_deepseek-v4-flash-amd-on/packages/workflow\u001b[39m\n\n \u001b[32m\u2713\u001b[39m \u001b[30m\u001b[42m default \u001b[49m\u001b[39m test/auth-redaction.test.ts \u001b[2m(\u001b[22m\u001b[2m7 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 5\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b["
+  },
+  {
+   "step": 5,
+   "tool": "edit_file",
+   "args": {
+    "path": "packages/workflow/test/auth-redaction.test.ts",
+    "old": "\tit('should not be enumerable on the request', () => {\n\t\tconst req = request({ authorization: 'Bearer secret' });\n\n\t\trecordConsumedAuth(req, ['authorization']);\n\n\t\texpect(Object.keys(req)).toEqual(['headers']);\n\t\texpect({ ...req }).toEqual({ headers: { authorization: 'Bearer secret' } });\n\t});\n});",
+    "new": "\tit('should not be enumerable on the request', () => {\n\t\tconst req = request({ authorization: 'Bearer secret' });\n\n\t\trecordConsumedAuth(req, ['authorization']);\n\n\t\texpect(Object.keys(req)).toEqual(['headers']);\n\t\texpect({ ...req }).toEqual({ headers: { authorization: 'Bearer secret' } });\n\t});\n\n\tit("
+   },
+   "refused": false,
+   "result_head": "edited packages/workflow/test/auth-redaction.test.ts"
+  },
+  {
+   "step": 6,
+   "tool": "edit_file",
+   "args": {
+    "path": "packages/workflow/test/auth-redaction.test.ts",
+    "old": "\tit('should redact when multiple recorded names differ in casing from header keys', () => {\n\t\tconst req = request({ authorization: 'a', 'x-api-key': 'b', keep: 'c' });\n\n\t\trecordConsumedAuth(req, ['Authorization', 'X-API-Key']);\n\n\t\texpect(redactedHeaders(req)).toEqual({ authorization: 'a', 'x-api-key",
+    "new": "\tit('should redact when multiple recorded names differ in casing from header keys', () => {\n\t\tconst req = request({ authorization: 'a', 'x-api-key': 'b', keep: 'c' });\n\n\t\trecordConsumedAuth(req, ['Authorization', 'X-API-Key']);\n\n\t\texpect(redactedHeaders(req)).toEqual({ authorization: REDACTED, 'x-ap"
+   },
+   "refused": false,
+   "result_head": "edited packages/workflow/test/auth-redaction.test.ts"
+  },
+  {
+   "step": 7,
+   "tool": "shell",
+   "args": {
+    "cmd": "cd packages/workflow && pnpm exec vitest run test/auth-redaction.test.ts"
+   },
+   "refused": false,
+   "result_head": "exit 0\n\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv5.0.1 \u001b[39m\u001b[90m/work/runs/n8n-43061/deepseek_deepseek-v4-flash-amd-on/packages/workflow\u001b[39m\n\n \u001b[32m\u2713\u001b[39m \u001b[30m\u001b[42m default \u001b[49m\u001b[39m test/auth-redaction.test.ts \u001b[2m(\u001b[22m\u001b[2m10 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 6\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b"
+  },
+  {
+   "step": 8,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/workflow/src/auth-redaction.ts"
+   },
+   "refused": false,
+   "result_head": "1: import type { IncomingHttpHeaders } from 'http';\n2: \n3: type RequestWithHeaders = { headers: IncomingHttpHeaders };\n4: \n5: export const REDACTED = '**hidden**';\n6: const CONSUMED_AUTH = Symbol.for('n8n.consumedAuth');\n7: \n8: function readRecord(req: RequestWithHeaders): string[] {\n9: \tconst recor"
+  },
+  {
+   "step": 8,
+   "tool": "read_file",
+   "args": {
+    "path": "packages/workflow/test/auth-redaction.test.ts"
+   },
+   "refused": false,
+   "result_head": "1: import { recordConsumedAuth, redactedHeaders, REDACTED } from '../src/auth-redaction';\n2: \n3: const request = (headers: Record<string, string>) => ({ headers });\n4: \n5: describe('recordConsumedAuth / redactedHeaders', () => {\n6: \tit('should leave the request untouched', () => {\n7: \t\tconst req = r"
+  }
+ ],
+ "diff": "diff --git a/packages/workflow/src/auth-redaction.ts b/packages/workflow/src/auth-redaction.ts\nindex 06fa0113..7c27023f 100644\n--- a/packages/workflow/src/auth-redaction.ts\n+++ b/packages/workflow/src/auth-redaction.ts\n@@ -25,9 +25,16 @@ export function recordConsumedAuth(req: RequestWithHeaders, names: string[]): vo\n export function redactedHeaders(req: RequestWithHeaders): IncomingHttpHeaders {\n \tconst headers = { ...req.headers };\n \n+\tconst headerKeys = Object.keys(headers).map((k) => k.toLowerCase());\n+\tconst headerEntries = Object.entries(headers);\n+\n \tfor (const name of readRecord(req)) {\n-\t\tif (name in headers) headers[name] = REDACTED;\n+\t\tconst lowerName = name.toLowerCase();\n+\t\tconst idx = headerKeys.indexOf(lowerName);\n+\t\tif (idx !== -1) {\n+\t\t\theaderEntries[idx][1] = REDACTED;\n+\t\t}\n \t}\n \n-\treturn headers;\n+\treturn Object.fromEntries(headerEntries);\n }\ndiff --git a/packages/workflow/test/auth-redaction.test.ts b/packages/workflow/test/auth-redaction.test.ts\nindex 3135414c..e1630d86 100644\n--- a/packages/workflow/test/auth-redaction.test.ts\n+++ b/packages/workflow/test/auth-redaction.test.ts\n@@ -63,4 +63,28 @@ describe('recordConsumedAuth / redactedHeaders', () => {\n \t\texpect(Object.keys(req)).toEqual(['headers']);\n \t\texpect({ ...req }).toEqual({ headers: { authorization: 'Bearer secret' } });\n \t});\n+\n+\tit('should redact case-insensitively when recorded name has different casing than the header key', () => {\n+\t\tconst req = request({ authorization: 'Bearer secret' });\n+\n+\t\trecordConsumedAuth(req, ['Authorization']);\n+\n+\t\texpect(redactedHeaders(req)).toEqual({ authorization: REDACTED });\n+\t});\n+\n+\tit('should redact case-insensitively when recorded name is all uppercase', () => {\n+\t\tconst req = request({ authorization: 'Bearer secret' });\n+\n+\t\trecordConsumedAuth(req, ['AUTHORIZATION']);\n+\n+\t\texpect(redactedHeaders(req)).toEqual({ authorization: REDACTED });\n+\t});\n+\n+\tit('should redact when multiple recorded names differ in casing from header keys', () => {\n+\t\tconst req = request({ authorization: 'a', 'x-api-key': 'b', keep: 'c' });\n+\n+\t\trecordConsumedAuth(req, ['Authorization', 'X-API-Key']);\n+\n+\t\texpect(redactedHeaders(req)).toEqual({ authorization: REDACTED, 'x-api-key': REDACTED, keep: 'c' });\n+\t});\n });\n",
+ "isolation": {
+  "container": "per-run",
+  "mounts": [
+   "runs/n8n-43061/deepseek_deepseek-v4-flash-amd-on"
+  ],
+  "network": "jail (egress /llm only)",
+  "user": "1001",
+  "caps": "none",
+  "memory": "2g"
+ }
+}

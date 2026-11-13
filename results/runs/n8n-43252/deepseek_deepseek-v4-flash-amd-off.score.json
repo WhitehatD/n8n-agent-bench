@@ -1,0 +1,36 @@
+{
+ "task": "n8n-43252",
+ "model": "deepseek/deepseek-v4-flash",
+ "agents_md": "off",
+ "held_out_tests_pass": false,
+ "policy": {
+  "deny_write_hits": [],
+  "human_review_path_hits": [],
+  "gate_model": "morph/reflex",
+  "gate_p_needs_human": 1.6680634031840298e-05,
+  "needs_human": false,
+  "refused_tool_calls": 0
+ },
+ "closeness": {
+  "agent_files": [
+   "packages/@n8n/nodes-langchain/nodes/agents/Agent/agents/ToolsAgent/common.ts",
+   "packages/@n8n/nodes-langchain/nodes/agents/Agent/test/ToolsAgent/commons.test.ts"
+  ],
+  "gold_src_files": [
+   "packages/@n8n/nodes-langchain/nodes/agents/Agent/agents/ToolsAgent/common.ts"
+  ],
+  "src_file_overlap": 1.0,
+  "extra_files": [],
+  "agent_lines": 4,
+  "gold_lines": 30
+ },
+ "cost_usd": 0.1863,
+ "steps": 77,
+ "seconds": 1002,
+ "finished": true,
+ "held_out": {
+  "passed": false,
+  "seconds": 3,
+  "tail": "e tool (2)\n       \u2713 should parse output from format_final_json_response tool 0ms\n       \u2713 should stringify tool input if it is not an object 0ms\n     \u2713 manual parsing path (9)\n       \u2713 should handle already wrapped output structure correctly 1ms\n       \u2713 should wrap output that is not already wrapped 0ms\n       \u2713 should handle output with additional properties correctly 0ms\n       \u2713 should handle parse errors gracefully 1ms\n       \u2713 should handle null output correctly 0ms\n       \u2713 should handle undefined-like values correctly 1ms\n       \u2713 should return output as-is without memory 1ms\n       \u2713 should hand the parser the text block when the model returns content blocks 1ms\n       \u2713 should hand the parser an empty string when the model returns only thinking blocks 0ms\n     \u2713 without output parser (2)\n       \u2713 should pass through agent finish steps unchanged 0ms\n       \u2713 should handle array of agent actions 0ms\n   \u276f handleAgentFinishOutput (8)\n     \u2713 should concatenate streamed text fragments without adding newlines 0ms\n     \u2713 should merge multi-output text arrays into a single string 0ms\n     \u2713 should not modify non-text multi-output arrays 0ms\n     \u2713 should not modify simple string output 0ms\n     \u2713 should handle agent action arrays unchanged 0ms\n     \u2713 should filter out thinking blocks and return only text blocks 0ms\n     \u00d7 should return thinking content when no text blocks exist 20ms\n     \u2713 should return empty string when no text or thinking blocks exist 1ms\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af Failed Tests 1 \u23af\u23af\u23af\u23af\u23af\u23af\u23af\n\n FAIL  nodes/agents/Agent/test/ToolsAgent/commons.test.ts > handleAgentFinishOutput > should return thinking content when no text blocks exist\nAssertionError: expected 'Only thinking content\\nMore thinking' to be 'Only thinking contentMore thinking' // Object.is equality\n\n- Expected\n+ Received\n\n- Only thinking contentMore thinking\n+ Only thinking content\n+ More thinking\n\n \u276f nodes/agents/Agent/test/ToolsAgent/commons.test.ts:1331:38\n    1329|   const result = handleAgentFinishOutput(steps) as AgentFinish;\n    1330|\n    1331|   expect(result.returnValues.output).toBe('Only thinking contentMore t\u2026\n       |                                      ^\n    1332|  });\n    1333|\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[1/1]\u23af\n\n\n Test Files  1 failed (1)\n      Tests  1 failed | 64 passed (65)\n   Start at  23:27:18\n   Duration  1.89s (import 70%, transform 23%, tests 6%, setup 1%)\n\nJUNIT report written to /work/runs/n8n-43252/deepseek_deepseek-v4-flash-amd-off/packages/@n8n/nodes-langchain/junit.xml\n"
+ }
+}

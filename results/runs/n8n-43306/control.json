@@ -1,0 +1,10 @@
+{
+ "task": "n8n-43306",
+ "base_fails": true,
+ "failing": [
+  "sanitizes offloaded result locators for persistTurnDelta",
+  "sanitizes offloaded result locators for saveToMemory",
+  "does not tell the observer that a live offloaded result is unavailable"
+ ],
+ "tail": ": \"application/pdf\",\n            \"type\": \"file-data\",\n          },\n        ],\n      },\n      \"state\": \"resolved\",\n+     \"toolCallId\": \"content-result-call\",\n+     \"toolName\": \"content-result-tool\",\n+     \"type\": \"tool-call\",\n    },\n    {\n-     \"error\": \"{\\\"originalCharCount\\\":100000,\\\"estimatedTokenCount\\\":60000}\",\n+     \"error\": \"{\\\"_offloaded\\\":true,\\\"expired\\\":true,\\\"message\\\":\\\"The stored tool result expired with its originating run.\\\"}\",\n+     \"input\": {},\n      \"state\": \"rejected\",\n+     \"toolCallId\": \"error-call\",\n+     \"toolName\": \"error-tool\",\n+     \"type\": \"tool-call\",\n    },\n    {\n-     \"text\": \"{\\\"originalCharCount\\\":100000,\\\"estimatedTokenCount\\\":60000}\",\n+     \"text\": \"{\\\"_offloaded\\\":true,\\\"expired\\\":true,\\\"message\\\":\\\"The stored tool result expired with its originating run.\\\"}\",\n      \"type\": \"text\",\n    },\n  ]\n\n \u276f src/runtime/__tests__/memory-orchestrator-persist-input.test.ts:364:30\n    362|    const [persisted] = await store.getMessages(THREAD_ID, { resourceId\u2026\n    363|    if (!persisted || !('content' in persisted)) throw new Error('Expec\u2026\n    364|    expect(persisted.content).toEqual([\n       |                              ^\n    365|     expect.objectContaining({\n    366|      state: 'resolved',\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[2/3]\u23af\n\n\n Test Files  2 failed (2)\n      Tests  3 failed | 53 passed (56)\n   Start at  23:10:38\n   Duration  3.00s (import 69%, transform 19%, tests 11%)\n\nJUNIT report written to /work/runs/n8n-43306/control/packages/@n8n/agents/junit.xml\n"
+}

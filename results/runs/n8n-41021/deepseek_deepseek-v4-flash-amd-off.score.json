@@ -1,0 +1,38 @@
+{
+ "task": "n8n-41021",
+ "model": "deepseek/deepseek-v4-flash",
+ "agents_md": "off",
+ "held_out_tests_pass": false,
+ "policy": {
+  "deny_write_hits": [],
+  "human_review_path_hits": [],
+  "gate_model": "morph/reflex",
+  "gate_p_needs_human": 0.0004607664292274058,
+  "needs_human": false,
+  "refused_tool_calls": 0
+ },
+ "closeness": {
+  "agent_files": [
+   "packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/text/message.operation.test.ts",
+   "packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/text/message.operation.ts"
+  ],
+  "gold_src_files": [
+   "packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/text/message.operation.ts"
+  ],
+  "src_file_overlap": 1.0,
+  "extra_files": [
+   "packages/@n8n/nodes-langchain/nodes/vendors/GoogleGemini/actions/text/message.operation.test.ts"
+  ],
+  "agent_lines": 16,
+  "gold_lines": 82
+ },
+ "cost_usd": 0.0089,
+ "steps": 18,
+ "seconds": 103,
+ "finished": true,
+ "held_out": {
+  "passed": false,
+  "seconds": 3,
+  "tail": "1ms\n       \u2713 should not pass durationSeconds if not provided 1ms\n       \u2713 should handle errors from video generation 2ms\n       \u2713 should throw error for non-Veo model 1ms\n     \u2713 Video -> Download (2)\n       \u2713 should derive download filename from MIME type 1ms\n       \u2713 should propagate download domain policy errors 3ms\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af Failed Tests 1 \u23af\u23af\u23af\u23af\u23af\u23af\u23af\n\n FAIL  nodes/vendors/GoogleGemini/GoogleGemini.node.test.ts > GoogleGemini Node > Text -> Message > should send tool results in a user turn and return the follow-up response\nAssertionError: expected 2nd \"apiRequest\" call to have been called with [ 'POST', \u2026(2) ]\n\n- Expected\n+ Received\n\n@@ -38,11 +38,44 @@\n                    },\n                  },\n                },\n              },\n            ],\n-           \"role\": \"user\",\n+           \"role\": \"function\",\n+         },\n+       ],\n+       \"generationConfig\": {\n+         \"candidateCount\": undefined,\n+         \"frequencyPenalty\": undefined,\n+         \"maxOutputTokens\": undefined,\n+         \"presencePenalty\": undefined,\n+         \"responseMimeType\": undefined,\n+         \"temperature\": undefined,\n+         \"topK\": undefined,\n+         \"topP\": undefined,\n+       },\n+       \"systemInstruction\": undefined,\n+       \"tools\": [\n+         {\n+           \"functionDeclarations\": [\n+             {\n+               \"description\": \"Performs calculations\",\n+               \"name\": \"calculator\",\n+               \"parameters\": {\n+                 \"additionalProperties\": undefined,\n+                 \"properties\": {\n+                   \"expression\": {\n+                     \"type\": \"string\",\n+                   },\n+                 },\n+                 \"required\": [\n+                   \"expression\",\n+                 ],\n+                 \"type\": \"object\",\n+               },\n+             },\n+           ],\n          },\n        ],\n      },\n    },\n  ]\n\n \u276f nodes/vendors/GoogleGemini/GoogleGemini.node.test.ts:174:27\n    172|    expect(tool.invoke).toHaveBeenCalledExactlyOnceWith({ expression: '\u2026\n    173|    expect(apiRequestMock).toHaveBeenCalledTimes(2);\n    174|    expect(apiRequestMock).toHaveBeenNthCalledWith(\n       |                           ^\n    175|     2,\n    176|     'POST',\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[1/1]\u23af\n\n\n Test Files  1 failed (1)\n      Tests  1 failed | 42 passed (43)\n   Start at  00:01:54\n   Duration  1.62s (import 65%, transform 30%, tests 3%, setup 1%)\n\nJUNIT report written to /work/runs/n8n-41021/deepseek_deepseek-v4-flash-amd-off/packages/@n8n/nodes-langchain/junit.xml\n"
+ }
+}
